@@ -1,4 +1,4 @@
-package com.tyrannotorus.bubblebobble;
+package com.tyrannotorus.bubblebobble.utils;
 
 import flash.display.Sprite;
 import flash.display.Bitmap;

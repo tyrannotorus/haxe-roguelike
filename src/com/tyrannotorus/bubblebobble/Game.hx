@@ -1,6 +1,9 @@
 package com.tyrannotorus.bubblebobble;
 
+import com.tyrannotorus.bubblebobble.utils.Colors;
+import com.tyrannotorus.bubblebobble.utils.Constants;
 import com.tyrannotorus.bubblebobble.utils.Utils;
+import com.tyrannotorus.bubblebobble.utils.KeyCodes;
 import com.tyrannotorus.bubblebobble.utils.ActorUtils;
 import com.tyrannotorus.assetloader.AssetEvent;
 import com.tyrannotorus.assetloader.AssetLoader;
@@ -17,7 +20,6 @@ import openfl.media.SoundTransform;
 class Game extends Sprite {
 		
 	private var screen:Sprite;
-	private var ring:Ring;
 	private var player:Actor;
 	private var opponent:Actor;
 	private var healthBars:HealthBars;
@@ -41,25 +43,31 @@ class Game extends Sprite {
 	private var musicTransform:SoundTransform;
 	
 	public function new() {
-		
 		super();
+	}
+	
+	public function loadGame():Void {
 		
 		screen = new Sprite();
 		
 		// Add Mike Tyson Welcome Screen
-		var intro:Bitmap = new Bitmap();
-		intro.bitmapData = Assets.getBitmapData("img/intro.png");
-		screen.addChild(intro);
-		addChild(screen);
+		//var intro:Bitmap = new Bitmap();
+		//intro.bitmapData = Assets.getBitmapData("img/intro.png");
+		//screen.addChild(intro);
+		//addChild(screen);
 		
-		ring = new Ring();
-		addChild(ring);
+		// Create Bub.
+		var bubSpritesheet:BitmapData = Assets.getBitmapData("actors/bub_spritesheet.png");
+		var bubLogic:String = Assets.getText("actors/bub_logic.txt");
+		var bubData:Dynamic = ActorUtils.parseActorData(bubSpritesheet, bubLogic);
+		player = new Actor(bubData);
 		
-		// Create Little Mac
-		var macSpritesheet:BitmapData = Assets.getBitmapData("actors/mac_spritesheet.png");
-		var macLogic:String = Assets.getText("actors/mac_logic.txt");
-		var macData:Dynamic = ActorUtils.parseActorData(macSpritesheet, macLogic);
-		player = new Actor(macData);
+		Utils.position(player, 96, 132);
+		addChild(player);
+		
+		addEventListener(Event.ENTER_FRAME, onEnterFrame);
+		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
+		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);
 		
 		healthBars = new HealthBars();
 		textManager = new TextManager();
@@ -72,9 +80,9 @@ class Game extends Sprite {
 		testText.fontSet = 4;
 		addChild(textManager.typeText(testText));
 		
-		var assetLoader:AssetLoader = new AssetLoader();
-		assetLoader.addEventListener(AssetEvent.LOAD_COMPLETE, parseExternalAsset);
-		assetLoader.loadAsset("http://sites.google.com/site/tyrannotorus/01-glassjoe.zip");
+		//var assetLoader:AssetLoader = new AssetLoader();
+		//assetLoader.addEventListener(AssetEvent.LOAD_COMPLETE, parseExternalAsset);
+		//assetLoader.loadAsset("http://sites.google.com/site/tyrannotorus/01-glassjoe.zip");
 				
 		musicTransform = new SoundTransform(0.1);
 		music = Assets.getSound("audio/title_music.mp3", true);
@@ -102,8 +110,6 @@ class Game extends Sprite {
 		Utils.position(opponent, Constants.CENTER, 73);
 		addChild(opponent);
 		
-		ring.loadRing(characterData);
-				
 		Utils.position(player, 96, 132);
 		addChild(player);
 		
@@ -113,8 +119,14 @@ class Game extends Sprite {
 	}
 	
 	private function onEnterFrame(e:Event):Void {
+		if (leftKey) {
+			player.xMove(-1, -1, player.WALK);
+		} else if (rightKey) {
+			player.xMove(1, 1, player.WALK);
+		}
+		
 		player.animate();
-		opponent.animate();
+	//	opponent.animate();
 	}
 	
 	private function onGameKeyDown(e:KeyboardEvent):Void {
@@ -122,51 +134,51 @@ class Game extends Sprite {
 		switch(e.keyCode) {
 			
 			// Left key
-			case 37:
-				if (leftKey == false) {
+			case KeyCodes.LEFT:
+				//if (leftKey == false) {
 					leftKey = true;
-					player.dodgeLeft();
-				}
+					//player.move(-1);
+				//}
 			
 			// Up key
-			case 38:
+			case KeyCodes.UP:
 				if (upKey == false) {
 					upKey = true;
 				}
 			
 			// Right Key	
-			case 39:
-				if (rightKey == false) {
+			case KeyCodes.RIGHT:
+				//if (rightKey == false) {
 					rightKey = true;
-					player.dodgeRight();
-				}
+					//player.move(1);
+				//}
 			
 			// Down Key
-			case 40:
+			case KeyCodes.DOWN:
 				if (downKey == false) {
 					downKey = true;
-					player.duck(true);
+					//player.duck(true);
 				}
 			
 			// X Key
-			case 88:
+			case KeyCodes.X:
 				if (xKey == false && zKey == false) {
 					xKey = true;
 					if (upKey == true) {
-						player.highPunchA();
+						//player.highPunchA();
 					} else {
-						player.lowPunchA();
+						//player.lowPunchA();
 					}
 				}
 			
 			// Z Key
-			case 90:
+			case KeyCodes.Z:
 				if (zKey == false && xKey == false) {
 					zKey = true;
 					if (upKey == true) {
-						player.highPunchB();
+						//player.highPunchB();
 					} else {
-						player.lowPunchB();
+						//player.lowPunchB();
 					}
 				}
 		}
@@ -176,18 +188,20 @@ class Game extends Sprite {
 	private function onGameKeyUp(e:KeyboardEvent):Void {
 				
 		switch(e.keyCode) {
-			case 37:
+			case KeyCodes.LEFT:
 				leftKey = false;
-			case 38:
+				player.xMove(0, 0, player.IDLE);
+			case KeyCodes.UP:
 				upKey = false;
-			case 39:
+			case KeyCodes.RIGHT:
 				rightKey = false;
-			case 40:
+				player.xMove(0, 0, player.IDLE);
+			case KeyCodes.DOWN:
 				downKey = false;
 				player.duck(false);
-			case 88:
+			case KeyCodes.X:
 				xKey = false;
-			case 90:
+			case KeyCodes.Z:
 				zKey = false;
 		}
 		

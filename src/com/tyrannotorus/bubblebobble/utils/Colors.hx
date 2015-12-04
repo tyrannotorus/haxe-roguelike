@@ -1,4 +1,4 @@
-package com.tyrannotorus.bubblebobble;
+package com.tyrannotorus.bubblebobble.utils;
 
 import motion.Actuate;
 

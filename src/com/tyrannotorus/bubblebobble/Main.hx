@@ -1,5 +1,6 @@
 package com.tyrannotorus.bubblebobble;
 
+import com.tyrannotorus.bubblebobble.utils.Constants;
 import openfl.display.Sprite;
 import openfl.display.StageDisplayState;
 import openfl.events.Event;
@@ -14,10 +15,12 @@ class Main extends Sprite {
 	public function new() {
 		
 		super();
-		
+				
 		game = new Game();
 		addChild(game);
 		addListeners();
+		
+		game.loadGame();
 	}
 	
 	/**

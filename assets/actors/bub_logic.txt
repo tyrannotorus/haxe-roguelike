@@ -1,0 +1,191 @@
+; ////////////////////////////////////////////////////////////
+; //                                                        //
+; //  Little Mac v0.1                   	         	    //
+; //  HAXE PUNCHOUT v.2015.01.20                            //
+; //  TYRANNOTORUS.BLOGSPOT.COM                             //
+; //                                                        //
+; ////////////////////////////////////////////////////////////
+
+	stats.NAME		= "Bub"
+	stats.HEALTH   		= 100
+	stats.STRENGTH  	= 1
+	stats.DEFENSE	  	= 1
+	stats.WILLPOWER 	= 1
+	stats.WALKSPEED 	= 2	
+	stats.RUNSPEED  	= 3
+	stats.RECOVERY		= 4
+	stats.ATTACKPOWER	= 1		
+	stats.JUMPPOWER 	= 1
+;	stats.DEATHCRY		= sfx_nooooo.mp3
+
+	frames.IDLE (0,0)
+	timing:10000
+		
+	frames.WALK (0,0)
+	timing:6
+	timing:6
+	timing:6
+	timing:6
+	
+;	frames.PUNCH_HIGH_B (0,1)
+;	timing:1, xshift:-2
+;	timing:1, xshift:-4, yshift:-4
+;	timing:1, xshift:-2, yshift:-12
+;	timing:1, xshift:0, yshift:-16
+;	timing:1, xshift:3, yshift:-30
+;	timing:1, xshift:5, yshift:-30, hit:10
+;	timing:1, xshift:4, yshift:-16
+;	timing:1, xshift:0, yshift:-12
+;	timing:1, xshift:-4, yshift:-4
+;	timing:1, xshift:-1
+;	
+;	frames.PUNCH_HIGH_A (0,2)
+;	timing:1, xshift:-1
+;	timing:1, xshift:-3, yshift:-4
+;	timing:1, xshift:0, yshift:-12
+;	timing:1, xshift:3, yshift:-21
+;	timing:1, xshift:8, yshift:-30
+;	timing:1, xshift:6, yshift:-30, hit:10
+;	timing:1, xshift:3, yshift:-21
+;	timing:1, xshift:0, yshift:-12
+;	timing:1, xshift:-3, yshift:-4
+	
+;	frames.DODGE_LEFT (0,3)
+;	timing:1, xshift:-1
+;	timing:1, xshift:-6, yshift:-4
+;	timing:1, xshift:-9, yshift:-4
+;	timing:1, xshift:-12, yshift:-4
+;	timing:1, xshift:-17
+;	timing:1, xshift:-17
+;	timing:1, xshift:-17
+;	timing:1, xshift:-16
+;	timing:1, xshift:-17, yshift:-4
+;	timing:1, xshift:-15, yshift:-4
+;	timing:1, xshift:-13, yshift:-4
+;	timing:1, xshift:-11, yshift:-4
+;	timing:1, xshift:-8, yshift:-4
+;	timing:1, xshift:-3
+;	
+;	frames.DODGE_RIGHT (0,4)
+;	timing:1, xshift:1
+;	timing:1, yshift:-4
+;	timing:1, xshift:2, yshift:-4
+;	timing:1, xshift:4, yshift:-4
+;	timing:1, xshift:13, yshift:-4
+;	timing:1, xshift:13, yshift:-4
+;	timing:1, xshift:18, yshift:-4
+;	timing:1, xshift:17, yshift:-1
+;	timing:1, xshift:11, yshift:-4
+;	timing:1, xshift:10, yshift:-4
+;	timing:1, xshift:5, yshift:-4
+;	timing:1, xshift:2, yshift:-4
+;	timing:1, xshift:-1, yshift:-4
+;	
+;	frames.DUCK (0,5)
+;	timing:3
+;	timing:10000
+		
+	
+	
+;	frames.HOP (8,0)
+;	timing:5
+;	timing:4
+
+;	frames.CROUCH (12,0)
+;	timing:20, sfx:sfx_land.mp3
+
+;	frames.WALK (0,1)
+;	timing:6
+;	timing:7
+;	timing:6
+;	timing:7
+
+;	frames.JUMP (10,0)
+;	timing:2
+;	timing:2
+
+;	frames.RUN (5,1)
+;	timing:5
+;	timing:5
+;	timing:4
+;	timing:5
+;	timing:5
+;	timing:4
+
+;	frames.FALL (12,1)
+;	timing:1000
+
+;	frames.FACEHIT1 (1,2)
+;	timing:10
+
+;	frames.FACEHIT2 (0,2)
+;	timing:10
+;	timing:10
+
+;	frames.KNOCKUP (2,2)
+;	timing:15
+;	timing:1000
+
+;	frames.DEADUP (4,2)
+;	timing:6, sfx:sfx_fall.mp3
+;	timing:120
+
+;	frames.BACKHIT1 (8,2)
+;	timing:10
+
+;	frames.BACKHIT2 (7,2)
+;	timing:10
+;	timing:10
+
+;	frames.KNOCKDOWN (9,2)
+;	timing:15
+;	timing:1000
+
+;	frames.DEADDOWN (11,2)
+;	timing:6, sfx:sfx_fall.mp3
+;	timing:120
+
+;	frames.STUN (0,3)
+;	timing:15
+;	timing:12
+;	timing:21
+
+;	frames.JUMPATTACK0 (9,3)
+;	timing:6, sfx:sfx_saber_miss2.mp3
+;	timing:9
+;	timing:9
+;	timing:1000
+
+;	frames.ATTACK0 (0,4)
+;	timing:6, sfx:sfx_saber_miss1.mp3
+;	timing:3, hit:30, hitpow:7, hitangle:125, hithp:1, hitsp:1, xshift:9
+;	timing:6, xshift:9
+
+;	frames.ATTACK1 (3,4)
+;	timing:9, xshift:-3, sfx:sfx_saber_miss1.mp3
+;	timing:5, xshift:9, hit:30, hitpow:7, hitangle:125, hithp:1, hitsp:1
+;	timing:9, xshift:9
+
+;	frames.ATTACK2 (6,4)
+;	timing:9, sfx:sfx_saber_miss2.mp3
+;	timing:3, xshift:9
+;	timing:6, xshift:7, hit:27, hitpow:10, hitangle:110, hithp:1, hitsp:1
+;	timing:5
+
+;	frames.ATTACK3 (0,6)
+;	timing:9, sfx:sfx_saber_miss2.mp3
+;	timing:3, xshift:9, hit:27, hitpow:12, hitangle:160, hithp:1, hitsp:1
+;	timing:7
+;	timing:5, yshift:-2
+
+;	combos.strikecombos
+;	ATTACK0, ATTACK0, ATTACK1, ATTACK2
+;	ATTACK0, ATTACK0, ATTACK1, F:ATTACK3
+
+;	combos.grapplecombos
+;	GRAPPLE_N, GRAPPLE_N, GRAPPLE_N
+;	D:GRAPPLE_D, D:GRAPPLE_D, D:GRAPPLE_D
+;	B:GRAPPLE_B
+
+;	combos.jumpcombos
+;	JUMPATTACK0

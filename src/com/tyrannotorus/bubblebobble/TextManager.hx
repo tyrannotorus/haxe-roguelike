@@ -1,5 +1,6 @@
 package com.tyrannotorus.bubblebobble;
 
+import com.tyrannotorus.bubblebobble.utils.Colors;
 import com.tyrannotorus.bubblebobble.utils.Utils;
 import flash.display.Sprite;
 import flash.display.Bitmap;
