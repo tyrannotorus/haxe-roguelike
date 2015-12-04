@@ -1,13 +1,8 @@
 ﻿package com.tyrannotorus.bubblebobble;
 	
-	import openfl.display.Sprite;
-	import openfl.display.Bitmap;
-	import openfl.display.BitmapData;
-	//import flash.geom.Point;
-	//import flash.media.Sound;
-	//import flash.media.SoundChannel;
-	//import flash.media.SoundTransform;
-	
+import openfl.display.Sprite;
+import openfl.display.Bitmap;
+import openfl.display.BitmapData;
 	
 class Actor extends Sprite {
 		
@@ -81,9 +76,10 @@ class Actor extends Sprite {
 		
 	public var difficulty	:Int;
 		
-	public var a			:Int = 0;	// Current animation
-	public var _a			:Int = 0;	// Next animation
-	public var f			:Int = 0;	// Frame
+	public var currentFrame:Int = 0;
+	public var currentAnimation:Int = 0;
+	public var nextAnimation:Int = 0;
+	
 			
 	public var actor		:Bitmap;
 			
@@ -110,8 +106,8 @@ class Actor extends Sprite {
 	public var vy			:Int;	// Characters Y momentum
 	
 	// TEMPORARY VARIABLE HOLDERS
-	private var tmpxshift	:Int;	// xshift[a][f] holder should declare these when needed = faster
-	private var tmpyshift	:Int;	// yshift[a][f] holder
+	private var tmpxshift	:Int;	// xshift[currentAnimation][currentFrame] holder should declare these when needed = faster
+	private var tmpyshift	:Int;	// yshift[currentAnimation][currentFrame] holder
 			
 	private var tick		:Int = 0;		
 	private var combo		:Int;
@@ -195,6 +191,7 @@ class Actor extends Sprite {
 		var statsData:Dynamic = Reflect.field(actorData, "stats");
 		actorName = Reflect.field(statsData, "NAME");
 		addChild(actor = new Bitmap());
+		actor.x = -8;
 		actor.bitmapData = bitmaps[0][0];
 		cacheAsBitmap = true;
 	}
@@ -318,7 +315,7 @@ class Actor extends Sprite {
 			
 				// Character bitmap
 				actor = new Bitmap();
-				actor.bitmapData = bitmaps[a][f];
+				actor.bitmapData = bitmaps[currentAnimation][currentFrame];
 				actor.x = -actor.bitmapData.width >> 1;
 				actor.y = -actor.bitmapData.height + 3;
 				h = actor.bitmapData.height;
@@ -462,7 +459,7 @@ class Actor extends Sprite {
 					// Stop and wait...
 					} else if( Math.random() < 0.1 ) {
 						joystick = 1;
-						forceAnimation(IDLE);
+						setAnimation(IDLE);
 						n = 0;
 					}
 				}*/
@@ -481,7 +478,7 @@ class Actor extends Sprite {
 			
 			var n:Int = 1;
 			var x1:Int, y1:Int;
-			var test_altitude:Float = altitude != altitude ? elevation : altitude;
+			var testnextAnimationltitude:Float = altitude != altitude ? elevation : altitude;
 			
 			
 			// Collision detection, if actor is moving --------------------------------------------
@@ -514,8 +511,8 @@ class Actor extends Sprite {
 									vx = vy = victim.vx = victim.vy = 0;
 									new_x = victim.x - scaleX * 25;
 									new_z = victim.y;// + 3;
-									forceAnimation(GRAB, GRAPPLE);
-									victim.forceAnimation(victim.GRABBED, victim.GRAPPLED);
+									setAnimation(GRAB, GRAPPLE);
+									victim.setAnimation(victim.GRABBED, victim.GRAPPLED);
 									victim.stamina = 3;
 									victim.recovery = 0;
 									victim.scaleX = -scaleX;
@@ -544,18 +541,18 @@ class Actor extends Sprite {
 			
 				//if(cpu) trace("3z:"+new_z);
 				// Actor vs Environment collisions ...
-				if( floormap[new_z][new_x] > test_altitude ) {
+				if( floormap[new_z][new_x] > testnextAnimationltitude ) {
 				
 					LOOP: do {
 							
 						do {
 						
 							// Found free spot found while counting back
-							if( floormap[new_z][new_x] <= test_altitude ) {
+							if( floormap[new_z][new_x] <= testnextAnimationltitude ) {
 							
 								if( !vz ) {
-									if( floormap[new_z+1][new_x] <= test_altitude && floormap[new_z-1][new_x] > test_altitude ) ++new_z;
-									else if( floormap[new_z-1][new_x] <= test_altitude && floormap[new_z+1][new_x] > test_altitude ) --new_z;
+									if( floormap[new_z+1][new_x] <= testnextAnimationltitude && floormap[new_z-1][new_x] > testnextAnimationltitude ) ++new_z;
+									else if( floormap[new_z-1][new_x] <= testnextAnimationltitude && floormap[new_z+1][new_x] > testnextAnimationltitude ) --new_z;
 								}
 							
 								break LOOP;
@@ -590,11 +587,11 @@ class Actor extends Sprite {
 				// Beating grappled victim
 				} else if( victim != null ) {
 					
-					victim.grappleDamage( scaleX, hitvx[a][f], hitvy[a][f], hithp[a][f], hitsp[a][f] );
+					victim.grappleDamage( scaleX, hitvx[currentAnimation][currentFrame], hitvy[currentAnimation][currentFrame], hithp[currentAnimation][currentFrame], hitsp[currentAnimation][currentFrame] );
 					
 					if( victim.prone ) {
 						victim = null;
-						_a = IDLE;
+						nextAnimation = IDLE;
 					}
 				
 				// Beating another actor
@@ -610,22 +607,22 @@ class Actor extends Sprite {
 							{
 								x1 = $actorpool[n].x - new_x;
 								if (x1 > 0) {
-									x1 -= hit[a][f];
+									x1 -= hit[currentAnimation][currentFrame];
 									if (x1 < 5) $actorpool[n].strikeDamage(
 																		   scaleX,
-																		   hitvx[a][f],
-																		   hitvy[a][f],
-																		   hithp[a][f],
-																		   hitsp[a][f] );
+																		   hitvx[currentAnimation][currentFrame],
+																		   hitvy[currentAnimation][currentFrame],
+																		   hithp[currentAnimation][currentFrame],
+																		   hitsp[currentAnimation][currentFrame] );
 																			
 								} else if (x1 < 0) {
-									x1 += hit[a][f];
+									x1 += hit[currentAnimation][currentFrame];
 									if (x1 > -5) $actorpool[n].strikeDamage( 
 																			scaleX, 
-																			hitvx[a][f], 
-																			hitvy[a][f], 
-																			hithp[a][f], 
-																			hitsp[a][f] );
+																			hitvx[currentAnimation][currentFrame], 
+																			hitvy[currentAnimation][currentFrame], 
+																			hithp[currentAnimation][currentFrame], 
+																			hitsp[currentAnimation][currentFrame] );
 									
 								}
 							}
@@ -648,11 +645,11 @@ class Actor extends Sprite {
 		if (altitude != altitude)
 		{
 			// CHARACTER IS NOW FALLING
-			if( test_altitude > elevation )
+			if( testnextAnimationltitude > elevation )
 			{
-				altitude = test_altitude;
+				altitude = testnextAnimationltitude;
 				vy = 0;
-				forceAnimation(FALL, _a);
+				setAnimation(FALL, nextAnimation);
 			}
 				// REDUCE MOMENTUMS
 			else
@@ -681,7 +678,7 @@ class Actor extends Sprite {
 					actor.y += vy++;
 					x = new_x;
 					y = new_z;
-					z_axis = new_z - 1;//+ elevation;
+					znextAnimationxis = new_z - 1;//+ elevation;
 					//actor.y = -elevation - h + 3;
 					if( actor.y > 300 ) {altitude = NaN; trace(actorName + " fell to his death"); }//resetActor();  
 					return;
@@ -703,17 +700,17 @@ class Actor extends Sprite {
 				} else if( health <= 0 ) {
 					//if (actorName=="DARTH VADER") sfxchannel = sfx.dead.play(50, 0, sfxtransform);
 					healthbar.adjust( health = 0, true );
-					forceAnimation( a==KNOCKUP?DEADUP:DEADDOWN, DEAD );// : forceAnimation( DEADDOWN, DEAD );
+					setAnimation( a==KNOCKUP?DEADUP:DEADDOWN, DEAD );// : setAnimation( DEADDOWN, DEAD );
 				
 				// Character has fallen, but is still alive
 				} else if( stamina <= 0 ) {
 					stamina = 3;
-					forceAnimation( a==KNOCKUP?DEADUP:DEADDOWN, CROUCH );// : forceAnimation(DEADDOWN, CROUCH);
+					setAnimation( a==KNOCKUP?DEADUP:DEADDOWN, CROUCH );// : setAnimation(DEADDOWN, CROUCH);
 							
 				// Character is landing from a jump or a fall
 				} else {				
-					forceAnimation( a==FALL?_a==RUN?RUN:IDLE:CROUCH );
-					//a == FALL ? _a == RUN ? forceAnimation( RUN ) : forceAnimation( IDLE ) : forceAnimation( CROUCH );
+					setAnimation( a==FALL?nextAnimation==RUN?RUN:IDLE:CROUCH );
+					//a == FALL ? nextAnimation == RUN ? setAnimation( RUN ) : setAnimation( IDLE ) : setAnimation( CROUCH );
 				}
 				
 				actor.y = -elevation - h + 3;
@@ -737,7 +734,7 @@ class Actor extends Sprite {
 					
 		x = new_x;
 		y = new_z
-		z_axis = new_z + elevation;
+		znextAnimationxis = new_z + elevation;
 	}
 
 		
@@ -780,10 +777,10 @@ class Actor extends Sprite {
 				if( $sp != 255 ) {
 					if( $vy < 0 ) {
 						frames[KNOCKDOWN][0] = $vy;
-						forceAnimation( KNOCKDOWN );
+						setAnimation( KNOCKDOWN );
 					} else {
 						frames[KNOCKUP][0] = $vy;
-						forceAnimation( KNOCKUP );
+						setAnimation( KNOCKUP );
 					}
 				}
 						
@@ -796,7 +793,7 @@ class Actor extends Sprite {
 		{
 			// RELEASE GRAPPLE VICTIM, IF ANY
 			if( victim ) {
-				victim.forceAnimation();
+				victim.setAnimation();
 				victim = null;
 			}
 			
@@ -820,22 +817,22 @@ class Actor extends Sprite {
 				
 				if( $direction + scaleX ) {
 					frames[KNOCKDOWN][0] = $vy;
-					forceAnimation( KNOCKDOWN );
+					setAnimation( KNOCKDOWN );
 				} else {
 					frames[KNOCKUP][0] = $vy;
-					forceAnimation( KNOCKUP );
+					setAnimation( KNOCKUP );
 				}
 			
 			// CHARACTER IS STILL TAKING A BEATING
 			} else {
 				if( stamina > 0 && health > 0 ) {
 					willpower = 60 - (stats.WILLPOWER << 1);
-					($direction + scaleX) ? forceAnimation(BACKHIT1) : forceAnimation(FACEHIT1);
+					($direction + scaleX) ? setAnimation(BACKHIT1) : setAnimation(FACEHIT1);
 					
 				} else {
 					recovery = stats.RECOVERY;
 					stamina = willpower = 0;
-					($direction + scaleX) ? forceAnimation(BACKHIT2, STUN) : forceAnimation(FACEHIT2, STUN);
+					($direction + scaleX) ? setAnimation(BACKHIT2, STUN) : setAnimation(FACEHIT2, STUN);
 				}
 			}
 			
@@ -846,27 +843,27 @@ class Actor extends Sprite {
 		
 		/**
 		 * Force a change in the animation
-		 * @param {Int} newAni - The new animation
-		 * @param {Int} nextAni - Animation that follows the new animation
-		 * @param {Bool} now - force the bitmapData to change this frame
+		 * @param {Int} newAnimation
+		 * @param {Int} nextAnimation
+		 * @param {Bool} updateNow - force the bitmapData to change this frame
 		 */
-		public function forceAnimation(newAni:Int = 0, nextAni:Int = 0, now:Bool = false):Void {
-			if(a != newAni) {
-				f = tick = 0;	// Reset frame time
-				a = newAni;		// Set new animation
-				_a = nextAni;
-				if (now == true) {
-					actor.bitmapData = bitmaps[a][f];
-				}
-				comboChain = (comboChain == 3) ? 2 : 0;
+		public function setAnimation(newAnimation:Int = 0, nextAnimation:Int = 0, updateNow:Bool = false):Void {
+			
+			// There is no change in the current animation.
+			if (currentAnimation == newAnimation) {
+				return;
 			}
-		}
-		
-		
-		public function setOpponent(opponent:Actor):Void {
-			this.opponent = opponent;
-			BLOCK_HIGH = opponent.BLOCK_HIGH;
-			BLOCK_LOW = opponent.BLOCK_LOW;
+			
+			currentFrame = tick = 0;
+			currentAnimation = newAnimation;
+			this.nextAnimation = nextAnimation;
+			
+			// Update the frame of the actor immediately.
+			if (updateNow) {
+				actor.bitmapData = bitmaps[currentAnimation][currentFrame];
+			}
+			
+			comboChain = (comboChain == 3) ? 2 : 0;
 		}
 		
 		
@@ -883,7 +880,7 @@ class Actor extends Sprite {
 			// High Left Punch
 			} else if (punchType == PUNCH_HIGH_B) {
 								
-				if (blockHigh[a][f] > 0) {
+				if (blockHigh[currentAnimation][currentFrame] > 0) {
 					trace("punch high left blocked!");
 				} else {
 					trace("punch high left hit!");
@@ -892,7 +889,7 @@ class Actor extends Sprite {
 			// High Right Punch
 			} else if (punchType == PUNCH_HIGH_A) {
 								
-				if (blockHigh[a][f] > 0) {
+				if (blockHigh[currentAnimation][currentFrame] > 0) {
 					trace("punch high right blocked!");
 				} else {
 					trace("punch high right hit!");
@@ -901,7 +898,7 @@ class Actor extends Sprite {
 			// Low Left punch
 			} else if (punchType == PUNCH_LOW_B) {
 								
-				if (blockLow[a][f] > 0) {
+				if (blockLow[currentAnimation][currentFrame] > 0) {
 					trace("punch low left blocked!");
 				} else {
 					trace("punch low left hit!");
@@ -910,7 +907,7 @@ class Actor extends Sprite {
 			// Low Right punch
 			} else if (punchType == PUNCH_LOW_A) {
 								
-				if (blockLow[a][f] > 0) {
+				if (blockLow[currentAnimation][currentFrame] > 0) {
 					trace("punch low right blocked!");
 				} else {
 					trace("punch low right hit!");
@@ -939,7 +936,7 @@ class Actor extends Sprite {
 		
 		public function previewing( e:* ):void
 		{
-			if( tick++ == frames[0][f] )
+			if( tick++ == frames[0][currentFrame] )
 			{
 				tick = 0;
 				if (++f == frames[0].length) f = 0;
@@ -950,15 +947,15 @@ class Actor extends Sprite {
 			{
 				// SHIFT BITMAP PIXELS
 				actor.x -= tmpxshift;
-				actor.x += (tmpxshift = xshift[0][f]);
+				actor.x += (tmpxshift = xshift[0][currentFrame]);
 				actor.y -= tmpyshift;
-				actor.y += (tmpyshift = yshift[0][f]);
+				actor.y += (tmpyshift = yshift[0][currentFrame]);
 				
 				// FLIP FRAME
-				scaleX *= flip[0][f];
+				scaleX *= flip[0][currentFrame];
 				
 				// Update BitmapData
-				actor.bitmapData = bitmaps[0][f];
+				actor.bitmapData = bitmaps[0][currentFrame];
 				//cacheAsBitmap = true;
 			}
 		}
@@ -967,9 +964,16 @@ class Actor extends Sprite {
 		
 	*/
 		
-		public function animate():Void {
+	public function xMove(speed:Int, scaleX:Int, animation:Int = 0):Void {
+		vx = speed;
+		this.scaleX = (scaleX != 0) ? scaleX : this.scaleX;
+		setAnimation( nextAnimation = animation );
+	}
+		
+	
+	public function animate():Void {
 			
-			//trace("tick: " + tick + ", a:" + a + ", f:" + f + ", timing:"+frames[a][f]);
+			//trace("tick: " + tick + ", a:" + a + ", f:" + f + ", timing:"+frames[currentAnimation][currentFrame]);
 			
 			//if( healthbar.visible && faction == 2 && !--healthtick )
 			//healthdisplay.remove( healthbar.num );
@@ -990,20 +994,20 @@ class Actor extends Sprite {
 			//}
 
 			// If end of frame, go to next frame
-			if(tick == frames[a][f]) {
+			if(tick == frames[currentAnimation][currentFrame]) {
 				
 				tick = 0;
 				
 				// Animation turnover
-				if (++f == frames[a].length) {
+				if (++currentFrame == frames[currentAnimation].length) {
 					
 					// If stunned, repeat stun animation until recovery time = 0
 					if( recovery > 0) {
 						if( --recovery > 0) {
-							_a = STUN;
+							nextAnimation = STUN;
 						
 						} else { 
-							_a = IDLE;
+							nextAnimation = IDLE;
 							if ( health <= 0 ) {
 								stamina = 1;
 								//healthbar.adjust( health = 1 );
@@ -1013,20 +1017,20 @@ class Actor extends Sprite {
 						}
 					} 
 					
-					if( _a == KNOCKDOWN ) {
-						_a = a;
-						f = 1;
+					if( nextAnimation == KNOCKDOWN ) {
+						nextAnimation = currentAnimation;
+						currentFrame = 1;
 						tick = dead = 80;
 					
 					} else {
 						comboChain = (comboChain == 3) ? 2 : 0;
-						f = 0;
-						a = _a;
+						currentFrame = 0;
+						currentAnimation = nextAnimation;
 						
-						//if (_a == CROUCH || RISEUP && _a == RISEUP || RISEDOWN && _a == RISEDOWN) {
+						//if (nextAnimation == CROUCH || RISEUP && nextAnimation == RISEUP || RISEDOWN && nextAnimation == RISEDOWN) {
 						//	prone = false;
 						//}
-						_a = IDLE;
+						nextAnimation = IDLE;
 						//++combo;
 					}
 										
@@ -1037,36 +1041,38 @@ class Actor extends Sprite {
 			if ( tick++ == 0) {
 				
 				// ADD ADDITIONAL X VELOCITY
-				vx += Std.int(scaleX * xshove[a][f]);
+				vx += Std.int(scaleX * xshove[currentAnimation][currentFrame]);
 				
 				// ADD ADDITIONAL Y VELOCITY
-				if (yshove[a][f] > 0) {
-					vy += yshove[a][f];
+				if (yshove[currentAnimation][currentFrame] > 0) {
+					vy += yshove[currentAnimation][currentFrame];
 					//if( altitude != altitude ) altitude = elevation;
 				}
 				
 				// SHIFT BITMAP PIXELS
 				actor.x -= tmpxshift;
-				actor.x += (tmpxshift = xshift[a][f]);
+				actor.x += (tmpxshift = xshift[currentAnimation][currentFrame]);
 				actor.y -= tmpyshift;
-				actor.y += (tmpyshift = yshift[a][f]);
+				actor.y += (tmpyshift = yshift[currentAnimation][currentFrame]);
 				
 				// FLIP FRAME
-				scaleX *= flip[a][f];
+				scaleX *= flip[currentAnimation][currentFrame];
 				
 				// HIT FRAME
-				hitPower = hit[a][f];
+				hitPower = hit[currentAnimation][currentFrame];
 				if (hitPower > 0) {
-					opponent.punch(a, hitPower);
+					opponent.punch(currentAnimation, hitPower);
 				}
 				
 				// PLAY SFX
-				//if( sfx[a][f] != null )
-				//sfxchannel = sfx[a][f].play( 0, 0, sfxtransform );
+				//if( sfx[currentAnimation][currentFrame] != null )
+				//sfxchannel = sfx[currentAnimation][currentFrame].play( 0, 0, sfxtransform );
 				
 				// UPDATE BITMAPDATA
-				actor.bitmapData = bitmaps[a][f];
+				actor.bitmapData = bitmaps[currentAnimation][currentFrame];
 			}
+			
+			x += vx;
 		}
 		
 		/*
@@ -1078,7 +1084,7 @@ class Actor extends Sprite {
 			switch( a )
 			{
 				case WALK:
-				case RUN:	forceAnimation(); break;
+				case RUN:	setAnimation(); break;
 			}
 		}
 		
@@ -1157,14 +1163,14 @@ class Actor extends Sprite {
 		 * Button B was pressed
 		 */
 		public function highPunchB():Void {
-			if (a != PUNCH_HIGH_B) {
-				forceAnimation(PUNCH_HIGH_B, IDLE);
+			if (currentAnimation != PUNCH_HIGH_B) {
+				setAnimation(PUNCH_HIGH_B, IDLE);
 			}
 		}
 		
 		public function lowPunchB():Void {
-			if (a != PUNCH_LOW_B) {
-				forceAnimation(PUNCH_LOW_B, IDLE);
+			if (currentAnimation != PUNCH_LOW_B) {
+				setAnimation(PUNCH_LOW_B, IDLE);
 			}
 		}
 		
@@ -1172,59 +1178,67 @@ class Actor extends Sprite {
 		 * Button A was pressed
 		 */
 		public function highPunchA():Void {
-			if (a != PUNCH_HIGH_A) {
-				forceAnimation(PUNCH_HIGH_A);
+			if (currentAnimation != PUNCH_HIGH_A) {
+				setAnimation(PUNCH_HIGH_A);
 			} else {
-				_a = PUNCH_HIGH_A;
+				nextAnimation = PUNCH_HIGH_A;
 			}
 		}
 		
 		public function lowPunchA():Void {
-			if (a == IDLE) {
-				forceAnimation(PUNCH_LOW_A);
+			if (currentAnimation == IDLE) {
+				setAnimation(PUNCH_LOW_A);
 			} else {
-				_a = PUNCH_LOW_A;
+				nextAnimation = PUNCH_LOW_A;
 			}
 		}
 		
 		public function dodgeLeft():Void {
-			if (a == IDLE) {
-				forceAnimation(DODGE_LEFT);
+			if (currentAnimation == IDLE) {
+				setAnimation(DODGE_LEFT);
 			} else {
-				_a = DODGE_LEFT;
+				nextAnimation = DODGE_LEFT;
 			}
 		}
 		
 		public function dodgeRight():Void {
-			if (a == IDLE) {
-				forceAnimation(DODGE_RIGHT);
+			if (currentAnimation == IDLE) {
+				setAnimation(DODGE_RIGHT);
 			} else {
-				_a = DODGE_RIGHT;
+				nextAnimation = DODGE_RIGHT;
 			}
 		}
 		
 		public function duck(ducking:Bool):Void {
 			if(ducking == true){
-				if (a == IDLE) {
-					forceAnimation(DUCK);
+				if (currentAnimation == IDLE) {
+					setAnimation(DUCK);
 				} else {
-					_a = DUCK;
+					nextAnimation = DUCK;
 				}
 			} else {
-				if (a == DUCK) {
-					forceAnimation(IDLE);
+				if (currentAnimation == DUCK) {
+					setAnimation(IDLE);
 				}
 			}
 		}
-			
+		
+		public function move(direction:Int):Void {
+			trace("move " + direction);
+			setAnimation(WALK);
+			actor.scaleX = direction;
+			x += direction * walkspeed;
+		}
+		
+				
 			
 			/*
 			if( comboChain == 2 ) {
 				// CAN ONLY REPEAT STRIKING COMBOS INFINITELY, HALT ALL OTHERS IF COMBO SUCCESSOR NOT FOUND
 				comboChain = 3;
 				combos[ joystick ] ? combos = combos[joystick] : combos[1] ? combos = combos[1] : comboarchive[joystick] ? combos = comboarchive[joystick] : combos = comboarchive[1];
-				_a = combos[0];
-				if( victim ) victim._a = _a + 5; // DEPRECIATED!!!!!
+				nextAnimation = combos[0];
+				if( victim ) victim.nextAnimation = nextAnimation + 5; // DEPRECIATED!!!!!
 				//trace("STAMINA " + victim.stamina);
 				//if (victim) trace("VICTIM" + victim.elevation);
 					
@@ -1239,7 +1253,7 @@ class Actor extends Sprite {
 							combos = comboarchive = strikecombos;
 							comboarchive[joystick] ? combos = comboarchive[joystick] : combos = comboarchive[1];
 							comboChain = 3;
-							forceAnimation(combos[0], IDLE);
+							setAnimation(combos[0], IDLE);
 						} break;
 						
 					case GRAPPLE:
@@ -1248,8 +1262,8 @@ class Actor extends Sprite {
 							combos = comboarchive = grapplecombos;
 							comboarchive[joystick] ? combos = comboarchive[joystick] : combos = comboarchive[1];
 							comboChain = 3;
-							forceAnimation(combos[0], GRAPPLE);
-							victim.forceAnimation(a + 5, GRAPPLED);
+							setAnimation(combos[0], GRAPPLE);
+							victim.setAnimation(a + 5, GRAPPLED);
 						} break;
 						
 					case JUMP:
@@ -1258,7 +1272,7 @@ class Actor extends Sprite {
 							combos = comboarchive = jumpcombos;
 							comboarchive[joystick] ? combos = comboarchive[joystick] : combos = comboarchive[1];
 							comboChain = 3;
-							forceAnimation(combos[0], FALL);
+							setAnimation(combos[0], FALL);
 						} break;
 						
 					case CROUCH:
@@ -1267,7 +1281,7 @@ class Actor extends Sprite {
 							combos = comboarchive = crouchcombos;
 							comboarchive[joystick] ? combos = comboarchive[joystick] : combos = comboarchive[1];
 							comboChain = 2;
-							_a = combos[0];
+							nextAnimation = combos[0];
 						} break;
 				}
 			}
@@ -1288,30 +1302,25 @@ class Actor extends Sprite {
 						else if (vx > 0) vx+=2; 	// GIVE X MOMENTUM A TINY BOOST
 						vy = -jump;
 						altitude = elevation;
-						forceAnimation(JUMP, CROUCH);
+						setAnimation(JUMP, CROUCH);
 				}
 			}
 		}
 		
 		
-		private function xMove( $speed:Float, $scaleX:Int, $animation:Int ):void
-		{
-			vx = $speed;
-			scaleX = $scaleX;
-			forceAnimation( _a = $animation );
-		}
+		
 		
 		private function yMove( $speed:Float, $scale:Int, $animation:Int ):void
 		{
 			scaleX = $scale;
 			y += $speed;
-			forceAnimation( _a = $animation );
+			setAnimation( nextAnimation = $animation );
 		}
 		
 		private function zMove( $speed:Float, $animation:Int ):void
 		{
 			vz = $speed;
-			forceAnimation( _a = $animation );
+			setAnimation( nextAnimation = $animation );
 		}
 		
 		
@@ -1377,23 +1386,23 @@ class Actor extends Sprite {
 				if( $direction + scaleX ) {
 					vx = 3 * $direction;
 					frames[KNOCKDOWN][0] = -vy;
-					forceAnimation(KNOCKDOWN);
+					setAnimation(KNOCKDOWN);
 				} else {
 					vx = 4 * $direction;
 					frames[KNOCKUP][0] = -vy;
-					forceAnimation(KNOCKUP);
+					setAnimation(KNOCKUP);
 				}
 			
 			} else {
 				stamina -= $sdmg;
 				if (stamina > 0 && health > 0){
 					willpower = 60 - (stats.WILLPOWER << 1);
-					($direction + scaleX) ? forceAnimation(BACKHIT1) : forceAnimation(FACEHIT1);
+					($direction + scaleX) ? setAnimation(BACKHIT1) : setAnimation(FACEHIT1);
 					
 				} else {
 					recovery = stats.RECOVERY;
 					stamina = willpower = 0;
-					($direction + scaleX) ? forceAnimation(BACKHIT2, STUN) : forceAnimation(FACEHIT2, STUN);
+					($direction + scaleX) ? setAnimation(BACKHIT2, STUN) : setAnimation(FACEHIT2, STUN);
 				}
 			}
 		}
@@ -1429,7 +1438,7 @@ class Actor extends Sprite {
 			
 			if( faction ) cpu = cpu = Math.random()*60 + 30;
 			
-			z_axis = elevation + y;
+			znextAnimationxis = elevation + y;
 			
 			actor.y -= altitude;
 			a = FALL;
@@ -1478,7 +1487,7 @@ class Actor extends Sprite {
 			// Regen Variables
 			prone = false;
 			//lazer = false;
-			dead = melee = elevation = pursue = tick = a = _a = f = vx = vy = 0;
+			dead = melee = elevation = pursue = tick = a = nextAnimation = f = vx = vy = 0;
 			vy = NaN;
 		}
 		
@@ -1489,6 +1498,8 @@ class Actor extends Sprite {
 			bitmaps = Palette.swap( originals, palette, $pal );
 		}
 	*/	
+		
+	
 		
 	
 }
