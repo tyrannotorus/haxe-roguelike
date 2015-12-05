@@ -1,92 +1,91 @@
-package com.tyrannotorus.bubblebobble.utils;
+package bubblebobble;
 
-import flash.display.Sprite;
-import flash.display.Bitmap;
-import flash.display.BitmapData;
-import flash.geom.Rectangle;
-import flash.geom.Point;
-import flash.geom.Matrix;
-import motion.Actuate;
+import com.tyrannotorus.utils.Colors;
+import openfl.display.Bitmap;
+import openfl.display.BitmapData;
+import openfl.display.Sprite;
+import openfl.geom.Point;
 
-class Constants {
+/**
+ * Matte.hx
+ * Create bitmap blocks for use in the background.
+ */
+class Matte {
 	
-	/* Game variables */
-	public static inline var GAME_WIDTH:Int = 256;
-	public static inline var GAME_HEIGHT:Int = 224;
-	
-	/* Positioning */
-	public static inline var CENTER:Int = 10000;
-	public static inline var LEFT:Int = -29000;
-	public static inline var RIGHT:Int = 29000;
-	public static inline var BOTTOM:Int = -29001;
-	public static inline var TOP:Int = 29001;
-	public static inline var NONE:Int = 0;
-	public static inline var ALL:Int = 32767;
-	
-	/* Tweens */
-	public static inline var SLIDE_LEFT:Int = -20;
-	public static inline var SLIDE_RIGHT:Int = 20;
-	public static inline var SLIDE_UP:Int = -21;
-	public static inline var SLIDE_DOWN:Int = 21;
-	public static inline var FADE_IN:Int = -22;
-	public static inline var FADE_OUT:Int = 22;
-	public static inline var FADE_FROM_BLACK:Int = -23;
-	public static inline var FADE_TO_BLACK:Int = 23;
-	
-	public static var colors:Array<Int> = [0xFFFF7400, 0xFF008C00, 0xFF006E2E, 0xFF4096EE, 0xFFFF0084, 0xFFB02B2C, 0xFFD15600, 0xFFC79810, 0xFF73880A, 0xFF6BBA70, 0xFF3F4C6B, 0xFF356AA0, 0xFFD01F3C, 0xFFCDEB8B, 0xFF36393D, 0xFF0063DC];
-	public static var fullWidth(default,set):Int;
-	public static var halfWidth:Int;
-	public static var fullHeight(default,set):Int;
-	public static var halfHeight:Int;
-	
-	public static function set_fullWidth(value:Int):Int{
-		fullWidth = value;
-		halfWidth = Std.int(fullWidth * 0.5);
-		return fullWidth;
-	}
-	
-	public static function set_fullHeight(value:Int):Int{
-		fullHeight = value;
-		halfWidth = Std.int(fullHeight * 0.5);
-		return fullHeight;
-	}
+	/**
+	 * Return a bitmap matte. No shadow support on bitmaps.
+	 * @param {matteData} matteData
+	 * @return {Bitmap}
+	 */
+	public static function toBitmap(matteData:MatteData = null):Bitmap {
 		
-	
-	
-	/*TEXT BLOCK OBJECT WITH SHADOW AND MATTING -----------------------------------------------------------------------------------
-	public static function toBlock(TemplateModifiers:Dynamic, Elements:Array<Dynamic>) : Sprite
-	{
-		// CREATE COPY OF LOCAL TEMPLATE
-		var tpl:MenuTemplate = new MenuTemplate();
-       
-		// Update Template with TemplateModifier
-		for (i in TemplateModifiers)
-		Reflect.setField(tpl, i, Reflect.field(TemplateModifiers, i));
-			
-		var menumatte:Sprite = new Sprite();
-		menumatte.name = TemplateModifiers.name;
-						
-		// Convert Elements into Menu Entries
-		var w:Int = 0;
-		var h:Int = 0;
-		for (i in 0...Elements.length)
-		{
-			var menuentry:Dynamic;
-			if (Reflect.field(Elements[i], "text")) {
-				menuentry = new MenuEntry(tpl, Elements[i]);
-			} else if (Reflect.field(Elements[i], "bitmap")) {
-				menuentry = Elements[i].bitmap;
-			}
-			if (menuentry.width > w) w = menuentry.width;
-			h += menuentry.height;
-			menumatte.addChild(menuentry);
+		// Create the default matte.
+		if (matteData == null) {
+			matteData = new MatteData();
 		}
-
-			
-		// Set width and height of Menu matte, or determine based on menu entries
-		if (!Reflect.field(tpl, "width")) tpl.width = w + tpl.xoffset * 2;
-		if (!Reflect.field(tpl, "height")) tpl.height = h + tpl.yoffset * 2;
-			
+		
+		var width:Int = matteData.width;
+		var height:Int = matteData.height;
+		var borderColor:UInt = matteData.borderColor;
+		var borderWidth:UInt = matteData.borderWidth;
+		var twiceBorderWidth:UInt = borderWidth * 2;
+		var matteColor:UInt = matteData.matteColor;
+		var topRadius:Int = matteData.topRadius;
+		var bottomRadius:Int = matteData.bottomRadius;
+		
+		// Create the backing matte which will act as the border.
+		var borderBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
+		var borderSprite:Sprite = new Sprite();
+		borderSprite.graphics.beginFill(borderColor);
+		borderSprite.graphics.drawRoundRectComplex(0, 0, width, height, topRadius, topRadius, bottomRadius, bottomRadius);
+		borderSprite.graphics.endFill();
+		borderBmd.draw(borderSprite);
+		borderBmd.threshold(borderBmd, borderBmd.rect, new Point(), "!=", borderColor, Colors.TRANSPARENT);
+		
+		// Create the inner matte.
+		var innerBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
+		var innerSprite:Sprite = new Sprite();
+		innerSprite.graphics.beginFill(matteColor);
+		innerSprite.graphics.drawRoundRectComplex(borderWidth, borderWidth, width - twiceBorderWidth, height - twiceBorderWidth, topRadius, topRadius, bottomRadius, bottomRadius);
+		innerSprite.graphics.endFill();
+		innerBmd.draw(innerSprite);
+		innerBmd.threshold(innerBmd, innerBmd.rect, new Point(), "!=", matteColor, Colors.TRANSPARENT);
+		
+		// Copy the inner matte onto the border matte.
+		borderBmd.copyPixels(innerBmd, innerBmd.rect, new Point(), null, null, true);
+				
+		return new Bitmap(borderBmd);
+	}
+	
+	/**
+	 * Return a Sprite matte with shadow support.
+	 * @param {matteData} matteData
+	 * @return {Sprite}
+	 */
+	public static function toSprite(matteData:MatteData = null):Sprite {
+		
+		// Create the default matte.
+		if (matteData == null) {
+			matteData = new MatteData();
+		}
+		
+		var matteSprite:Sprite = new Sprite();
+		var matteBitmap:Bitmap = toBitmap(matteData);
+		
+		// Add the shadow.
+		if (matteData.shadowColor != Colors.TRANSPARENT) {
+			var shadowBmd:BitmapData = matteBitmap.bitmapData.clone();
+			shadowBmd.threshold(shadowBmd, shadowBmd.rect, new Point(), "!=", Colors.TRANSPARENT, matteData.shadowColor);
+			var shadowBitmap:Bitmap = new Bitmap(shadowBmd);
+			shadowBitmap.x = matteData.shadowOffsetX;
+			shadowBitmap.y = matteData.shadowOffsetY;
+			matteSprite.addChild(shadowBitmap);			
+		}
+		
+		matteSprite.addChild(matteBitmap);
+		
+		return matteSprite;
+	}
 			/*
 			if ($modifier.hasOwnProperty("height")) {
 				object.height = $modifier.height;
@@ -204,7 +203,7 @@ class Constants {
 				
 				
 			
-	private static function hextoUint(A:Float, C:String):Int
+	private static function hextoUint(A:Float, C:String):UInt
 	{
 		return uint("0x" + Math.round(A*255).toString(16).toUpperCase() + (C.indexOf("0x") == 0 ? C.slice(4) : $c));
 	}		
@@ -225,7 +224,7 @@ class Constants {
 	
 	
 	/*
-	public static function toBMD(Sourcebmd:BitmapData, Direction:Int, Color1:Int, Color2:Int):BitmapData
+	public static function toBMD(Sourcebmd:BitmapData, Direction:Int, Color1:UInt, Color2:UInt):BitmapData
 	{
 		var pt1:Point = new Point();
 		var pt2:Point = new Point();

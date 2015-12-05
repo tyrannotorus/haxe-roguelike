@@ -1,7 +1,11 @@
 package com.tyrannotorus.assetloader;
 
-import flash.events.Event;
+import openfl.events.Event;
 
+/**
+ * AssetEvent.hx
+ * Dispatched by AssetLoader.as.
+ */
 class AssetEvent extends Event {
 	
 	// Event types.
@@ -13,9 +17,9 @@ class AssetEvent extends Event {
 	public var assetPath:String;
 	
 	/**
-	 * A standard event with an added data parameter.
+	 * A standard event with an added assetData parameter.
 	 * @param {String} type
-	 * @param {Dynamic} data
+	 * @param {Dynamic} assetData
 	 * @param {Bool} bubbles
 	 * @param {Bool} cancelable
 	 */

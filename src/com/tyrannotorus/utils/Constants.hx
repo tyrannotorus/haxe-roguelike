@@ -1,52 +1,81 @@
-package com.tyrannotorus.bubblebobble;
+package com.tyrannotorus.utils;
 
-import flash.display.Sprite;
-import flash.display.Bitmap;
-import flash.display.BitmapData;
-import flash.geom.Rectangle;
-import flash.geom.Point;
-import flash.geom.Matrix;
-import motion.Actuate;
 
-class Matte
-{
+class Constants {
 	
-	//TEXT BLOCK OBJECT WITH SHADOW AND MATTING -----------------------------------------------------------------------------------
-	public static function toBitmap(parameters:Dynamic = null):Bitmap
-	{
-		
-		if (parameters == null)
-		{
-			parameters = { };
-		}
-		
-		for (p in Reflect.fields(Menu.template))
-		{
-			if (!Reflect.hasField(parameters, p))
-			{
-				Reflect.setField(parameters, p, Reflect.field(Menu.template, p));
-			}
-		}
-				
-		var w:Int = Std.int(parameters.width);
-		var h:Int = Std.int(parameters.height);
-		var frameColor:UInt = parameters.frameColor;
-		var matteColor:UInt = parameters.matteColor;
-       	var matteBmd:BitmapData = new BitmapData(parameters.width, parameters.height, true, 0x00000000);
-		
-		// Outer frame
-		matteBmd.fillRect(new Rectangle(0, 4, w, h-8), frameColor);
-		matteBmd.fillRect(new Rectangle(4, 0, w-8, h), frameColor);
-		matteBmd.fillRect(new Rectangle(1, 2, w-2, h-4), frameColor);
-		matteBmd.fillRect(new Rectangle(2, 1, w-4, h-2), frameColor);
-			
-		// Inner matte
-		matteBmd.fillRect(new Rectangle(1, 4, w-2, h-8), matteColor);
-		matteBmd.fillRect(new Rectangle(2, 2, w-4, h-4), matteColor);
-		matteBmd.fillRect(new Rectangle(4, 1, w-8, h-2), matteColor);
-		
-		return new Bitmap(matteBmd);
+	/* Positioning */
+	public static inline var CENTER:Int = 10000;
+	public static inline var LEFT:Int = -29000;
+	public static inline var RIGHT:Int = 29000;
+	public static inline var BOTTOM:Int = -29001;
+	public static inline var TOP:Int = 29001;
+	public static inline var NONE:Int = 0;
+	public static inline var ALL:Int = 32767;
+	
+	/* Tweens */
+	public static inline var SLIDE_LEFT:Int = -20;
+	public static inline var SLIDE_RIGHT:Int = 20;
+	public static inline var SLIDE_UP:Int = -21;
+	public static inline var SLIDE_DOWN:Int = 21;
+	public static inline var FADE_IN:Int = -22;
+	public static inline var FADE_OUT:Int = 22;
+	public static inline var FADE_FROM_BLACK:Int = -23;
+	public static inline var FADE_TO_BLACK:Int = 23;
+	
+	public static var colors:Array<Int> = [0xFFFF7400, 0xFF008C00, 0xFF006E2E, 0xFF4096EE, 0xFFFF0084, 0xFFB02B2C, 0xFFD15600, 0xFFC79810, 0xFF73880A, 0xFF6BBA70, 0xFF3F4C6B, 0xFF356AA0, 0xFFD01F3C, 0xFFCDEB8B, 0xFF36393D, 0xFF0063DC];
+	public static var fullWidth(default,set):Int;
+	public static var halfWidth:Int;
+	public static var fullHeight(default,set):Int;
+	public static var halfHeight:Int;
+	
+	public static function set_fullWidth(value:Int):Int{
+		fullWidth = value;
+		halfWidth = Std.int(fullWidth * 0.5);
+		return fullWidth;
 	}
+	
+	public static function set_fullHeight(value:Int):Int{
+		fullHeight = value;
+		halfWidth = Std.int(fullHeight * 0.5);
+		return fullHeight;
+	}
+		
+	
+	
+	/*TEXT BLOCK OBJECT WITH SHADOW AND MATTING -----------------------------------------------------------------------------------
+	public static function toBlock(TemplateModifiers:Dynamic, Elements:Array<Dynamic>) : Sprite
+	{
+		// CREATE COPY OF LOCAL TEMPLATE
+		var tpl:MenuTemplate = new MenuTemplate();
+       
+		// Update Template with TemplateModifier
+		for (i in TemplateModifiers)
+		Reflect.setField(tpl, i, Reflect.field(TemplateModifiers, i));
+			
+		var menumatte:Sprite = new Sprite();
+		menumatte.name = TemplateModifiers.name;
+						
+		// Convert Elements into Menu Entries
+		var w:Int = 0;
+		var h:Int = 0;
+		for (i in 0...Elements.length)
+		{
+			var menuentry:Dynamic;
+			if (Reflect.field(Elements[i], "text")) {
+				menuentry = new MenuEntry(tpl, Elements[i]);
+			} else if (Reflect.field(Elements[i], "bitmap")) {
+				menuentry = Elements[i].bitmap;
+			}
+			if (menuentry.width > w) w = menuentry.width;
+			h += menuentry.height;
+			menumatte.addChild(menuentry);
+		}
+
+			
+		// Set width and height of Menu matte, or determine based on menu entries
+		if (!Reflect.field(tpl, "width")) tpl.width = w + tpl.xoffset * 2;
+		if (!Reflect.field(tpl, "height")) tpl.height = h + tpl.yoffset * 2;
+			
 			/*
 			if ($modifier.hasOwnProperty("height")) {
 				object.height = $modifier.height;
@@ -164,7 +193,7 @@ class Matte
 				
 				
 			
-	private static function hextoUint(A:Float, C:String):UInt
+	private static function hextoUint(A:Float, C:String):Int
 	{
 		return uint("0x" + Math.round(A*255).toString(16).toUpperCase() + (C.indexOf("0x") == 0 ? C.slice(4) : $c));
 	}		
@@ -185,7 +214,7 @@ class Matte
 	
 	
 	/*
-	public static function toBMD(Sourcebmd:BitmapData, Direction:Int, Color1:UInt, Color2:UInt):BitmapData
+	public static function toBMD(Sourcebmd:BitmapData, Direction:Int, Color1:Int, Color2:Int):BitmapData
 	{
 		var pt1:Point = new Point();
 		var pt2:Point = new Point();

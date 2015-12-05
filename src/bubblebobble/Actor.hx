@@ -1,4 +1,4 @@
-﻿package com.tyrannotorus.bubblebobble;
+﻿package bubblebobble;
 	
 import openfl.display.Sprite;
 import openfl.display.Bitmap;
@@ -1498,6 +1498,10 @@ class Actor extends Sprite {
 			bitmaps = Palette.swap( originals, palette, $pal );
 		}
 	*/	
+		
+		public function clone():Actor {
+			return this;
+		}
 		
 	
 		

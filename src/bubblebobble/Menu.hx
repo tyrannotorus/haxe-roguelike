@@ -1,7 +1,7 @@
-package com.tyrannotorus.bubblebobble;
+package bubblebobble;
 
-import com.tyrannotorus.bubblebobble.utils.Constants;
-import com.tyrannotorus.bubblebobble.utils.Utils;
+import com.tyrannotorus.utils.Constants;
+import com.tyrannotorus.utils.Utils;
 import flash.display.Bitmap;
 import flash.display.BitmapData;
 import flash.display.DisplayObject;
@@ -19,7 +19,6 @@ class Menu extends Sprite {
 	private var container:Dynamic = { };
 	private var entries:Dynamic = { };
 	private var uniqueId:Int = 0;
-	private var game:Game;
 	
 	public static var template:Dynamic = {
 		fontColor1:0xFFFFFF00,
@@ -50,8 +49,7 @@ class Menu extends Sprite {
 		matte:{ },
 	}
 					
-	public function new(game:Game):Void {
-		this.game = game;
+	public function new():Void {
 		super();
 	}
 	
@@ -120,13 +118,13 @@ class Menu extends Sprite {
 		entry.content.x = Utils.getField(menuEntry, 'x', 0);
 		entry.content.y = Utils.getField(menuEntry, 'y', menu.content.numChildren ? menu.content.getChildAt(menu.content.numChildren - 1).y + menu.content.getChildAt(menu.content.numChildren - 1).height : 0);
 		entry.content.name = ++uniqueId;
-		entry.content.addChild(game.textManager.toBitmap(menuEntry, "regular"));
+		entry.content.addChild(TextManager.getInstance().toBitmap(menuEntry, "regular"));
 		
 		if (Reflect.hasField(entry, 'href'))
 		{
 			menuEntry.fontColor1 = Utils.getField(menuEntry, 'highcolor1', template.highcolor1);
 			menuEntry.fontColor2 = Utils.getField(menuEntry, 'highcolor2', template.highcolor2);
-			entry.content.addChild(game.textManager.toBitmap(menuEntry, "highlight", false));
+			entry.content.addChild(TextManager.getInstance().toBitmap(menuEntry, "highlight", false));
 		}
 		
 		if (!menu.content.hasEventListener(MouseEvent.MOUSE_DOWN))
