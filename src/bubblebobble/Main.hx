@@ -1,6 +1,6 @@
-package com.tyrannotorus.bubblebobble;
+package bubblebobble;
 
-import com.tyrannotorus.bubblebobble.utils.Constants;
+import com.tyrannotorus.utils.Constants;
 import openfl.display.Sprite;
 import openfl.display.StageDisplayState;
 import openfl.events.Event;

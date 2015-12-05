@@ -1,4 +1,4 @@
-package com.tyrannotorus.bubblebobble.utils;
+package com.tyrannotorus.utils;
 
 import openfl.display.DisplayObject;
 import format.swf.Data.Sound;
@@ -19,6 +19,15 @@ class Utils {
 		var rect:Rectangle = displayObject.getRect(displayObject);
 		return Std.int((Constants.GAME_HEIGHT - rect.height) * 0.5);
 	}
+	
+	public static function sortAlphabetically(a:String, b:String):Int {
+        a = a.toLowerCase();
+        b = b.toLowerCase();
+       
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
+    }
 	
 	/**
 	 * Positions a display object on the screen

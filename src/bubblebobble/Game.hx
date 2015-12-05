@@ -1,10 +1,10 @@
-package com.tyrannotorus.bubblebobble;
+package bubblebobble;
 
-import com.tyrannotorus.bubblebobble.utils.Colors;
-import com.tyrannotorus.bubblebobble.utils.Constants;
-import com.tyrannotorus.bubblebobble.utils.Utils;
-import com.tyrannotorus.bubblebobble.utils.KeyCodes;
-import com.tyrannotorus.bubblebobble.utils.ActorUtils;
+import com.tyrannotorus.utils.Colors;
+import com.tyrannotorus.utils.Constants;
+import com.tyrannotorus.utils.Utils;
+import com.tyrannotorus.utils.KeyCodes;
+import com.tyrannotorus.utils.ActorUtils;
 import com.tyrannotorus.assetloader.AssetEvent;
 import com.tyrannotorus.assetloader.AssetLoader;
 import openfl.Assets;
@@ -16,6 +16,7 @@ import openfl.events.KeyboardEvent;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.media.SoundTransform;
+import haxe.ds.ArraySort;
 
 class Game extends Sprite {
 		
@@ -24,6 +25,7 @@ class Game extends Sprite {
 	private var opponent:Actor;
 	private var healthBars:HealthBars;
 	private var menu:Menu;
+	private var tilesDialog:TilesDialog;
 	
 	// Keyboard Controls
 	private var zKey:Bool = false;
@@ -34,9 +36,6 @@ class Game extends Sprite {
 	private var leftKey:Bool = false;
 	private var rightKey:Bool = false;
 		
-	// Fonts and text typing
-	public var textManager:TextManager;
-		
 	// Music and sfx
 	private var music:Sound;
 	private var musicChannel:SoundChannel;
@@ -44,25 +43,26 @@ class Game extends Sprite {
 	
 	public function new() {
 		super();
+		scaleX = scaleY = 3;
 	}
 	
 	public function loadGame():Void {
 		
 		screen = new Sprite();
 		
-		// Add Mike Tyson Welcome Screen
-		//var intro:Bitmap = new Bitmap();
-		//intro.bitmapData = Assets.getBitmapData("img/intro.png");
-		//screen.addChild(intro);
-		//addChild(screen);
+		tilesDialog = new TilesDialog();
+		tilesDialog.loadTiles();
+		addChild(tilesDialog);
 		
+		
+				
 		// Create Bub.
 		var bubSpritesheet:BitmapData = Assets.getBitmapData("actors/bub_spritesheet.png");
 		var bubLogic:String = Assets.getText("actors/bub_logic.txt");
 		var bubData:Dynamic = ActorUtils.parseActorData(bubSpritesheet, bubLogic);
 		player = new Actor(bubData);
 		
-		Utils.position(player, 96, 132);
+		Utils.position(player, 8, 8);
 		addChild(player);
 		
 		addEventListener(Event.ENTER_FRAME, onEnterFrame);
@@ -70,25 +70,24 @@ class Game extends Sprite {
 		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);
 		
 		healthBars = new HealthBars();
-		textManager = new TextManager();
-		menu = new Menu(this);
+		menu = new Menu();
 		addChild(menu);
 		
-		var testText:Dynamic = { };
-		testText.text = "Mike Tysons\nPunch\nout!!";
-		testText.fontColor1 = Colors.WHITE;
-		testText.fontSet = 4;
-		addChild(textManager.typeText(testText));
+		//var testText:Dynamic = { };
+		//testText.text = "Mike Tysons\nPunch\nout!!";
+		//testText.fontColor1 = Colors.WHITE;
+		//testText.fontSet = 4;
+		//addChild(textManager.typeText(testText));
 		
-		//var assetLoader:AssetLoader = new AssetLoader();
-		//assetLoader.addEventListener(AssetEvent.LOAD_COMPLETE, parseExternalAsset);
-		//assetLoader.loadAsset("http://sites.google.com/site/tyrannotorus/01-glassjoe.zip");
+		
 				
 		musicTransform = new SoundTransform(0.1);
 		music = Assets.getSound("audio/title_music.mp3", true);
 		musicChannel = music.play();
 		musicChannel.soundTransform = musicTransform;
 	}
+	
+	
 	
 	/**
 	 * External Asset has been loaded and extracted from the zip. Parse it.
@@ -119,12 +118,7 @@ class Game extends Sprite {
 	}
 	
 	private function onEnterFrame(e:Event):Void {
-		if (leftKey) {
-			player.xMove(-1, -1, player.WALK);
-		} else if (rightKey) {
-			player.xMove(1, 1, player.WALK);
-		}
-		
+				
 		player.animate();
 	//	opponent.animate();
 	}
@@ -137,7 +131,7 @@ class Game extends Sprite {
 			case KeyCodes.LEFT:
 				//if (leftKey == false) {
 					leftKey = true;
-					//player.move(-1);
+					player.xMove(-1, -1, player.WALK);
 				//}
 			
 			// Up key
@@ -150,7 +144,7 @@ class Game extends Sprite {
 			case KeyCodes.RIGHT:
 				//if (rightKey == false) {
 					rightKey = true;
-					//player.move(1);
+					player.xMove(1, 1, player.WALK);
 				//}
 			
 			// Down Key

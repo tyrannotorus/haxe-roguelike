@@ -1,4 +1,4 @@
-package com.tyrannotorus.bubblebobble.utils;
+package com.tyrannotorus.utils;
 
 import openfl.display.DisplayObject;
 import format.swf.Data.Sound;

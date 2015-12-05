@@ -1,4 +1,4 @@
-package com.tyrannotorus.bubblebobble.utils;
+package com.tyrannotorus.utils;
 
 class KeyCodes {
 	

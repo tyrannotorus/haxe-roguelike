@@ -1,51 +1,91 @@
-package com.tyrannotorus.bubblebobble;
+package bubblebobble;
 
-import flash.display.Sprite;
-import flash.display.Bitmap;
-import flash.display.BitmapData;
-import flash.geom.Rectangle;
-import flash.geom.Point;
-import flash.geom.Matrix;
-import motion.Actuate;
+import com.tyrannotorus.utils.Colors;
+import openfl.display.Bitmap;
+import openfl.display.BitmapData;
+import openfl.display.Sprite;
+import openfl.geom.Point;
+import openfl.geom.Rectangle;
 
-class Matte
-{
+/**
+ * Matte.hx
+ * Create bitmap blocks for use in the background.
+ */
+class Matte {
 	
-	//TEXT BLOCK OBJECT WITH SHADOW AND MATTING -----------------------------------------------------------------------------------
-	public static function toBitmap(parameters:Dynamic = null):Bitmap
-	{
+	/**
+	 * Return a bitmap matte. No shadow support on bitmaps.
+	 * @param {MatteObject} matteObject
+	 * @return {Bitmap}
+	 */
+	public static function toBitmap(matteObject:MatteObject = null):Bitmap {
 		
-		if (parameters == null)
-		{
-			parameters = { };
+		// Create the default matte.
+		if (matteObject == null) {
+			matteObject = new MatteObject();
 		}
 		
-		for (p in Reflect.fields(Menu.template))
-		{
-			if (!Reflect.hasField(parameters, p))
-			{
-				Reflect.setField(parameters, p, Reflect.field(Menu.template, p));
-			}
-		}
+		var width:Int = matteObject.width;
+		var height:Int = matteObject.height;
+		var borderColor:UInt = matteObject.borderColor;
+		var borderWidth:UInt = matteObject.borderWidth;
+		var twiceBorderWidth:UInt = borderWidth * 2;
+		var primaryColor:UInt = matteObject.primaryColor;
+		var topRadius:Int = matteObject.topRadius;
+		var bottomRadius:Int = matteObject.bottomRadius;
+		
+		// Create the backing matte which will act as the border.
+		var borderBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
+		var borderSprite:Sprite = new Sprite();
+		borderSprite.graphics.beginFill(borderColor);
+		borderSprite.graphics.drawRoundRectComplex(0, 0, width, height, topRadius, topRadius, bottomRadius, bottomRadius);
+		borderSprite.graphics.endFill();
+		borderBmd.draw(borderSprite);
+		borderBmd.threshold(borderBmd, borderBmd.rect, new Point(), "!=", borderColor, Colors.TRANSPARENT);
+		
+		// Create the inner matte.
+		var innerBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
+		var innerSprite:Sprite = new Sprite();
+		innerSprite.graphics.beginFill(primaryColor);
+		innerSprite.graphics.drawRoundRectComplex(borderWidth, borderWidth, width - twiceBorderWidth, height - twiceBorderWidth, topRadius, topRadius, bottomRadius, bottomRadius);
+		innerSprite.graphics.endFill();
+		innerBmd.draw(innerSprite);
+		innerBmd.threshold(innerBmd, innerBmd.rect, new Point(), "!=", primaryColor, Colors.TRANSPARENT);
+		
+		// Copy the inner matte onto the border matte.
+		borderBmd.copyPixels(innerBmd, innerBmd.rect, new Point(), null, null, true);
 				
-		var w:Int = Std.int(parameters.width);
-		var h:Int = Std.int(parameters.height);
-		var frameColor:UInt = parameters.frameColor;
-		var matteColor:UInt = parameters.matteColor;
-       	var matteBmd:BitmapData = new BitmapData(parameters.width, parameters.height, true, 0x00000000);
+		return new Bitmap(borderBmd);
+	}
+	
+	/**
+	 * Return a Sprite matte with shadow support.
+	 * @param {MatteObject} matteObject
+	 * @return {Sprite}
+	 */
+	public static function toSprite(matteObject:MatteObject = null):Sprite {
 		
-		// Outer frame
-		matteBmd.fillRect(new Rectangle(0, 4, w, h-8), frameColor);
-		matteBmd.fillRect(new Rectangle(4, 0, w-8, h), frameColor);
-		matteBmd.fillRect(new Rectangle(1, 2, w-2, h-4), frameColor);
-		matteBmd.fillRect(new Rectangle(2, 1, w-4, h-2), frameColor);
-			
-		// Inner matte
-		matteBmd.fillRect(new Rectangle(1, 4, w-2, h-8), matteColor);
-		matteBmd.fillRect(new Rectangle(2, 2, w-4, h-4), matteColor);
-		matteBmd.fillRect(new Rectangle(4, 1, w-8, h-2), matteColor);
+		// Create the default matte.
+		if (matteObject == null) {
+			matteObject = new MatteObject();
+		}
 		
-		return new Bitmap(matteBmd);
+		var matteSprite:Sprite = new Sprite();
+		var matteBitmap:Bitmap = toBitmap(matteObject);
+		
+		// Add the shadow.
+		if (matteObject.shadowColor != Colors.TRANSPARENT) {
+			var shadowBmd:BitmapData = matteBitmap.bitmapData.clone();
+			shadowBmd.threshold(shadowBmd, shadowBmd.rect, new Point(), "!=", Colors.TRANSPARENT, matteObject.shadowColor);
+			var shadowBitmap:Bitmap = new Bitmap(shadowBmd);
+			shadowBitmap.x = matteObject.shadowOffsetX;
+			shadowBitmap.y = matteObject.shadowOffsetY;
+			matteSprite.addChild(shadowBitmap);			
+		}
+		
+		matteSprite.addChild(matteBitmap);
+		
+		return matteSprite;
 	}
 			/*
 			if ($modifier.hasOwnProperty("height")) {

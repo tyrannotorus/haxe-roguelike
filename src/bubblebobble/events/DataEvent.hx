@@ -1,4 +1,4 @@
-package com.tyrannotorus.bubblebobble.events;
+package bubblebobble.events;
 
 import flash.events.Event;
 

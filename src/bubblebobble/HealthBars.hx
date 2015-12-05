@@ -1,10 +1,10 @@
-package com.tyrannotorus.bubblebobble;
+package bubblebobble;
 
 import openfl.display.Sprite;
 import openfl.display.Bitmap;
 import openfl.Lib;
 
-class Opponent extends Sprite {
+class HealthBars extends Sprite {
 
 	public function new() {
 		
