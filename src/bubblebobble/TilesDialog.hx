@@ -33,15 +33,24 @@ class TilesDialog extends DraggableDialog {
 		// Create the backing matte for the header.
 		var matteObject:MatteObject = new MatteObject();
 		matteObject.width = 64;
-		matteObject.height = 8;
-		matteObject.bottomRadius = 0;
+		matteObject.height = 64;
 		matteObject.borderColor = Colors.DUSTY_GREY;
 		matteObject.primaryColor = Colors.LOCHMARA;
 		matteObject.shadowColor = Colors.MIDNIGHT_BLUE;
 		matteObject.shadowOffsetX = -3;
 		matteObject.shadowOffsetY = 2;
 		
-		headerContainer = Matte.toSprite(matteObject);
+		// Create the backing matte for the container.
+		var tilesBackground:Sprite = Matte.toSprite(matteObject);
+		addChild(tilesBackground);
+		
+		var headerObject:MatteObject = new MatteObject();
+		headerObject.width = 64;
+		headerObject.height = 12;
+		headerObject.bottomRadius = 0;
+		headerObject.borderColor = Colors.TRANSPARENT;
+		headerObject.primaryColor = Colors.MIDNIGHT_BLUE;
+		headerContainer = Matte.toSprite(headerObject);
 		headerContainer.buttonMode = true;
 		addChild(headerContainer);
 		
@@ -50,34 +59,32 @@ class TilesDialog extends DraggableDialog {
 		textObject.primaryColor = Colors.GALLERY;
 		textObject.shadowColor = Colors.TUATARA;
 		var headerText:Bitmap = TextManager.getInstance().toBitmap(textObject);
+		headerText.y = 3;
+		headerText.x = 4;
 		headerContainer.addChild(headerText);
-		
-		// Create the backing matte for the container.
-		matteObject.height = 56;
-		matteObject.topRadius = 0;
-		matteObject.bottomRadius = 1;
-		var tilesBackground:Sprite = Matte.toSprite(matteObject);
-		tilesBackground.y = headerContainer.height - 2;
-		addChild(tilesBackground);
+			
 		
 		tilesContainer = new Sprite();
 		tilesContainer.x = 4;
-		tilesContainer.y = tilesBackground.y + 4;
+		tilesContainer.y = headerContainer.height + 4;
 		tilesContainer.mouseChildren = true;
 		addChild(tilesContainer);
 		
 		selectedTile = new Bitmap();
-		selectedTile.x = tilesBackground.width - 12;
-		selectedTile.y = tilesContainer.y - 12;
+		selectedTile.x = tilesBackground.width - 14;
+		selectedTile.y = 2;
 		addChild(selectedTile);
 		
 		addListeners();
 	}
 	
 	private function onTileClick(e:MouseEvent):Void {
-		trace(e.target);
+
 		var tileBitmap:Bitmap = tilesMap.get(e.target);
-		selectedTile.bitmapData = tileBitmap.bitmapData;
+		if(tileBitmap != null) {
+			selectedTile.bitmapData = tileBitmap.bitmapData;
+		}
+			
 	}
 		
 	/**
