@@ -6,9 +6,9 @@ import openfl.events.Event;
 
 class Main extends Sprite {
 	
-	public static inline var GAME_WIDTH:Int = 240;
-	public static inline var GAME_HEIGHT:Int = 135;
-	public static inline var GAME_SCALE:Int = 2;
+	public static inline var GAME_WIDTH:Int = 384;
+	public static inline var GAME_HEIGHT:Int = 216;
+	public static inline var GAME_SCALE:Int = 1;
 
 	private var game:Game;
 	
