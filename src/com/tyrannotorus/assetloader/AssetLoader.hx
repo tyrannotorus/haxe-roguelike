@@ -18,6 +18,13 @@ import openfl.net.URLLoaderDataFormat;
 import openfl.net.URLRequest;
 import openfl.utils.ByteArray;
 
+/**
+ * AssetLoader.hx
+ * Simplifies the external asset loading proceess.
+ * Handles pngs, txts, and zip files (converting to dynamic)
+ * Dispatches AssetEvent when complete.
+ */
+
 class AssetLoader extends EventDispatcher {
 	
 	// Handled File types.
@@ -47,7 +54,7 @@ class AssetLoader extends EventDispatcher {
 	public function loadAsset(assetPath:String):Void {
 		
 		// If this asset was previously loaded, return it from the cache.
-		assetEvent = Reflect.field(assetCache, assetPath);
+		assetEvent = assetCache.get(assetPath);
 		if (assetEvent != null) {
 			dispatchEvent(assetEvent);
 			return;
@@ -104,7 +111,6 @@ class AssetLoader extends EventDispatcher {
 	 */
 	private function onAssetProgress(e:ProgressEvent):Void {
 		var loadedPct:UInt = Math.round(100 * (e.bytesLoaded / e.bytesTotal)); 
-		trace(loadedPct + "% loaded."); 
 	}
 	
 	/**
@@ -130,8 +136,6 @@ class AssetLoader extends EventDispatcher {
 			var fileName:String = entry.fileName.split("/").pop().toLowerCase();
 			var fileType:String = fileName.split(".").pop();
 			
-			trace("Loading " + fileName);
-			
 			// Parse the PNG from the zip.
 			if(fileType == PNG){
 				var loader:Loader = new Loader();
@@ -143,7 +147,6 @@ class AssetLoader extends EventDispatcher {
 			// parse .txt from the zip
 			} else if (fileType == TXT) {
 				assetEvent.addData(fileName, entry.data.toString());
-				trace("loading TXT " + assetEvent.getData(fileName));
 				dispatchComplete();
 			}
 		} 
@@ -190,7 +193,7 @@ class AssetLoader extends EventDispatcher {
 		
 		// Save the assetData to the assetCache and dispatch compelete.
 		var assetPath:String = assetEvent.assetPath;
-		Reflect.setField(assetCache, assetPath, assetEvent);
+		assetCache.set(assetPath, assetEvent);
 		dispatchEvent(assetEvent);
 	}
 	
