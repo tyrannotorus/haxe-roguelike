@@ -5,7 +5,6 @@ import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.geom.Point;
-import openfl.geom.Rectangle;
 
 /**
  * Matte.hx
@@ -15,24 +14,24 @@ class Matte {
 	
 	/**
 	 * Return a bitmap matte. No shadow support on bitmaps.
-	 * @param {MatteObject} matteObject
+	 * @param {matteData} matteData
 	 * @return {Bitmap}
 	 */
-	public static function toBitmap(matteObject:MatteObject = null):Bitmap {
+	public static function toBitmap(matteData:MatteData = null):Bitmap {
 		
 		// Create the default matte.
-		if (matteObject == null) {
-			matteObject = new MatteObject();
+		if (matteData == null) {
+			matteData = new MatteData();
 		}
 		
-		var width:Int = matteObject.width;
-		var height:Int = matteObject.height;
-		var borderColor:UInt = matteObject.borderColor;
-		var borderWidth:UInt = matteObject.borderWidth;
+		var width:Int = matteData.width;
+		var height:Int = matteData.height;
+		var borderColor:UInt = matteData.borderColor;
+		var borderWidth:UInt = matteData.borderWidth;
 		var twiceBorderWidth:UInt = borderWidth * 2;
-		var primaryColor:UInt = matteObject.primaryColor;
-		var topRadius:Int = matteObject.topRadius;
-		var bottomRadius:Int = matteObject.bottomRadius;
+		var matteColor:UInt = matteData.matteColor;
+		var topRadius:Int = matteData.topRadius;
+		var bottomRadius:Int = matteData.bottomRadius;
 		
 		// Create the backing matte which will act as the border.
 		var borderBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
@@ -46,11 +45,11 @@ class Matte {
 		// Create the inner matte.
 		var innerBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
 		var innerSprite:Sprite = new Sprite();
-		innerSprite.graphics.beginFill(primaryColor);
+		innerSprite.graphics.beginFill(matteColor);
 		innerSprite.graphics.drawRoundRectComplex(borderWidth, borderWidth, width - twiceBorderWidth, height - twiceBorderWidth, topRadius, topRadius, bottomRadius, bottomRadius);
 		innerSprite.graphics.endFill();
 		innerBmd.draw(innerSprite);
-		innerBmd.threshold(innerBmd, innerBmd.rect, new Point(), "!=", primaryColor, Colors.TRANSPARENT);
+		innerBmd.threshold(innerBmd, innerBmd.rect, new Point(), "!=", matteColor, Colors.TRANSPARENT);
 		
 		// Copy the inner matte onto the border matte.
 		borderBmd.copyPixels(innerBmd, innerBmd.rect, new Point(), null, null, true);
@@ -60,26 +59,26 @@ class Matte {
 	
 	/**
 	 * Return a Sprite matte with shadow support.
-	 * @param {MatteObject} matteObject
+	 * @param {matteData} matteData
 	 * @return {Sprite}
 	 */
-	public static function toSprite(matteObject:MatteObject = null):Sprite {
+	public static function toSprite(matteData:MatteData = null):Sprite {
 		
 		// Create the default matte.
-		if (matteObject == null) {
-			matteObject = new MatteObject();
+		if (matteData == null) {
+			matteData = new MatteData();
 		}
 		
 		var matteSprite:Sprite = new Sprite();
-		var matteBitmap:Bitmap = toBitmap(matteObject);
+		var matteBitmap:Bitmap = toBitmap(matteData);
 		
 		// Add the shadow.
-		if (matteObject.shadowColor != Colors.TRANSPARENT) {
+		if (matteData.shadowColor != Colors.TRANSPARENT) {
 			var shadowBmd:BitmapData = matteBitmap.bitmapData.clone();
-			shadowBmd.threshold(shadowBmd, shadowBmd.rect, new Point(), "!=", Colors.TRANSPARENT, matteObject.shadowColor);
+			shadowBmd.threshold(shadowBmd, shadowBmd.rect, new Point(), "!=", Colors.TRANSPARENT, matteData.shadowColor);
 			var shadowBitmap:Bitmap = new Bitmap(shadowBmd);
-			shadowBitmap.x = matteObject.shadowOffsetX;
-			shadowBitmap.y = matteObject.shadowOffsetY;
+			shadowBitmap.x = matteData.shadowOffsetX;
+			shadowBitmap.y = matteData.shadowOffsetY;
 			matteSprite.addChild(shadowBitmap);			
 		}
 		

@@ -1,25 +1,23 @@
 package bubblebobble;
 
 import com.tyrannotorus.utils.Colors;
-import com.tyrannotorus.utils.Constants;
 
 /**
- * TextObject.hx
- * Text Object parameter for use with TextManager.hx.
+ * MatteObject.hx
+ * Matte Object parameter for user with Matte.as.
  */
-class TextObject {
+class MatteData {
 	
-	public var text:String = " ";
-	public var fontSet:Int = TextManager.SMALL;
-	public var primaryColor:Int = Colors.WHITE;
-	public var secondaryColor:Int = Colors.GALLERY;
+	public var matteColor:Int = Colors.LOCHMARA;
+	public var borderColor:Int = Colors.DUSTY_GREY;
+	public var borderWidth:Int = 1;
+	public var topRadius:Int = 1;
+	public var bottomRadius:Int = 1;
+	public var width:Int = 100;
+	public var height:Int = 100;
 	public var shadowColor:Int = Colors.TRANSPARENT;
-	public var shadowOffsetX:Int = 0;
+	public var shadowOffsetX:Int = 1;
 	public var shadowOffsetY:Int = 1;
-	public var scale:Int = 1;
-	public var matteMarginX:Int = 0;
-	public var matteMarginY:Int = 0;
-	public var typingSpeed:Float = 0.2;
 		
 	/**
 	 * Constructor.
@@ -36,7 +34,7 @@ class TextObject {
 		for (fieldName in Reflect.fields(parameters)) {
 
 			if (!Reflect.hasField(this, fieldName)) {
-				trace("TextObject.new() Uknown parameter " + fieldName + " passed.");
+				trace("MatteData.new() Uknown parameter " + fieldName + " passed");
 				continue;
 			}
 			

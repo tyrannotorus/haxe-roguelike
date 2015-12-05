@@ -93,14 +93,14 @@ class TextManager {
 	 * @param {Array<String>} textArray
 	 * @return {Rectangle}
 	 */
-	private function getTextRect(textObject:TextObject):Rectangle {
+	private function getTextRect(textData:TextData):Rectangle {
 		
-		var textArray:Array<String> = textObject.text.split("\n");
+		var textArray:Array<String> = textData.text.split("\n");
 		var textArrayLength:Int = textArray.length;
 		
-		var fontSet:Int = textObject.fontSet;
-		var matteMarginX:Int = textObject.matteMarginX;
-		var matteMarginY:Int = textObject.matteMarginY;
+		var fontSet:Int = textData.fontSet;
+		var matteMarginX:Int = textData.matteMarginX;
+		var matteMarginY:Int = textData.matteMarginY;
 		var maxWidth:Int = 2 * matteMarginX - 1;
 		var maxHeight:Int = Std.int(2*matteMarginY + textArrayLength * textArrayLength*glyphBmds[fontSet][0].height - 1);
 		
@@ -116,26 +116,26 @@ class TextManager {
 	
 	/**
 	 * Convert string to bitmapdata
-	 * @param {TextObject} textObject
+	 * @param {textData} textData
 	 * @return {BitmapData}
 	 */
-	public function toBitmapData(textObject:TextObject):BitmapData {
+	public function toBitmapData(textData:TextData):BitmapData {
 		
-		trace(textObject.text);
+		trace(textData.text);
 		
-		var textArray:Array<String> = textObject.text.split("\n");
+		var textArray:Array<String> = textData.text.split("\n");
 		
 		trace(textArray.join(","));
 		
-		var textRect:Rectangle = getTextRect(textObject);	
+		var textRect:Rectangle = getTextRect(textData);	
 		
 		trace(textRect);
 		var bmd:BitmapData = new BitmapData(Std.int(textRect.width), Std.int(textRect.height), true, Colors.TRANSPARENT);
 		var textArrayLength:Int = textArray.length;
 		var idxGlyph:Int;
 		var rect:Rectangle;
-		var fontSet:Int = textObject.fontSet;
-		var matteMarginX:Int = textObject.matteMarginX;
+		var fontSet:Int = textData.fontSet;
+		var matteMarginX:Int = textData.matteMarginX;
 								
 		// Write full lines of Text to empty bitmapdata
 		var point:Point = new Point();
@@ -151,14 +151,14 @@ class TextManager {
 			}
 		}
 		
-		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.BLACK, textObject.primaryColor);		// Colour opaque text
-		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.YELLOW, textObject.secondaryColor);		// Colour opaque text
+		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.BLACK, textData.primaryColor);		// Colour opaque text
+		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.YELLOW, textData.secondaryColor);		// Colour opaque text
 			
 		// Render shadow text and lay opaque text on top.
-		if (textObject.shadowColor != Colors.TRANSPARENT) {
+		if (textData.shadowColor != Colors.TRANSPARENT) {
 			
-			var shadowOffsetX:Int = textObject.shadowOffsetX;
-			var shadowOffsetY:Int = textObject.shadowOffsetY;
+			var shadowOffsetX:Int = textData.shadowOffsetX;
+			var shadowOffsetY:Int = textData.shadowOffsetY;
 			var shadowPoint:Point = new Point();
 			var textPoint:Point = new Point();
 			
@@ -182,28 +182,28 @@ class TextManager {
 			var newHeight:Int = Std.int(bmd.height + Math.abs(shadowOffsetY));
 			var shadowBmd:BitmapData = new BitmapData(newWidth, newHeight, true, Colors.TRANSPARENT);
 			shadowBmd.copyPixels(bmd, bmd.rect, shadowPoint, null, null, true);
-			shadowBmd.threshold(shadowBmd, shadowBmd.rect, new Point(), "!=", Colors.TRANSPARENT, textObject.shadowColor);
+			shadowBmd.threshold(shadowBmd, shadowBmd.rect, new Point(), "!=", Colors.TRANSPARENT, textData.shadowColor);
 			shadowBmd.copyPixels(bmd, bmd.rect, textPoint, null, null, true);
 			
 			bmd.dispose();
 			
-			return scaleBMD(shadowBmd, textObject.scale);
+			return scaleBMD(shadowBmd, textData.scale);
 		}
 		
-		return scaleBMD(bmd, textObject.scale);
+		return scaleBMD(bmd, textData.scale);
 		
 	}
 	
 	/**
 	 * Returns Bitmap block of text 
-	 * @param	{TextObject} textObject
+	 * @param	{textData} textData
 	 * @param	{String} name
 	 * @param	{Bool} visibilty
 	 * @return	{Bitmap}
 	 */
-	public function toBitmap(textObject:TextObject, name:String = null, visibilty:Bool = true):Bitmap {
+	public function toBitmap(textData:TextData, name:String = null, visibilty:Bool = true):Bitmap {
 		
-		var textBmd:BitmapData = toBitmapData(textObject);
+		var textBmd:BitmapData = toBitmapData(textData);
 		var textBitmap:Bitmap = new Bitmap(textBmd);
 		textBitmap.visible = visibilty;
 		
@@ -214,17 +214,17 @@ class TextManager {
 		return textBitmap;
 	}
 	
-	public function typeText(textObject:TextObject):Sprite {
+	public function typeText(textData:TextData):Sprite {
 		
-		var textArray:Array<String> = textObject.text.split("\n");
-		var textRect:Rectangle = getTextRect(textObject);
+		var textArray:Array<String> = textData.text.split("\n");
+		var textRect:Rectangle = getTextRect(textData);
 		var textBlock:Sprite = new Sprite();
 		var textArrayLength:Int = textArray.length;
 		var point:Point = new Point();
 		var idxChar:Int;
-		var primaryColor:Int = textObject.primaryColor;
-		var fontSet:Int = textObject.fontSet;
-		var matteMarginX:Int = textObject.matteMarginX;
+		var primaryColor:Int = textData.primaryColor;
+		var fontSet:Int = textData.fontSet;
+		var matteMarginX:Int = textData.matteMarginX;
 		
 		textBitmapArray = [];
 		

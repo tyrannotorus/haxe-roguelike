@@ -1,45 +1,32 @@
-package bubblebobble;
+package bubblebobble.dialogs;
 
 import haxe.ds.StringMap;
-import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
 
 /**
  * DraggableDialog.as.
- * - If you want your new, fancy dialog to be draggable around the screen in some manner, extend this.
+ * - If you want your new, fancy GenericDialog to be draggable around the screen in some manner, extend this.
  * - DraggableDialogs maintain independent positioning for both windowed/fullscreen display states, which auto-restore upon switching display state.
  * - Advised: Override the addListeners/removeListeners functions in order to add drag clicking to a specified part of the dialog.
  */
-class DraggableDialog extends Sprite {
+class DraggableDialog extends GenericDialog {
 
 	private var displayStatePosition:StringMap<Dynamic> = new StringMap<Dynamic>();
 
 	/**
 	 * Constructor.
+	 * @param {DialogData} dialogData
 	 */
-	public function new() {
-		
-		super();
-		
-		// Grab our local reference to myLife.
-		//myLife = MyLifeInstance.getInstance() as MyLifeGame;
-		
-		// Listen for display state changes.
-		//myLife.gblStage.addEventListener(Event.RESIZE, restorePosition);
+	public function new(dialogData:DialogData = null) {
+		super(dialogData);
 	}
-		/**
+	
+	/**
 	 * Mouse is held down, inititate the drag of the dialog
 	 * @param {MouseEvent.MOUSE_DOWN} e
 	 */
 	private function onStartDialogDrag(e:MouseEvent):Void {
-		trace("startDrag()");
-		//var displayState:String = myLife.gblStage.displayState;
-		//if(displayStatePosition[displayState] == null) {
-		//	displayStatePosition[displayState] = new Point(0,0);
-		//}
-			//displayStatePosition[displayState].x = x;
-		//displayStatePosition[displayState].y = y;
 		startDrag();
 	}
 
@@ -48,13 +35,6 @@ class DraggableDialog extends Sprite {
 	 * @param {MouseEvent.MOUSE_MOVE} e
 	 */
 	private function onStopDialogDrag(e:MouseEvent):Void {
-	trace("onStopDialogDrag()");
-		//var displayState:String = myLife.gblStage.displayState;
-		//if(displayStatePosition[displayState] == null) {
-		//	displayStatePosition[displayState] = new Point(0,0);
-		//}
-			//displayStatePosition[displayState].x = x;
-		//displayStatePosition[displayState].y = y;
 		stopDrag();
 	}
 
@@ -64,13 +44,6 @@ class DraggableDialog extends Sprite {
 	 */
 	public function restorePosition(e:Event = null):Void {
 		
-		//var displayState:String = myLife.gblStage.displayState;
-		
-		//if(displayStatePosition[displayState] != null) {
-		//	var point:Point = displayStatePosition[displayState];
-		//	x = point.x;
-		//	y = point.y;
-		//}
 	}
 
 	/**
@@ -82,13 +55,6 @@ class DraggableDialog extends Sprite {
 	 */
 	public function setPosition(x:Int, y:Int, setRestorablePositions:Bool = false):Void {
 		
-		//this.x = x;
-		//this.y = y;
-		
-		//if(setRestorablePositions) {
-		//	displayStatePosition[FullScreenManager.WINDOW] = new Point(x, y);
-		//	displayStatePosition[FullScreenManager.FULLSCREEN] = new Point(x, y);
-		//}
 	}
 
 	/**

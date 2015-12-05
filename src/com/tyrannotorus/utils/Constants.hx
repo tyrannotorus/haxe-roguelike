@@ -1,18 +1,7 @@
 package com.tyrannotorus.utils;
 
-import flash.display.Sprite;
-import flash.display.Bitmap;
-import flash.display.BitmapData;
-import flash.geom.Rectangle;
-import flash.geom.Point;
-import flash.geom.Matrix;
-import motion.Actuate;
 
 class Constants {
-	
-	/* Game variables */
-	public static inline var GAME_WIDTH:Int = 256;
-	public static inline var GAME_HEIGHT:Int = 224;
 	
 	/* Positioning */
 	public static inline var CENTER:Int = 10000;

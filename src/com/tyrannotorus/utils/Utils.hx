@@ -1,23 +1,19 @@
 package com.tyrannotorus.utils;
 
+import bubblebobble.Main;
 import openfl.display.DisplayObject;
-import format.swf.Data.Sound;
-import openfl.display.DisplayObject;
-import openfl.display.BitmapData;
 import openfl.geom.Rectangle;
-import openfl.geom.Point;
-import motion.Actuate;
 
 class Utils {
 	
 	public static function centerX(displayObject:DisplayObject):Int {
 		var bounds:Rectangle = displayObject.getRect(displayObject);
-		return Std.int((Constants.GAME_WIDTH - bounds.width) * 0.5);
+		return Std.int((Main.GAME_WIDTH - bounds.width) * 0.5);
 	}
 	
 	public static function centerY(displayObject:DisplayObject):Int {
 		var rect:Rectangle = displayObject.getRect(displayObject);
-		return Std.int((Constants.GAME_HEIGHT - rect.height) * 0.5);
+		return Std.int((Main.GAME_HEIGHT - rect.height) * 0.5);
 	}
 	
 	public static function sortAlphabetically(a:String, b:String):Int {
@@ -40,13 +36,13 @@ class Utils {
 		var rect:Rectangle = displayObject.getRect(displayObject);
 		
 		if (x == Constants.CENTER) {
-			displayObject.x = Std.int((Constants.GAME_WIDTH - rect.width) * 0.5);
+			displayObject.x = Std.int((Main.GAME_WIDTH - rect.width) * 0.5);
 		} else if (Std.is(x, Float)) {
 			displayObject.x = x;
 		}
 		
 		if (y == Constants.CENTER) {
-			displayObject.y = Std.int((Constants.GAME_HEIGHT - rect.height) * 0.5);
+			displayObject.y = Std.int((Main.GAME_HEIGHT - rect.height) * 0.5);
 		} else if (Std.is(x, Float)) {
 			displayObject.y = y;
 		}

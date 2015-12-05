@@ -1,11 +1,14 @@
 package bubblebobble;
 
-import com.tyrannotorus.utils.Constants;
 import openfl.display.Sprite;
 import openfl.display.StageDisplayState;
 import openfl.events.Event;
 
 class Main extends Sprite {
+	
+	public static inline var GAME_WIDTH:Int = 240;
+	public static inline var GAME_HEIGHT:Int = 135;
+	public static inline var GAME_SCALE:Int = 2;
 
 	private var game:Game;
 	
@@ -18,9 +21,11 @@ class Main extends Sprite {
 				
 		game = new Game();
 		addChild(game);
-		addListeners();
 		
+		game.scaleX = game.scaleY = GAME_SCALE;
 		game.loadGame();
+				
+		addListeners();
 	}
 	
 	/**
@@ -55,18 +60,16 @@ class Main extends Sprite {
 		var scale:Float = 1;
 		var stageWidth:Int = getStageWidth();
 		var stageHeight:Int = getStageHeight();
-		var gameWidth:Int = Constants.GAME_WIDTH;
-		var gameHeight:Int = Constants.GAME_HEIGHT;
 				
 		// Find which dimension to scale by
-		if (gameWidth / stageWidth > gameHeight / stageHeight) {
-			scale = stageWidth / gameWidth;		
+		if (GAME_WIDTH / stageWidth > GAME_HEIGHT / stageHeight) {
+			scale = stageWidth / GAME_WIDTH;		
 		} else {
-			scale = stageHeight / gameHeight;
+			scale = stageHeight / GAME_HEIGHT;
 		}
 					
 		game.scaleX = game.scaleY = scale;
-		game.x = Std.int((stageWidth - (gameWidth * scale)) * 0.5);
-		game.y = Std.int((stageHeight - (gameHeight * scale)) * 0.5);
+		game.x = Std.int((stageWidth - (GAME_WIDTH * scale)) * 0.5);
+		game.y = Std.int((stageHeight - (GAME_HEIGHT * scale)) * 0.5);
 	}
 }

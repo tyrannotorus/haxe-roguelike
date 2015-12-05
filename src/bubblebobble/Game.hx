@@ -1,23 +1,19 @@
 package bubblebobble;
 
-import com.tyrannotorus.utils.Colors;
-import com.tyrannotorus.utils.Constants;
-import com.tyrannotorus.utils.Utils;
+import bubblebobble.dialogs.TilesDialog;
+import bubblebobble.levels.LevelEditor;
 import com.tyrannotorus.utils.KeyCodes;
-import com.tyrannotorus.utils.ActorUtils;
-import com.tyrannotorus.assetloader.AssetEvent;
-import com.tyrannotorus.assetloader.AssetLoader;
 import openfl.Assets;
-import openfl.display.Bitmap;
-import openfl.display.BitmapData;
 import openfl.display.Sprite;
-import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.media.SoundTransform;
-import haxe.ds.ArraySort;
 
+/**
+ * Game.as.
+ * - The main game stage.
+ */
 class Game extends Sprite {
 		
 	private var screen:Sprite;
@@ -41,37 +37,23 @@ class Game extends Sprite {
 	private var musicChannel:SoundChannel;
 	private var musicTransform:SoundTransform;
 	
+	/**
+	 * Constructor.
+	 */
 	public function new() {
 		super();
-		scaleX = scaleY = 3;
 	}
 	
+	/**
+	 * Initiate load of the game.
+	 */
 	public function loadGame():Void {
 		
-		screen = new Sprite();
+		var levelEditor:LevelEditor = new LevelEditor() ;
+		addChild(levelEditor);
 		
-		tilesDialog = new TilesDialog();
-		tilesDialog.loadTiles();
-		addChild(tilesDialog);
-		
-		
-				
-		// Create Bub.
-		var bubSpritesheet:BitmapData = Assets.getBitmapData("actors/bub_spritesheet.png");
-		var bubLogic:String = Assets.getText("actors/bub_logic.txt");
-		var bubData:Dynamic = ActorUtils.parseActorData(bubSpritesheet, bubLogic);
-		player = new Actor(bubData);
-		
-		Utils.position(player, 8, 8);
-		addChild(player);
-		
-		addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
 		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);
-		
-		healthBars = new HealthBars();
-		menu = new Menu();
-		addChild(menu);
 		
 		//var testText:Dynamic = { };
 		//testText.text = "Mike Tysons\nPunch\nout!!";
@@ -87,41 +69,7 @@ class Game extends Sprite {
 		musicChannel.soundTransform = musicTransform;
 	}
 	
-	
-	
-	/**
-	 * External Asset has been loaded and extracted from the zip. Parse it.
-	 * @param {AssetEvent.LOAD_COMPLETE}	e
-	 */
-	private function parseExternalAsset(e:AssetEvent):Void {
-		trace("parseExternalAsset");
-		var assetLoader:AssetLoader = cast(e.target, AssetLoader);
-		assetLoader.removeEventListener(AssetEvent.LOAD_COMPLETE, parseExternalAsset);
-		
-		if (e.assetData == null) {
-			return;
-		}
-		
-		var spritesheet:Bitmap = e.getData("spritesheet.png");
-		var logic:String = e.getData("logic.txt");
-		var characterData:Dynamic = ActorUtils.parseActorData(spritesheet.bitmapData, logic);
-		opponent = new Actor(characterData);
-		Utils.position(opponent, Constants.CENTER, 73);
-		addChild(opponent);
-		
-		Utils.position(player, 96, 132);
-		addChild(player);
-		
-		addEventListener(Event.ENTER_FRAME, onEnterFrame);
-		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
-		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);
-	}
-	
-	private function onEnterFrame(e:Event):Void {
-				
-		player.animate();
-	//	opponent.animate();
-	}
+
 	
 	private function onGameKeyDown(e:KeyboardEvent):Void {
 		
