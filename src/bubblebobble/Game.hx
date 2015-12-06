@@ -1,9 +1,10 @@
 package bubblebobble;
 
 import bubblebobble.dialogs.TilesDialog;
-import bubblebobble.levels.LevelEditor;
+import bubblebobble.editor.Editor;
 import com.tyrannotorus.utils.KeyCodes;
 import openfl.Assets;
+import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.events.KeyboardEvent;
 import openfl.media.Sound;
@@ -49,8 +50,22 @@ class Game extends Sprite {
 	 */
 	public function loadGame():Void {
 		
-		var levelEditor:LevelEditor = new LevelEditor() ;
-		addChild(levelEditor);
+		// Create text
+		var textData:TextData = new TextData( { text:"- Bubble Bobble Forever -" } );
+		var titleText:Bitmap = TextManager.getInstance().toBitmap(textData);
+		titleText.x = Std.int((Main.GAME_WIDTH - titleText.width) / 2);
+		titleText.y = 1;
+		addChild(titleText);
+		
+		textData = new TextData( { text:"- Menu -" } );
+		var menuText:Bitmap = TextManager.getInstance().toBitmap(textData);
+		//menuText.x = Main.GAME_WIDTH - menuText.width) / 2);
+		menuText.y = 1;
+		addChild(menuText);
+		
+		var editor:Editor = new Editor();
+		editor.y = 8;
+		addChild(editor);
 		
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
 		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);

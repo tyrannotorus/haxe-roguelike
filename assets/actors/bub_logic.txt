@@ -19,9 +19,10 @@
 ;	stats.DEATHCRY		= sfx_nooooo.mp3
 
 	frames.IDLE (0,0)
-	timing:10000
+	timing:20
+	timing:10
 		
-	frames.WALK (0,0)
+	frames.WALK (1,0)
 	timing:6
 	timing:6
 	timing:6

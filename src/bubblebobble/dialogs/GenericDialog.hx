@@ -10,6 +10,7 @@ import openfl.display.Sprite;
 class GenericDialog extends Sprite {
 
 	private var headerContainer:Sprite;
+	private var headerText:Bitmap;
 	
 	/**
 	 * Constructor.
@@ -46,7 +47,7 @@ class GenericDialog extends Sprite {
 		textObject.shadowColor = dialogData.headerTextShadowColor;
 		
 		// Add the header text.
-		var headerText:Bitmap = TextManager.getInstance().toBitmap(textObject);
+		headerText = TextManager.getInstance().toBitmap(textObject);
 		headerText.y = 3;
 		headerText.x = 4;
 		headerContainer.addChild(headerText);
