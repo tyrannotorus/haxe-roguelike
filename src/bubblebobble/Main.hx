@@ -9,7 +9,6 @@ class Main extends Sprite {
 	
 	public static inline var GAME_WIDTH:Int = 384;
 	public static inline var GAME_HEIGHT:Int = 216;
-	//public static inline var GAME_OFFSET_Y:Int = 8;
 	public static inline var GAME_SCALE:Int = 1;
 
 	private var game:Game;
@@ -22,8 +21,6 @@ class Main extends Sprite {
 		super();
 				
 		game = new Game();
-		//game.y = GAME_OFFSET_Y;
-		//game.scrollRect = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
 		addChild(game);
 		
 		game.scaleX = game.scaleY = GAME_SCALE;

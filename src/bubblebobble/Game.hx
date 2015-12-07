@@ -3,8 +3,6 @@ package bubblebobble;
 import bubblebobble.dialogs.TilesDialog;
 import bubblebobble.editor.Editor;
 import com.tyrannotorus.utils.KeyCodes;
-import openfl.Assets;
-import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.events.KeyboardEvent;
 import openfl.media.Sound;
@@ -50,21 +48,7 @@ class Game extends Sprite {
 	 */
 	public function loadGame():Void {
 		
-		// Create text
-		var textData:TextData = new TextData( { text:"- Bubble Bobble Forever -" } );
-		var titleText:Bitmap = TextManager.getInstance().toBitmap(textData);
-		titleText.x = Std.int((Main.GAME_WIDTH - titleText.width) / 2);
-		titleText.y = 1;
-		addChild(titleText);
-		
-		textData = new TextData( { text:"- Menu -" } );
-		var menuText:Bitmap = TextManager.getInstance().toBitmap(textData);
-		//menuText.x = Main.GAME_WIDTH - menuText.width) / 2);
-		menuText.y = 1;
-		addChild(menuText);
-		
 		var editor:Editor = new Editor();
-		editor.y = 8;
 		addChild(editor);
 		
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
@@ -77,11 +61,10 @@ class Game extends Sprite {
 		//addChild(textManager.typeText(testText));
 		
 		
-				
-		musicTransform = new SoundTransform(0.1);
-		music = Assets.getSound("audio/title_music.mp3", true);
-		musicChannel = music.play();
-		musicChannel.soundTransform = musicTransform;
+		//musicTransform = new SoundTransform(0.1);
+		//music = Assets.getSound("audio/title_music.mp3", true);
+		//musicChannel = music.play();
+		//musicChannel.soundTransform = musicTransform;
 	}
 	
 
