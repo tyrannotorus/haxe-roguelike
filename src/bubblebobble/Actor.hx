@@ -119,11 +119,15 @@ class Actor extends Sprite {
 	public var doubletap	:Int;
 	private var player:Actor;
 	private var opponent:Actor;
+	
+	private var actorData:Dynamic;
 		
 		
 	public function new(actorData:Dynamic, player:Actor = null):Void {
 		
 		super();
+		
+		this.actorData = actorData;
 		
 		if (player != null) {
 			this.player = player;
@@ -1500,7 +1504,7 @@ class Actor extends Sprite {
 	*/	
 		
 		public function clone():Actor {
-			return this;
+			return new Actor(actorData);
 		}
 		
 	
