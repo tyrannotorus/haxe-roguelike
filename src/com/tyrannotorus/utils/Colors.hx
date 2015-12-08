@@ -55,6 +55,19 @@ class Colors {
 	}
 	
 	/**
+	 * Modify the alpha of a 32-bit color.
+	 * @param {Int} color
+	 * @param {Float} alpha
+	 * @return {Int}
+	 */
+	public static function modifyAlpha(color:Int, alpha:Float = 1):Int {
+		var intAlpha:Int = Math.round(alpha * 255);
+		var rgb:Int = 0xFFFFFF & color;
+		var argb:Int = (intAlpha<<24)|rgb;
+		return argb;
+	}
+	
+	/**
 	 * Tweens the color of an object, with on optional callback function on complete
 	 * @param	object
 	 * @param	callBackFunction

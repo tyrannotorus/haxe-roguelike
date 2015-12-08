@@ -16,8 +16,6 @@ class DialogData extends MatteData {
 	public var headerMatteColor:Int = Colors.MIDNIGHT_BLUE;
 	public var headerBorderColor:Int = Colors.TRANSPARENT;
 	public var headerHeight:Int = 16;
-	
-	
 			
 	/**
 	 * Constructor.
@@ -26,6 +24,11 @@ class DialogData extends MatteData {
 	public function new(parameters:Dynamic = null) {
 		
 		super(parameters);
+		
+		// Set up the default dialog shadow.
+		shadowColor = Colors.modifyAlpha(Colors.BLACK, 0.4);
+		shadowOffsetX = 4;
+		shadowOffsetY = 6;
 		
 		// No parameters were passed. Use default values.
 		if (parameters == null) {

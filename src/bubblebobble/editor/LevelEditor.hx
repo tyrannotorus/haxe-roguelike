@@ -21,6 +21,7 @@ class LevelEditor extends Sprite {
 	private var levelLayer:Sprite;
 	private var largeTilesLayer:Sprite;
 	private var smallTilesLayer:Sprite;
+	private var actorsLayer:Sprite;
 	private var dialogLayer:Sprite;
 	private var bub:Actor;
 	private var tilesDialog:TilesDialog;
@@ -48,6 +49,9 @@ class LevelEditor extends Sprite {
 		addChild(largeTilesLayer);
 		smallTilesLayer = new Sprite();
 		addChild(smallTilesLayer);
+		
+		actorsLayer = new Sprite();
+		addChild(actorsLayer);
 				
 		// Create the dialog layer.
 		dialogLayer = new Sprite();
@@ -103,6 +107,7 @@ class LevelEditor extends Sprite {
 		trace("onMouseUp");
 		var actor:Actor = cast(e.target, Actor);
 		actor.stopDrag();
+		actorsLayer.addChild(actor);
 	}
 	
 	/**
@@ -218,6 +223,14 @@ class LevelEditor extends Sprite {
 		this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		this.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+		this.addEventListener(MouseEvent.CLICK, onMouseClick);
+	}
+	
+	private function onMouseClick(e:MouseEvent):Void {
+		if (Std.is(e.target, Actor)) {
+			var actor:Actor = cast(e.target, Actor);
+			actor.scaleX *= -1;
+		}
 	}
 	
 	/**

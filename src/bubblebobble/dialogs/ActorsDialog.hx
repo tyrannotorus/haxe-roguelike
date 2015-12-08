@@ -40,10 +40,7 @@ class ActorsDialog extends DraggableDialog {
 		dialogData.headerTextShadowColor = Colors.BLACK;
 		dialogData.width = WIDTH;
 		dialogData.height = HEIGHT;
-		dialogData.shadowColor = Colors.MIDNIGHT_BLUE;
-		dialogData.shadowOffsetX = 2;
-		dialogData.shadowOffsetY = 2;
-		
+				
 		super(dialogData);
 				
 		headerText.y += 1;

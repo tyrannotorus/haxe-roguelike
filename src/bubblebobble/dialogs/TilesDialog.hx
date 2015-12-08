@@ -39,10 +39,7 @@ class TilesDialog extends DraggableDialog {
 		dialogData.headerTextShadowColor = Colors.BLACK;
 		dialogData.width = WIDTH;
 		dialogData.height = HEIGHT;
-		dialogData.shadowColor = Colors.MIDNIGHT_BLUE;
-		dialogData.shadowOffsetX = 2;
-		dialogData.shadowOffsetY = 2;
-		
+				
 		super(dialogData);
 				
 		headerText.y += 1;
@@ -55,6 +52,8 @@ class TilesDialog extends DraggableDialog {
 		selectedTileContainer.addChild(selectedTile = new Bitmap());
 		selectedTileContainer.x = WIDTH - 20;
 		selectedTileContainer.y = 2;
+		selectedTileContainer.mouseChildren = false;
+		selectedTileContainer.mouseEnabled = false;
 		addChild(selectedTileContainer);
 		
 		addListeners();
