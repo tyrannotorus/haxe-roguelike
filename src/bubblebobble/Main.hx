@@ -68,7 +68,8 @@ class Main extends Sprite {
 		} else {
 			scale = stageHeight / GAME_HEIGHT;
 		}
-					
+		
+		scale = Math.floor(scale);
 		game.scaleX = game.scaleY = scale;
 		game.x = Std.int((stageWidth - (GAME_WIDTH * scale)) * 0.5);
 		game.y = Std.int((stageHeight - (GAME_HEIGHT * scale)) * 0.5);
