@@ -30,9 +30,9 @@ import openfl.utils.ByteArray;
 class AssetLoader extends EventDispatcher {
 	
 	// Handled File types.
-	private static inline var PNG:String = "png";
-	private static inline var TXT:String = "txt";
-	private static inline var ZIP:String = "zip";
+	public static inline var PNG:String = "png";
+	public static inline var TXT:String = "txt";
+	public static inline var ZIP:String = "zip";
 	
 	// Cache of previously loaded assets.
 	private static var assetCache:ObjectMap<Dynamic,AssetEvent> = new ObjectMap<Dynamic,AssetEvent>();

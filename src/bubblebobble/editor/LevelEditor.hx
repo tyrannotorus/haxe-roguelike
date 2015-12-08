@@ -1,6 +1,7 @@
 package bubblebobble.editor;
 
 import bubblebobble.dialogs.TilesDialog;
+import bubblebobble.dialogs.ActorsDialog;
 import com.tyrannotorus.utils.ActorUtils;
 import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.Utils;
@@ -23,10 +24,11 @@ class LevelEditor extends Sprite {
 	private var dialogLayer:Sprite;
 	private var bub:Actor;
 	private var tilesDialog:TilesDialog;
+	private var actorsDialog:ActorsDialog;
 	private var selectedTile:Bitmap;
 	private var largeTilesArray:Array<Array<Sprite>>;
 	private var smallTilesArray:Array<Array<Sprite>>;
-		
+	
 	/**
 	 * Constructor.
 	 */
@@ -55,21 +57,19 @@ class LevelEditor extends Sprite {
 		smallTilesArray = new Array<Array<Sprite>>();
 		largeTilesArray = new Array<Array<Sprite>>();
 		
+		//actorPool = new Array<Actor>();
+		
 		// Create and add the tiles dialog.
 		tilesDialog = new TilesDialog();
 		tilesDialog.loadTiles();
 		tilesDialog.addEventListener(MouseEvent.CLICK, onTileSelected);
 		dialogLayer.addChild(tilesDialog);
 		
-		// Create Bub.
-		var bubSpritesheet:BitmapData = Assets.getBitmapData("actors/bub_spritesheet.png");
-		var bubLogic:String = Assets.getText("actors/bub_logic.txt");
-		var bubData:Dynamic = ActorUtils.parseActorData(bubSpritesheet, bubLogic);
-		bub = new Actor(bubData);
-		Utils.position(bub, 8, 64);
-		dialogLayer.addChild(bub);
-		
-		
+		// Create and add the actors dialog.
+		actorsDialog = new ActorsDialog();
+		actorsDialog.loadActors();
+		actorsDialog.addEventListener(MouseEvent.MOUSE_DOWN, onActorSelected);
+		dialogLayer.addChild(actorsDialog);
 		
 		addListeners();
 	}
@@ -80,6 +80,29 @@ class LevelEditor extends Sprite {
 	 */
 	private function onTileSelected(e:MouseEvent):Void {
 		selectedTile = tilesDialog.getSelectedTile();
+	}
+	
+	/**
+	 * Mouse Downed over an actor.
+	 * @param {MouseEvent.CLICK} e
+	 */
+	private function onActorSelected(e:MouseEvent):Void {
+		
+		var selectedActor:Actor = actorsDialog.getActor(e.target);
+		
+		if (selectedActor != null) {
+			selectedTile = null;
+			addChild(selectedActor);
+			selectedActor.startDrag(true);
+			selectedActor.addEventListener(MouseEvent.MOUSE_UP, onStopActorDrag);
+			removePlaceTileListeners();
+		}
+	}
+	
+	private function onStopActorDrag(e:MouseEvent):Void {
+		trace("onMouseUp");
+		var actor:Actor = cast(e.target, Actor);
+		actor.stopDrag();
 	}
 	
 	/**
@@ -103,8 +126,14 @@ class LevelEditor extends Sprite {
 	 * @param {MouseEvent.MOUSE_MOVE} e
 	 */
 	private function onMouseMove(e:MouseEvent):Void {
-		trace("onMouseMove " + e.target.name);
 		placeTile(levelLayer.mouseX, levelLayer.mouseY);
+	}
+	
+	private function removePlaceTileListeners():Void {
+		levelLayer.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+		this.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+		this.removeEventListener(Event.MOUSE_LEAVE, onMouseUp);
+		this.stage.removeEventListener(Event.MOUSE_LEAVE, onMouseUp);
 	}
 	
 	/**
@@ -207,7 +236,7 @@ class LevelEditor extends Sprite {
 	 * Animate an creatures on the level.
 	 */	
 	private function onEnterFrame(e:Event):Void {
-		bub.animate();
+		//bub.animate();
 	}
 	
 }

@@ -27,6 +27,7 @@ class DraggableDialog extends GenericDialog {
 	 * @param {MouseEvent.MOUSE_DOWN} e
 	 */
 	private function onStartDialogDrag(e:MouseEvent):Void {
+		this.parent.setChildIndex(this, this.parent.numChildren - 1);
 		startDrag();
 	}
 

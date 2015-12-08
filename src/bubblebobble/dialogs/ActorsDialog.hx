@@ -1,13 +1,15 @@
 package bubblebobble.dialogs;
 
+import bubblebobble.Actor;
 import bubblebobble.dialogs.DraggableDialog;
 import com.tyrannotorus.assetloader.AssetEvent;
 import com.tyrannotorus.assetloader.AssetLoader;
+import com.tyrannotorus.utils.ActorUtils;
 import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.Utils;
 import haxe.ds.ObjectMap;
 import openfl.display.Bitmap;
-import openfl.display.Sprite;
+import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.geom.Rectangle;
 
@@ -16,17 +18,16 @@ import openfl.geom.Rectangle;
  * - A draggable dialog with for use within the level editor.
  * - Loads a selection of tiles.
  */
-class TilesDialog extends DraggableDialog {
+class ActorsDialog extends DraggableDialog {
 	
 	private static inline var WIDTH:Int = 96;
 	private static inline var HEIGHT:Int = 128;
-	private static inline var XMARGIN:Int = 6;
+	private static inline var XMARGIN:Int = 3;
 
-	private var tilesContainer:ItemContainer;
-	private var tilesArray:Array<Bitmap>;
-	private var tilesMap:ObjectMap<Dynamic,Bitmap>;
-	private var selectedTileContainer:Sprite;
+	private var actorsContainer:ItemContainer;
+	private var actorsMap:ObjectMap<Dynamic,Bitmap>;
 	private var selectedTile:Bitmap;
+	private var actorsArray:Array<Actor>;
 	
 	/**
 	 * Constructor.
@@ -34,8 +35,8 @@ class TilesDialog extends DraggableDialog {
 	public function new() {
 		
 		var dialogData:DialogData = new DialogData();
-		dialogData.headerText = "Arcade\nTiles";
-		dialogData.headerHeight = 20;
+		dialogData.headerText = "Characters";
+		dialogData.headerHeight = 14;
 		dialogData.headerTextShadowColor = Colors.BLACK;
 		dialogData.width = WIDTH;
 		dialogData.height = HEIGHT;
@@ -46,16 +47,12 @@ class TilesDialog extends DraggableDialog {
 		super(dialogData);
 				
 		headerText.y += 1;
-		var tilesContainerY:Int = Std.int(headerContainer.y + headerContainer.height + 2);
-		var tilesRectangle:Rectangle = new Rectangle(XMARGIN, tilesContainerY, WIDTH - 2 * XMARGIN, 50);
-		tilesContainer = new ItemContainer(tilesRectangle);
-		addChild(tilesContainer);
+		var actorsContainerY:Int = Std.int(headerContainer.y + headerContainer.height + 2);
+		var actorsRectangle:Rectangle = new Rectangle(XMARGIN, actorsContainerY, WIDTH - 2 * XMARGIN, 50);
+		actorsContainer = new ItemContainer(actorsRectangle);
+		addChild(actorsContainer);
 		
-		selectedTileContainer = new Sprite();
-		selectedTileContainer.addChild(selectedTile = new Bitmap());
-		selectedTileContainer.x = WIDTH - 20;
-		selectedTileContainer.y = 2;
-		addChild(selectedTileContainer);
+		actorsArray = new Array<Actor>();
 		
 		addListeners();
 	}
@@ -73,9 +70,9 @@ class TilesDialog extends DraggableDialog {
 	 * @return {MouseEvent.CLICK} e
 	 */
 	private function onTileClick(e:MouseEvent):Void {
-	trace(e.target + " " + e.target.name);
-		var tileBitmap:Bitmap = tilesMap.get(e.target);
-		trace("onTileClick " + tileBitmap);
+/*
+		var tileBitmap:Bitmap = actorsMap.get(e.target);
+		
 		// Invalid. Something was clicked, but it wasn't a tile.
 		if (tileBitmap == null) {
 			e.stopImmediatePropagation();
@@ -84,38 +81,31 @@ class TilesDialog extends DraggableDialog {
 		
 		// Swap in and position the new tile.
 		selectedTile.bitmapData = tileBitmap.bitmapData;
-		selectedTile.x = selectedTile.y = (16 - selectedTile.width) / 2;
+		selectedTile.x = selectedTile.y = (16 - selectedTile.width) / 2;*/
 	}
 	
 	/**
 	 * Initiate load of the tileset.
 	 */
-	public function loadTiles():Void {
+	public function loadActors():Void {
 		var assetLoader:AssetLoader = new AssetLoader();
-		assetLoader.addEventListener(AssetEvent.LOAD_COMPLETE, onTilesLoaded);
-		assetLoader.loadAsset("tiles/tiles.zip");
+		assetLoader.addEventListener(AssetEvent.LOAD_COMPLETE, onActorsLoaded);
+		assetLoader.loadAsset("actors/actors.zip");
 	}
 		
 	/**
 	 * Tileset has loaded.
 	 * @param {AssetEvent.LOAD_COMPLETE} e
 	 */
-	private function onTilesLoaded(e:AssetEvent):Void {
+	private function onActorsLoaded(e:AssetEvent):Void {
 		
 		var assetLoader:AssetLoader = cast(e.target, AssetLoader);
-		assetLoader.removeEventListener(AssetEvent.LOAD_COMPLETE, onTilesLoaded);
+		assetLoader.removeEventListener(AssetEvent.LOAD_COMPLETE, onActorsLoaded);
 		
 		if (e.assetData == null) {
-			trace("TilesDialog.onTilesLoaded() Failure.");
+			trace("TilesDialog.onActorsLoaded() Failure.");
 			return;
 		}
-		
-		tilesMap = new ObjectMap<Dynamic,Bitmap>();
-				
-		var xPosition:Float = 0;
-		var yPosition:Float = 0;
-		var rowHeight:Float = 0;
-		var maxWidth:Float = WIDTH - 13;
 		
 		// Load the fields.
 		var fieldsArray:Array<String> = Reflect.fields(e.assetData);
@@ -124,42 +114,67 @@ class TilesDialog extends DraggableDialog {
 		for (idxField in 0...fieldsArray.length) {
 			
 			var fieldString:String = fieldsArray[idxField];
-			var tileBitmap:Bitmap = Reflect.field(e.assetData, fieldString);
-			var tileSprite:Sprite = new Sprite();
-			tileSprite.addChild(tileBitmap);
-			tileSprite.buttonMode = true;
-			
-			tilesContainer.addItem(tileSprite);
-			tilesMap.set(tileSprite, tileBitmap);
+			var fieldArray:Array<String> = fieldString.split(".");
+			var fileType:String = fieldArray.pop().toLowerCase();
+			var fileName:String = fieldArray.join(".");
+						
+			if (fileType == AssetLoader.TXT) {
+				
+				var spriteSheet:Bitmap = Reflect.field(e.assetData, fileName + ".png");
+				var spriteLogic:String = Reflect.field(e.assetData, fieldString);
+				var actorData:Dynamic = ActorUtils.parseActorData(spriteSheet.bitmapData, spriteLogic);
+				var actor:Actor = new Actor(actorData);
+				actor.buttonMode = true;
+				
+				actorsArray.push(actor);
+				actorsContainer.addItem(actor);
+			}
 		}
 	}
 	
+	
 	/**
-	 * Stop outward propagation on MOUSE_DOWN
-	 * @param {MouseEvent.MOUSE_DOWN} e
-	 */
-	private function onMouseDown(e:MouseEvent):Void {
-		e.stopImmediatePropagation();
+	 * Animate an creatures on the level.
+	 */	
+	private function onEnterFrame(e:Event):Void {
+				
+		for (idxActor in 0...actorsArray.length) {
+			actorsArray[idxActor].animate();
+		}
+	}
+	
+	public function getActor(possibleActor:Dynamic):Actor {
+		
+		if(Std.is(possibleActor, Actor)){
+			
+			var actor:Actor = cast(possibleActor, Actor);
+			var selectedActor:Actor = actor.clone();
+			selectedActor.buttonMode = true;
+			actorsArray.push(selectedActor);
+			
+			return selectedActor;
+		}
+		
+		return null;
+		
 	}
 
 	/**
 	 * Add listeners.
 	 */
 	override private function addListeners():Void {
-		tilesContainer.addEventListener(MouseEvent.CLICK, onTileClick);
+		this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		headerContainer.addEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.addEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
-		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
 	
 	/**
 	 * Removes listeners.
 	 */
 	override private function removeListeners():Void {
-		tilesContainer.removeEventListener(MouseEvent.CLICK, onTileClick);
+		this.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
-		this.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
 
 	
