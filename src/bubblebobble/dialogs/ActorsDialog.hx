@@ -55,33 +55,6 @@ class ActorsDialog extends DraggableDialog {
 	}
 	
 	/**
-	 * Makes the tile publically accessible.
-	 * @return {Bitmap}
-	 */
-	public function getSelectedTile():Bitmap {
-		return selectedTile;
-	}
-	
-	/**
-	 * User has clicked the tiles container.
-	 * @return {MouseEvent.CLICK} e
-	 */
-	private function onTileClick(e:MouseEvent):Void {
-/*
-		var tileBitmap:Bitmap = actorsMap.get(e.target);
-		
-		// Invalid. Something was clicked, but it wasn't a tile.
-		if (tileBitmap == null) {
-			e.stopImmediatePropagation();
-			return;
-		}
-		
-		// Swap in and position the new tile.
-		selectedTile.bitmapData = tileBitmap.bitmapData;
-		selectedTile.x = selectedTile.y = (16 - selectedTile.width) / 2;*/
-	}
-	
-	/**
 	 * Initiate load of the tileset.
 	 */
 	public function loadActors():Void {
@@ -153,7 +126,13 @@ class ActorsDialog extends DraggableDialog {
 		}
 		
 		return null;
-		
+	}
+	
+	public function removeActor(actor:Actor):Void {
+		var actorIndex:Int = actorsArray.indexOf(actor);
+		if (actorIndex != -1) {
+			actorsArray.splice(actorIndex, 1);
+		}
 	}
 
 	/**
@@ -163,6 +142,7 @@ class ActorsDialog extends DraggableDialog {
 		this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		headerContainer.addEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.addEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
+		//this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
 	
 	/**
@@ -172,6 +152,7 @@ class ActorsDialog extends DraggableDialog {
 		this.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
+		//this.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
 
 	

@@ -72,9 +72,9 @@ class TilesDialog extends DraggableDialog {
 	 * @return {MouseEvent.CLICK} e
 	 */
 	private function onTileClick(e:MouseEvent):Void {
-	trace(e.target + " " + e.target.name);
+	
 		var tileBitmap:Bitmap = tilesMap.get(e.target);
-		trace("onTileClick " + tileBitmap);
+		
 		// Invalid. Something was clicked, but it wasn't a tile.
 		if (tileBitmap == null) {
 			e.stopImmediatePropagation();
