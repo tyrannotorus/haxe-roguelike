@@ -63,21 +63,61 @@ class LevelEditor extends Sprite {
 		
 		// Create and add the tiles dialog.
 		tilesDialog = new TilesDialog();
-		//actorsDialog.addEventListener(MouseEvent.CLICK, setTileState);
 		tilesDialog.loadTiles();
 		dialogLayer.addChild(tilesDialog);
 		
 		// Create and add the actors dialog.
 		actorsDialog = new ActorsDialog();
 		actorsDialog.loadActors();
-		//actorsDialog.addEventListener(MouseEvent.MOUSE_DOWN, setActorState);
 		dialogLayer.addChild(actorsDialog);
 		
-		//this.addEventListener(MouseEvent.ROLL_OUT, onMouseRollOut);
+		actorsDialog.addEventListener(MouseEvent.ROLL_OUT, onMouseRollOut);
+		actorsDialog.addEventListener(MouseEvent.ROLL_OVER, onMouseRollOver);
+		this.addEventListener(MouseEvent.ROLL_OUT, onMouseUp);
 		this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		this.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		this.addEventListener(Event.MOUSE_LEAVE, onMouseLeave);
+	}
+	
+	/**
+	 * If we're dragging an actor, bring the character in from the field.
+	 * @param {MouseEvent.ROLL_OVER} e
+	 */
+	private function onMouseRollOver(e:MouseEvent):Void {
+		trace("onMouseRollOver");
+		
+		if (state == DRAG_ACTOR) {
+			
+			// The character has been dragged.
+			if (selectedActor != null) {
+				selectedActor.startDrag(true);
+				addChild(selectedActor);
+			}
+		
+		}		
+		
+	}
+	
+	/**
+	 * If we're dragging an actor, put the character in the field.
+	 * @param {MouseEvent.ROLL_OUT} e
+	 */
+	private function onMouseRollOut(e:MouseEvent):Void {
+		
+		trace("onMouseRollOut");
+		
+		if (state == DRAG_ACTOR) {
+			
+			// The character has been dragged.
+			if (selectedActor != null) {
+				selectedActor.stopDrag();
+				actorsLayer.addChild(selectedActor);
+				trace("onMouseRollOut adding to actors layer");
+			}
+		
+		}		
+		
 	}
 	
 	/**
@@ -93,12 +133,20 @@ class LevelEditor extends Sprite {
 	 * @param {MouseEvent.CLICK} e
 	 */
 	private function onMouseDown(e:MouseEvent):Void {
+		
 		trace("onMouseDown() " + e.target + " " + e.currentTarget);
 		
-		selectedTile = null;
+		destroyActor();
 		
+				
+		selectedTile = null;
+		state = null;
+		
+		// User has mouseDowned on an actor.
 		if (Std.is(e.target, Actor)) {
+			
 			trace(e.target.parent);
+			
 			// Actor has been added to the level previously. Begin relocation.
 			if (e.target.parent == actorsLayer) {
 				selectedActor = cast(e.target, Actor);
@@ -106,19 +154,15 @@ class LevelEditor extends Sprite {
 			// Actor is being dragged from actors menu.
 			} else {
 				selectedActor = actorsDialog.getActor(e.target);
-				
 			}
 						
 			state = DRAG_ACTOR;
 			selectedActorDragged = false;
-			
 			actorsDialog.mouseChildren = false;
-			
-					
+								
 		} else {
-				state = null;
+			state = null;
 		}
-				
 	}
 	
 	/**
@@ -137,20 +181,10 @@ class LevelEditor extends Sprite {
 				
 				selectedActor.mouseEnabled = true;
 				selectedActor.mouseChildren = true;
-				selectedActor.stopDrag();
-				
+								
 				// Drop the character back into the inventory.
 				if (Std.is(e.target, ActorsDialog)) {
-				
-					if (selectedActor.parent != null) {
-						selectedActor.parent.removeChild(selectedActor);
-					}
-				
-					actorsDialog.removeActor(selectedActor);
-			
-				// Relocate character to his newly dragged position.
-				} else {
-					actorsLayer.addChild(selectedActor);
+					destroyActor();
 				}
 			
 			// Actor was clicked, not dragged. Flip him horizontally.
@@ -159,10 +193,25 @@ class LevelEditor extends Sprite {
 			}
 			
 			selectedActor = null;
+			selectedActorDragged = false;
 			state = null;
-			
-			
 		}
+	}
+	
+	private function destroyActor():Void {
+		
+		if (selectedActor != null) {
+			
+			if (selectedActor.parent != null) {
+				selectedActor.parent.removeChild(selectedActor);
+			}
+				
+			selectedActor.stopDrag();
+			actorsDialog.removeActor(selectedActor);
+		}
+		
+		selectedActor = null;
+		selectedActorDragged = false;
 	}
 	
 	/**
@@ -175,15 +224,21 @@ class LevelEditor extends Sprite {
 			
 			// The user has begun dragging the character.
 			if (!selectedActorDragged) {
+				
 				selectedActor.mouseEnabled = false;
 				selectedActor.mouseChildren = false;
-				selectedActor.startDrag(true);
 				selectedActorDragged = true;
-				addChild(selectedActor);
+				
+				if (selectedActor.parent != actorsLayer) {
+					selectedActor.startDrag(true);
+					addChild(selectedActor);
+				}
 			}
 			
-			selectedActor.x = Math.floor(selectedActor.x / 8) * 8;
-			selectedActor.y = Math.floor(selectedActor.y / 8) * 8;
+			if(selectedActor.parent == actorsLayer) {
+				selectedActor.x = Math.floor(actorsLayer.mouseX / 8) * 8;
+				selectedActor.y = Math.floor(actorsLayer.mouseY / 8) * 8;
+			}
 		}
 	}
 	
@@ -231,12 +286,7 @@ class LevelEditor extends Sprite {
 		}
 	}
 	
-	private function onMouseRollOut(e:MouseEvent):Void {
-		actorsDialog.removeEventListener(MouseEvent.ROLL_OUT, onMouseRollOut);
-		actorsLayer.addChild(selectedActor);
-		
-		trace("onMouseRollOut");
-	}
+	
 	
 	private function onActorDrag(e:MouseEvent = null):Void {
 		

@@ -134,21 +134,12 @@ class TilesDialog extends DraggableDialog {
 	}
 	
 	/**
-	 * Stop outward propagation on MOUSE_DOWN
-	 * @param {MouseEvent.MOUSE_DOWN} e
-	 */
-	private function onMouseDown(e:MouseEvent):Void {
-		e.stopImmediatePropagation();
-	}
-
-	/**
 	 * Add listeners.
 	 */
 	override private function addListeners():Void {
 		tilesContainer.addEventListener(MouseEvent.CLICK, onTileClick);
 		headerContainer.addEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.addEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
-		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
 	
 	/**
@@ -158,7 +149,6 @@ class TilesDialog extends DraggableDialog {
 		tilesContainer.removeEventListener(MouseEvent.CLICK, onTileClick);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
-		this.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
 
 	
