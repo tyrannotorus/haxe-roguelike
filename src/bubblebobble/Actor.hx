@@ -196,6 +196,7 @@ class Actor extends Sprite {
 		actorName = Reflect.field(statsData, "NAME");
 		addChild(actor = new Bitmap());
 		actor.x = -8;
+		actor.y = -8;
 		actor.bitmapData = bitmaps[0][0];
 		cacheAsBitmap = true;
 	}

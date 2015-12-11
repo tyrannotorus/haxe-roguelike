@@ -56,10 +56,11 @@ class ItemContainer extends Sprite {
 		
 		if (rowArray.length > 0) {
 						
-			var lastItem:Dynamic = rowArray[rowArray.length -1];
+			var lastItem:Dynamic = rowArray[rowArray.length - 1];
 			var lastItemRect:Rectangle = lastItem.getBounds(lastItem);
-			xPosition = Std.int(lastItem.x + lastItem.width);
-			yPosition = Std.int(lastItem.y);
+			trace(lastItemRect);
+			xPosition = Std.int(lastItem.x + lastItemRect.width);
+			yPosition = Std.int(lastItem.y + lastItemRect.y);
 			
 			var testWidth:Int = Std.int(lastItem.x + lastItemRect.right + xPadding + thisItemRect.width);
 			var widthDifference:Int = testWidth - maxWidth;	
@@ -70,10 +71,10 @@ class ItemContainer extends Sprite {
 				xPosition = 0;
 								
 				for (idxItem in 0...rowArray.length) {
-					var testHeight:Int = Std.int(rowArray[idxItem].height + rowArray[idxItem].y + yPadding);
+					var testHeight:Int = Std.int(rowArray[idxItem].height/2 + rowArray[idxItem].y + yPadding);
 					yPosition = (yPosition < testHeight) ? testHeight : yPosition;
 				}
-			
+							
 			// Append to current row.
 			} else {
 				xPosition = Std.int(lastItem.x + lastItemRect.right + xPadding);

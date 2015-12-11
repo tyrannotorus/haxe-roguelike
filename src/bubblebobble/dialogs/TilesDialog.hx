@@ -43,7 +43,7 @@ class TilesDialog extends DraggableDialog {
 		super(dialogData);
 				
 		headerText.y += 1;
-		var tilesContainerY:Int = Std.int(headerContainer.y + headerContainer.height + 2);
+		var tilesContainerY:Int = Std.int(headerContainer.y + headerContainer.height - 4);
 		var tilesRectangle:Rectangle = new Rectangle(XMARGIN, tilesContainerY, WIDTH - 2 * XMARGIN, 50);
 		tilesContainer = new ItemContainer(tilesRectangle);
 		addChild(tilesContainer);
@@ -125,6 +125,8 @@ class TilesDialog extends DraggableDialog {
 			var fieldString:String = fieldsArray[idxField];
 			var tileBitmap:Bitmap = Reflect.field(e.assetData, fieldString);
 			var tileSprite:Sprite = new Sprite();
+			tileBitmap.x = -tileBitmap.width / 2;
+			tileBitmap.y = -tileBitmap.height / 2;
 			tileSprite.addChild(tileBitmap);
 			tileSprite.buttonMode = true;
 			

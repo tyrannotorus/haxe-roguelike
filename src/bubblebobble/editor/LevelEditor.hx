@@ -73,11 +73,11 @@ class LevelEditor extends Sprite {
 		
 		actorsDialog.addEventListener(MouseEvent.ROLL_OUT, onMouseRollOut);
 		actorsDialog.addEventListener(MouseEvent.ROLL_OVER, onMouseRollOver);
-		this.addEventListener(MouseEvent.ROLL_OUT, onMouseUp);
+		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		this.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-		this.addEventListener(Event.MOUSE_LEAVE, onMouseLeave);
+		this.addEventListener(MouseEvent.ROLL_OUT, onMouseUp);
+		this.addEventListener(Event.MOUSE_LEAVE, onMouseUp);
 	}
 	
 	/**
@@ -124,14 +124,6 @@ class LevelEditor extends Sprite {
 	 * A Tile was selected within the tiles dialog.
 	 * @param {MouseEvent.CLICK} e
 	 */
-	private function onMouseLeave(e:Event):Void {
-		trace("onMouseLeave() " + e.target + " " + e.currentTarget);
-	}
-	
-	/**
-	 * A Tile was selected within the tiles dialog.
-	 * @param {MouseEvent.CLICK} e
-	 */
 	private function onMouseDown(e:MouseEvent):Void {
 		
 		trace("onMouseDown() " + e.target + " " + e.currentTarget);
@@ -169,7 +161,7 @@ class LevelEditor extends Sprite {
 	 * User has mouse upped.
 	 * @param {MouseEvent.MOUSE_UP} e
 	 */
-	private function onMouseUp(e:MouseEvent):Void {
+	private function onMouseUp(e:Event):Void {
 		trace("onMouseUp() " + state + " " + e.target + " " + e.currentTarget);
 		
 		actorsDialog.mouseChildren = true;
@@ -236,8 +228,12 @@ class LevelEditor extends Sprite {
 			}
 			
 			if(selectedActor.parent == actorsLayer) {
-				selectedActor.x = Math.floor(actorsLayer.mouseX / 8) * 8;
-				selectedActor.y = Math.floor(actorsLayer.mouseY / 8) * 8;
+				
+				var x:Float = Math.floor(actorsLayer.mouseX / 8) * 8;
+				selectedActor.x = (x <= 0) ? 8 : (x < Main.GAME_WIDTH) ? x : Main.GAME_WIDTH - 8;
+				
+				var y:Float = Math.floor(actorsLayer.mouseY / 8) * 8;
+				selectedActor.y = (y < this.y) ? this.y : (y >= Main.GAME_HEIGHT - this.y) ? Main.GAME_HEIGHT - this.y : y;
 			}
 		}
 	}
