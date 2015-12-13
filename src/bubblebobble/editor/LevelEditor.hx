@@ -31,6 +31,8 @@ class LevelEditor extends Sprite {
 	private var selectedTile:Tile;
 	private var selectedActor:Actor;
 	private var selectedActorDragged:Bool;
+	private var originalMouseX:Int = 0;
+	private var originalMouseY:Int = 0;
 	private var largeTilesArray:Array<Array<Tile>> = new Array<Array<Tile>>();
 	private var smallTilesArray:Array<Array<Tile>> = new Array<Array<Tile>>();
 	
@@ -77,7 +79,7 @@ class LevelEditor extends Sprite {
 		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		this.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-		//this.addEventListener(MouseEvent.ROLL_OUT, onMouseUp);
+		this.addEventListener(MouseEvent.ROLL_OUT, onMouseUp);
 		this.addEventListener(Event.MOUSE_LEAVE, onMouseUp);
 	}
 	
@@ -118,6 +120,9 @@ class LevelEditor extends Sprite {
 	private function onMouseDown(e:MouseEvent):Void {
 		trace(e.shiftKey );
 		destroyActor();
+		
+		originalMouseX = (Math.floor(levelLayer.mouseX / 8) * 8) % 16;
+		originalMouseY = (Math.floor(levelLayer.mouseY / 8) * 8) % 16;
 		
 		// User has mouseDowned on an actor - on stage or in the inventory dialog.
 		if (Std.is(e.target, Actor)) {
@@ -273,8 +278,8 @@ class LevelEditor extends Sprite {
 		}
 		
 		var tileWidth:Int = Std.int(tile.width);
-		var tileX:Int = Math.floor(x / tileWidth) * tileWidth;
-		var tileY:Int = Math.floor(y / tileWidth) * tileWidth;
+		var tileX:Int = Math.floor(x / 8) * 8;
+		var tileY:Int = Math.floor(y / 8) * 8;
 		var tilesArray:Array<Array<Tile>>;
 		var tilesLayer:Sprite;
 		
@@ -285,6 +290,8 @@ class LevelEditor extends Sprite {
 		} else {
 			tilesArray = largeTilesArray;
 			tilesLayer = largeTilesLayer;
+			tileX += (originalMouseX - tileX) % 16;
+			tileY += (originalMouseY - tileY) % 16;
 		}
 		
 		if (tilesArray[tileX] == null) {
@@ -335,7 +342,7 @@ class LevelEditor extends Sprite {
 		if (tile == null) {
 			tile = tilesDialog.getTileByName("000a.png");
 		}
-		
+		trace(tile.width);
 		placeTile(tileX, tileY, tile);
 		placeTile(tileX + 8, tileY, tile);
 		placeTile(tileX, tileY + 8, tile);
