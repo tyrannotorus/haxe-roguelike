@@ -1,6 +1,7 @@
 package bubblebobble.dialogs;
 
 import bubblebobble.dialogs.DraggableDialog;
+import bubblebobble.editor.Tile;
 import com.tyrannotorus.assetloader.AssetEvent;
 import com.tyrannotorus.assetloader.AssetLoader;
 import com.tyrannotorus.utils.Colors;
@@ -23,10 +24,9 @@ class TilesDialog extends DraggableDialog {
 	private static inline var XMARGIN:Int = 6;
 
 	private var tilesContainer:ItemContainer;
-	private var tilesArray:Array<Bitmap>;
-	private var tilesMap:ObjectMap<Dynamic,Bitmap>;
+	private var tilesMap:ObjectMap<String,Tile> = new ObjectMap<String,Tile>();
 	private var selectedTileContainer:Sprite;
-	private var selectedTile:Bitmap;
+	private var selectedTile:Tile;
 	
 	/**
 	 * Constructor.
@@ -49,41 +49,44 @@ class TilesDialog extends DraggableDialog {
 		addChild(tilesContainer);
 		
 		selectedTileContainer = new Sprite();
-		selectedTileContainer.addChild(selectedTile = new Bitmap());
 		selectedTileContainer.x = WIDTH - 20;
 		selectedTileContainer.y = 2;
-		selectedTileContainer.mouseChildren = false;
 		selectedTileContainer.mouseEnabled = false;
+		selectedTileContainer.mouseChildren = false;
+		
+		selectedTile = new Tile();
+		selectedTileContainer.addChild(selectedTile);
 		addChild(selectedTileContainer);
 		
 		addListeners();
 	}
 	
-	/**
-	 * Makes the tile publically accessible.
-	 * @return {Bitmap}
-	 */
-	public function getSelectedTile():Bitmap {
-		return selectedTile;
+	public function setSelectedTile(possibleTile:Sprite):Void {
+		var tileName:String = possibleTile.name;
+		getTileByName(tileName, true);
 	}
 	
-	/**
-	 * User has clicked the tiles container.
-	 * @return {MouseEvent.CLICK} e
-	 */
-	private function onTileClick(e:MouseEvent):Void {
+	public function getSelectedTile(possibleTile:Sprite, autoSelectTile:Bool = false):Tile {
+		var tileName:String = possibleTile.name;
+		return getTileByName(tileName, autoSelectTile);
+	}
 	
-		var tileBitmap:Bitmap = tilesMap.get(e.target);
+	public function getTileByName(tileName:String, autoSelectTile:Bool = false):Tile {
+		trace("getTileByName() " + tileName + " " + autoSelectTile);
+		var tile:Tile = tilesMap.get(tileName);
 		
-		// Invalid. Something was clicked, but it wasn't a tile.
-		if (tileBitmap == null) {
-			e.stopImmediatePropagation();
-			return;
+		// This is not a tile.
+		if (tile == null) {
+			return null;
 		}
 		
 		// Swap in and position the new tile.
-		selectedTile.bitmapData = tileBitmap.bitmapData;
-		selectedTile.x = selectedTile.y = (16 - selectedTile.width) / 2;
+		if(autoSelectTile == true) {
+			selectedTile.clone(tile);
+			selectedTile.x = selectedTile.y = (16 - selectedTile.width) / 2;
+		}
+		
+		return tile;
 	}
 	
 	/**
@@ -109,8 +112,6 @@ class TilesDialog extends DraggableDialog {
 			return;
 		}
 		
-		tilesMap = new ObjectMap<Dynamic,Bitmap>();
-				
 		var xPosition:Float = 0;
 		var yPosition:Float = 0;
 		var rowHeight:Float = 0;
@@ -121,17 +122,14 @@ class TilesDialog extends DraggableDialog {
 		fieldsArray.sort(Utils.sortAlphabetically);
 		
 		for (idxField in 0...fieldsArray.length) {
-			
 			var fieldString:String = fieldsArray[idxField];
 			var tileBitmap:Bitmap = Reflect.field(e.assetData, fieldString);
-			var tileSprite:Sprite = new Sprite();
-			tileBitmap.x = -tileBitmap.width / 2;
-			tileBitmap.y = -tileBitmap.height / 2;
-			tileSprite.addChild(tileBitmap);
-			tileSprite.buttonMode = true;
+			var tile:Tile = new Tile(fieldString, tileBitmap, true);
+			tile.bitmap.x = -tileBitmap.width / 2;
+			tile.bitmap.y = -tileBitmap.height / 2;
 			
-			tilesContainer.addItem(tileSprite);
-			tilesMap.set(tileSprite, tileBitmap);
+			tilesContainer.addItem(tile);
+			tilesMap.set(fieldString, tile);
 		}
 	}
 	
@@ -139,7 +137,6 @@ class TilesDialog extends DraggableDialog {
 	 * Add listeners.
 	 */
 	override private function addListeners():Void {
-		tilesContainer.addEventListener(MouseEvent.CLICK, onTileClick);
 		headerContainer.addEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.addEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
 	}
@@ -148,7 +145,6 @@ class TilesDialog extends DraggableDialog {
 	 * Removes listeners.
 	 */
 	override private function removeListeners():Void {
-		tilesContainer.removeEventListener(MouseEvent.CLICK, onTileClick);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
 	}
