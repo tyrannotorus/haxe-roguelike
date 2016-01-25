@@ -7,6 +7,7 @@ import com.tyrannotorus.assetloader.AssetLoader;
 import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.Utils;
 import haxe.ds.ObjectMap;
+import openfl.events.Event;
 import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.events.MouseEvent;
@@ -72,7 +73,7 @@ class TilesDialog extends DraggableDialog {
 	}
 	
 	public function getTileByName(tileName:String, autoSelectTile:Bool = false):Tile {
-		trace("getTileByName() " + tileName + " " + autoSelectTile);
+		//trace("getTileByName() " + tileName + " " + autoSelectTile);
 		var tile:Tile = tilesMap.get(tileName);
 		
 		// This is not a tile.
@@ -83,7 +84,7 @@ class TilesDialog extends DraggableDialog {
 		// Swap in and position the new tile.
 		if(autoSelectTile == true) {
 			selectedTile.clone(tile);
-			selectedTile.x = selectedTile.y = (16 - selectedTile.width) / 2;
+			//selectedTile.x = selectedTile.y = (16 - selectedTile.width) / 2;
 		}
 		
 		return tile;
@@ -108,14 +109,12 @@ class TilesDialog extends DraggableDialog {
 		assetLoader.removeEventListener(AssetEvent.LOAD_COMPLETE, onTilesLoaded);
 		
 		if (e.assetData == null) {
-			trace("TilesDialog.onTilesLoaded() Failure.");
+			//trace("TilesDialog.onTilesLoaded() Failure.");
 			return;
 		}
 		
 		var xPosition:Float = 0;
 		var yPosition:Float = 0;
-		var rowHeight:Float = 0;
-		var maxWidth:Float = WIDTH - 13;
 		
 		// Load the fields.
 		var fieldsArray:Array<String> = Reflect.fields(e.assetData);
@@ -124,13 +123,15 @@ class TilesDialog extends DraggableDialog {
 		for (idxField in 0...fieldsArray.length) {
 			var fieldString:String = fieldsArray[idxField];
 			var tileBitmap:Bitmap = Reflect.field(e.assetData, fieldString);
-			var tile:Tile = new Tile(fieldString, tileBitmap, true);
-			tile.bitmap.x = -tileBitmap.width / 2;
-			tile.bitmap.y = -tileBitmap.height / 2;
-			
+			var tile:Tile = new Tile(fieldString, true);
+			tile.createTileFromBitmap(tileBitmap);
+			tile.stackable = false;
+						
 			tilesContainer.addItem(tile);
 			tilesMap.set(fieldString, tile);
 		}
+		
+		dispatchEvent(new Event(Event.COMPLETE));
 	}
 	
 	/**

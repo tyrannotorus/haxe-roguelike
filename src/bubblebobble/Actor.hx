@@ -81,7 +81,7 @@ class Actor extends Sprite {
 	public var nextAnimation:Int = 0;
 	
 			
-	public var actor		:Bitmap;
+	public var actorBitmap		:Bitmap;
 			
 	private var A			:Int = 16;	// ELLIPSE MAJOR AXIS
 	private var B			:Int = 4;	// ELLIPSE MINOR AXIS
@@ -194,10 +194,13 @@ class Actor extends Sprite {
 		
 		var statsData:Dynamic = Reflect.field(actorData, "stats");
 		actorName = Reflect.field(statsData, "NAME");
-		addChild(actor = new Bitmap());
-		actor.x = -8;
-		actor.y = -8;
-		actor.bitmapData = bitmaps[0][0];
+				
+		actorBitmap = new Bitmap(bitmaps[0][0]);
+		actorBitmap.x = -actorBitmap.bitmapData.width/2;
+		actorBitmap.y = -actorBitmap.bitmapData.height + 1;
+		
+		addChild(actorBitmap);
+		
 		cacheAsBitmap = true;
 	}
 	
@@ -865,7 +868,7 @@ class Actor extends Sprite {
 			
 			// Update the frame of the actor immediately.
 			if (updateNow) {
-				actor.bitmapData = bitmaps[currentAnimation][currentFrame];
+				actorBitmap.bitmapData = bitmaps[currentAnimation][currentFrame];
 			}
 			
 			comboChain = (comboChain == 3) ? 2 : 0;
@@ -1055,10 +1058,10 @@ class Actor extends Sprite {
 				}
 				
 				// SHIFT BITMAP PIXELS
-				actor.x -= tmpxshift;
-				actor.x += (tmpxshift = xshift[currentAnimation][currentFrame]);
-				actor.y -= tmpyshift;
-				actor.y += (tmpyshift = yshift[currentAnimation][currentFrame]);
+				actorBitmap.x -= tmpxshift;
+				actorBitmap.x += (tmpxshift = xshift[currentAnimation][currentFrame]);
+				actorBitmap.y -= tmpyshift;
+				actorBitmap.y += (tmpyshift = yshift[currentAnimation][currentFrame]);
 				
 				// FLIP FRAME
 				scaleX *= flip[currentAnimation][currentFrame];
@@ -1074,7 +1077,7 @@ class Actor extends Sprite {
 				//sfxchannel = sfx[currentAnimation][currentFrame].play( 0, 0, sfxtransform );
 				
 				// UPDATE BITMAPDATA
-				actor.bitmapData = bitmaps[currentAnimation][currentFrame];
+				actorBitmap.bitmapData = bitmaps[currentAnimation][currentFrame];
 			}
 			
 			x += vx;
@@ -1231,7 +1234,7 @@ class Actor extends Sprite {
 		public function move(direction:Int):Void {
 			trace("move " + direction);
 			setAnimation(WALK);
-			actor.scaleX = direction;
+			actorBitmap.scaleX = direction;
 			x += direction * walkspeed;
 		}
 		

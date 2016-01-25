@@ -10,6 +10,7 @@ class Colors {
 	
 	public static inline var TRANSPARENT:Int = 0x00000000;
 	public static inline var BLACK:Int = 0xFF000000;
+	public static inline var SHADOW:Int = 0x55000000;
 	public static inline var WHITE:Int = 0xFFFFFFFF;
 	public static inline var MAGENTA:Int = 0xFFFF00FF;
 	public static inline var YELLOW:Int = 0xFFFFFF00;
@@ -39,6 +40,7 @@ class Colors {
 	public static inline var GARYS_PINK_LACE:Int = 0xFFFFCFE9;
 	public static inline var YO_COIN_GOLD:Int = 0xFFFEF07E;
 	public static inline var YO_CASH_GREEN:Int = 0xFF53A551;
+	public static inline var BLUE:Int = 0xFF0000FF;
 
 	/**
 	 * Converts an Int color (like those in this class) to a hex string.

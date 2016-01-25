@@ -7,9 +7,16 @@ import openfl.geom.Rectangle;
 
 class Main extends Sprite {
 	
+	/**
+	 * TO DO
+	 * - Ignore transparent bits of tile when clicked (replace transparent tile with red)
+	 * - Allow different tiles / no tiles in stacks.
+	 * - Add liquid aquafer
+	 */
+	
 	public static inline var GAME_WIDTH:Int = 384;
 	public static inline var GAME_HEIGHT:Int = 216;
-	public static inline var GAME_SCALE:Int = 1;
+	public static inline var GAME_SCALE:Int = 3;
 
 	private var game:Game;
 	

@@ -21,8 +21,7 @@ class LevelEditor extends Sprite {
 	
 	private var state:String;
 	private var levelLayer:Sprite;
-	private var largeTilesLayer:Sprite;
-	private var smallTilesLayer:Sprite;
+	private var tilesLayer:Sprite;
 	private var actorsLayer:Sprite;
 	private var dialogLayer:Sprite;
 
@@ -31,11 +30,13 @@ class LevelEditor extends Sprite {
 	private var selectedTile:Tile;
 	private var selectedActor:Actor;
 	private var selectedActorDragged:Bool;
-	private var originalMouseX:Int = 0;
-	private var originalMouseY:Int = 0;
-	private var largeTilesArray:Array<Array<Tile>> = new Array<Array<Tile>>();
-	private var smallTilesArray:Array<Array<Tile>> = new Array<Array<Tile>>();
-	
+	private var tilesArray:Array<Array<Tile>> = new Array<Array<Tile>>();
+	private var allTiles:Array<Tile> = new Array<Tile>();
+	private var tileWidth:Int;
+	private var tileHeight:Int;
+	private var halfWidth:Int;
+	private var halfHeight:Int;
+		
 	/**
 	 * Constructor.
 	 */
@@ -51,12 +52,11 @@ class LevelEditor extends Sprite {
 		addChild(levelLayer);
 		
 		// Create the tiles layers.
-		largeTilesLayer = new Sprite();
-		levelLayer.addChild(largeTilesLayer);
-		smallTilesLayer = new Sprite();
-		levelLayer.addChild(smallTilesLayer);
+		tilesLayer = new Sprite();
+		levelLayer.addChild(tilesLayer);
 		
 		actorsLayer = new Sprite();
+		actorsLayer.mouseEnabled = false;
 		addChild(actorsLayer);
 				
 		// Create the dialog layer.
@@ -65,6 +65,7 @@ class LevelEditor extends Sprite {
 		
 		// Create and add the tiles dialog.
 		tilesDialog = new TilesDialog();
+		tilesDialog.addEventListener(Event.COMPLETE, onTilesLoaded);
 		tilesDialog.loadTiles();
 		dialogLayer.addChild(tilesDialog);
 		
@@ -79,8 +80,49 @@ class LevelEditor extends Sprite {
 		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		this.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-		this.addEventListener(MouseEvent.ROLL_OUT, onMouseUp);
 		this.addEventListener(Event.MOUSE_LEAVE, onMouseUp);
+	}
+	
+	private function onTilesLoaded(e:Event):Void {
+		
+		tilesDialog.removeEventListener(Event.COMPLETE, onTilesLoaded);
+		
+		//Fill tiles layer with tiles.
+		var fillTile:Tile = tilesDialog.getTileByName("terrain1.png");
+		tileWidth = Math.floor(fillTile.width);
+		halfWidth = Math.floor(tileWidth / 2);
+		tileHeight = halfWidth;
+		halfHeight = Math.floor(tileHeight / 2);
+		var xPosition:Int = halfWidth;
+		var yPosition:Int = halfHeight;
+		
+		while (yPosition + (2 * tileHeight) < Main.GAME_HEIGHT) {
+			
+			while (xPosition + tileWidth < Main.GAME_WIDTH) {
+				var tile:Tile = fillTile.clone();
+				tile.x = xPosition;
+				tile.y = yPosition;
+				allTiles.push(tile);
+				tilesLayer.addChild(tile);
+				xPosition += tileWidth;
+				
+				if (Math.floor(yPosition % tileHeight) == 0) {
+					tile.tint(Colors.BUBBLEGUM, 1);
+				}
+			}
+			
+			yPosition += halfHeight;
+			
+			if (Math.floor(yPosition % tileHeight) == 0) {
+				xPosition = halfWidth;
+			} else {
+				xPosition = tileWidth;
+			}
+			xPosition = (Math.floor(yPosition % tileHeight) == 0) ? tileWidth : halfWidth;
+			
+			
+		}
+		
 	}
 	
 	/**
@@ -118,16 +160,13 @@ class LevelEditor extends Sprite {
 	 * @param {MouseEvent.MOUSE_DOWN} e
 	 */
 	private function onMouseDown(e:MouseEvent):Void {
-		trace(e.shiftKey );
+
 		destroyActor();
-		
-		originalMouseX = (Math.floor(levelLayer.mouseX / 8) * 8) % 16;
-		originalMouseY = (Math.floor(levelLayer.mouseY / 8) * 8) % 16;
-		
+				
 		// User has mouseDowned on an actor - on stage or in the inventory dialog.
 		if (Std.is(e.target, Actor)) {
 			
-			trace("onMouseDown actor selected");
+			//trace("onMouseDown actor selected");
 			
 			// Actor is being clicked in the level.
 			if (e.target.parent == actorsLayer) {
@@ -146,25 +185,20 @@ class LevelEditor extends Sprite {
 		} else if (e.target.parent != null && e.target.parent.parent == levelLayer) {
 		
 			// We are eyedropping the tile.
-			if (e.shiftKey == true) {
-				trace("select tile");
-				tilesDialog.setSelectedTile(e.target);
+			//if (e.shiftKey == true) {
+				//trace("select tile");
+				//tilesDialog.setSelectedTile(e.target);
 			
 			// We are setting the tile.
-			} else {
-				placeTile(levelLayer.mouseX, levelLayer.mouseY, selectedTile);
+			/*} else */if (selectedTile != null && Std.is(e.target, Tile)) {
+				var mouseOverTile:Tile = cast(e.target, Tile);
+				mouseOverTile.clone(selectedTile);
 				state = PLACE_TILE;
 			}
 					
-		// An empty space in the level layer was mouse downed upon. Place a tile.
-		} else if (e.target == levelLayer) {
-		
-			if(selectedTile != null) {
-				placeTile(levelLayer.mouseX, levelLayer.mouseY, selectedTile);
-				state = PLACE_TILE;
-			}
 		}
 	}
+	
 	
 	
 	/**
@@ -172,7 +206,7 @@ class LevelEditor extends Sprite {
 	 * @param {MouseEvent.MOUSE_UP} e
 	 */
 	private function onMouseUp(e:Event):Void {
-		trace("onMouseUp() " + e.type + " " + e.target + " " + e.currentTarget);
+	//	trace("onMouseUp() " + e.type + " " + e.target + " " + e.currentTarget);
 		
 		actorsDialog.mouseChildren = true;
 		
@@ -189,11 +223,6 @@ class LevelEditor extends Sprite {
 					destroyActor();
 				
 				// Drop character onto the level	
-				} else {
-					var selectedActorX:Int = Std.int(selectedActor.x - 8);
-					var selectedActorY:Int = Std.int(selectedActor.y - 8);
-					eraseQuadrant(selectedActorX, selectedActorY);
-					eraseTile(selectedActorX, selectedActorY, largeTilesArray);
 				}
 			
 			// Actor was clicked, not dragged. Flip him horizontally.
@@ -245,111 +274,28 @@ class LevelEditor extends Sprite {
 				}
 			}
 			
+			//**
+			 // ADD ACTORS TO TILE
 			if (selectedActor.parent == actorsLayer) {
 				
 				// Position the actor in 8 pixel increments.
-				var halfWidth:Int = Std.int(selectedActor.width / 2);
-				var x:Float = Math.floor(actorsLayer.mouseX / halfWidth) * halfWidth;
-				var y:Float = Math.floor(actorsLayer.mouseY / halfWidth) * halfWidth;
+				if (Std.is(e.target, Tile)) {
+					var tile:Tile = cast(e.target, Tile);
+					selectedActor.x = tile.x;
+					selectedActor.y = tile.y;
+				}
 				
 				// Ensure the actor is inside the ounds of the level.
-				selectedActor.x = (x <= 0) ? halfWidth : (x < Main.GAME_WIDTH) ? x : Main.GAME_WIDTH - halfWidth;
-				selectedActor.y = (y < this.y) ? this.y : (y >= Main.GAME_HEIGHT - this.y - halfWidth) ? Main.GAME_HEIGHT - this.y - halfWidth : y;
+				//selectedActor.x = (x <= 0) ? halfWidth : (x < Main.GAME_WIDTH) ? x : Main.GAME_WIDTH - halfWidth;
+				//selectedActor.y = (y < this.y) ? this.y : (y >= Main.GAME_HEIGHT - this.y - halfWidth) ? Main.GAME_HEIGHT - this.y - halfWidth : y;
 			}
 		
 		// We are placing tiles.
-		} else if (state == PLACE_TILE) {
-			placeTile(levelLayer.mouseX, levelLayer.mouseY, selectedTile);
+		} else if (state == PLACE_TILE && Std.is(e.target, Tile)) {
+			var mouseOverTile:Tile = cast(e.target, Tile);
+			mouseOverTile.clone(selectedTile);
 		}
 	}
-	
-	/**
-	 * Place our selected tile on the stage.
-	 * @param {Float} x
-	 * @param {Float} y
-	 * @param {Tile} tile
-	 */
-	private function placeTile(x:Float, y:Float, tile:Tile):Void {
-		
-		if (tile == null && selectedTile == null) {
-			trace("placeTile() selectedTile == null");
-			state = null;
-			return;
-		}
-		
-		var tileWidth:Int = Std.int(tile.width);
-		var tileX:Int = Math.floor(x / 8) * 8;
-		var tileY:Int = Math.floor(y / 8) * 8;
-		var tilesArray:Array<Array<Tile>>;
-		var tilesLayer:Sprite;
-		
-		if (tileWidth == 8) {
-			tilesArray = smallTilesArray;
-			tilesLayer = smallTilesLayer;
-		
-		} else {
-			tilesArray = largeTilesArray;
-			tilesLayer = largeTilesLayer;
-			tileX += (originalMouseX - tileX) % 16;
-			tileY += (originalMouseY - tileY) % 16;
-		}
-		
-		if (tilesArray[tileX] == null) {
-			tilesArray[tileX] = new Array<Tile>();
-		}
-		
-		var existingTile:Tile = tilesArray[tileX][tileY];
-				
-		if (existingTile == null) {
-			existingTile = new Tile();
-			existingTile.clone(tile);
-			existingTile.mouseChildren = false;
-			existingTile.mouseEnabled = true;
-			existingTile.x = tileX;
-			existingTile.y = tileY;
-			tilesArray[tileX][tileY] = existingTile;
-			tilesLayer.addChild(existingTile);
-		
-		} else {
-			existingTile.clone(tile);
-		}
-		
-		if (tileWidth == 16) {
-			eraseQuadrant(tileX, tileY);
-		}
-		
-		//trace("placing " + existingTile.name);
-	}
-	
-	private function eraseQuadrant(tileX:Int, tileY:Int):Void {
-		eraseTile(tileX, tileY, smallTilesArray);
-		eraseTile(tileX + 8, tileY, smallTilesArray);
-		eraseTile(tileX, tileY + 8, smallTilesArray);
-		eraseTile(tileX + 8, tileY + 8, smallTilesArray);
-	}
-	
-	private function eraseTile(tileX:Int, tileY:Int, tilesArray:Array<Array<Tile>>):Void {
-		if (tilesArray[tileX] != null && tilesArray[tileX][tileY] != null) {
-			var tile:Tile = tilesArray[tileX][tileY];
-			tile.parent.removeChild(tile);
-			tilesArray[tileX][tileY] = null;
-		}
-	}
-
-	
-	private function setQuadrantToTile(tileX:Int, tileY:Int, tile:Tile = null):Void {
-		
-		if (tile == null) {
-			tile = tilesDialog.getTileByName("000a.png");
-		}
-		trace(tile.width);
-		placeTile(tileX, tileY, tile);
-		placeTile(tileX + 8, tileY, tile);
-		placeTile(tileX, tileY + 8, tile);
-		placeTile(tileX + 8, tileY + 8, tile);
-	}
-	
-	
 	
 	/**
 	 * User mouse clicked.
@@ -357,9 +303,21 @@ class LevelEditor extends Sprite {
 	 */
 	private function onMouseClick(e:MouseEvent):Void {
 		
+		if (Std.is(e.target, Tile)) {
+			
+			var tile:Tile = cast(e.target, Tile);
+			
+			if (e.shiftKey == true) {
+				tile.reduceHeight();
+			} else {
+				tile.increaseHeight();
+			}
+		}
+
+		
 		// A tile in the tiles dialog was selected.
 		if (tilesDialog.getSelectedTile(e.target) != null) {
-			trace("onMouseClick selectedTile " + selectedTile);
+			//trace("onMouseClick selectedTile " + selectedTile);
 			selectedTile = tilesDialog.getSelectedTile(e.target, true);
 			//selectedTile.name = e.target.name;
 			

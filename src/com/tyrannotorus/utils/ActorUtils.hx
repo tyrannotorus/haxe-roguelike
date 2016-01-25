@@ -95,6 +95,7 @@ class ActorUtils {
 				var cell:BitmapData = new BitmapData(cellWidth, cellHeight, true);
 				cell.copyPixels(actorSpritesheet, rect, zeroPoint);
 				cell.threshold(cell, cell.rect, zeroPoint, "==", Colors.MAGENTA);
+				cell.threshold(cell, cell.rect, zeroPoint, "==", Colors.BLUE, Colors.SHADOW);
 				Reflect.field(actionData, "bitmaps")[i] = cell;
 			}
 		}
