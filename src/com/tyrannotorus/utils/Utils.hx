@@ -1,8 +1,11 @@
 package com.tyrannotorus.utils;
 
-import bubblebobble.Main;
+import roguelike.Main;
+import openfl.display.BitmapData;
 import openfl.display.DisplayObject;
+import openfl.display.Sprite;
 import openfl.geom.Rectangle;
+import openfl.Vector;
 
 class Utils {
 	
@@ -57,6 +60,38 @@ class Utils {
 	 */
 	public static function getField(object:Dynamic, field:Dynamic, defaultField:Dynamic):Dynamic {
 		return Reflect.hasField(object, field) ? Reflect.field(object, field) : defaultField;
+	}
+	
+	/**
+	 * Returns a hitArea sprite when passed a bitmapData, omitting the transparent bits.
+	 * @param {BitmapData} bmd
+	 * @return {Sprite}
+	 */
+	public static function getHitArea(bmd:BitmapData):Sprite {
+		
+		var rect:Rectangle = bmd.rect;
+		var vector:Vector<UInt> = bmd.getVector(rect);
+		var bmdWidth:Int = cast(rect.width, Int);
+		var bmdHeight:Int = cast(rect.height, Int);
+		var idxPixel:Int = 0;
+		
+		var sprite:Sprite = new Sprite();
+		sprite.mouseEnabled = false;
+		sprite.visible = false;
+		
+		// Create the sprite hitArea.
+		sprite.graphics.beginFill(Colors.BLACK, 1);
+		for(yy in 0...bmdHeight) {
+			for (xx in 0...bmdWidth) {
+				if (vector[idxPixel] != Colors.TRANSPARENT) {
+					sprite.graphics.drawRect(xx, yy, 1, 1);
+				}
+				idxPixel++;
+			}
+		}
+		sprite.graphics.endFill();
+		
+		return sprite;
 	}
 	
 	

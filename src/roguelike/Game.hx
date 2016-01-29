@@ -1,7 +1,7 @@
-package bubblebobble;
+package roguelike;
 
-import bubblebobble.dialogs.TilesDialog;
-import bubblebobble.editor.Editor;
+import roguelike.dialogs.TilesDialog;
+import roguelike.editor.Editor;
 import com.tyrannotorus.utils.KeyCodes;
 import openfl.display.Sprite;
 import openfl.events.KeyboardEvent;
@@ -50,7 +50,7 @@ class Game extends Sprite {
 		
 		var editor:Editor = new Editor();
 		addChild(editor);
-		
+				
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
 		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);
 		
@@ -70,7 +70,7 @@ class Game extends Sprite {
 
 	
 	private function onGameKeyDown(e:KeyboardEvent):Void {
-		
+		/*
 		switch(e.keyCode) {
 			
 			// Left key
@@ -121,7 +121,7 @@ class Game extends Sprite {
 						//player.lowPunchB();
 					}
 				}
-		}
+		}*/
 			
 	}
 	
@@ -130,15 +130,15 @@ class Game extends Sprite {
 		switch(e.keyCode) {
 			case KeyCodes.LEFT:
 				leftKey = false;
-				player.xMove(0, 0, player.IDLE);
+				//player.xMove(0, 0, player.IDLE);
 			case KeyCodes.UP:
 				upKey = false;
 			case KeyCodes.RIGHT:
 				rightKey = false;
-				player.xMove(0, 0, player.IDLE);
+				//player.xMove(0, 0, player.IDLE);
 			case KeyCodes.DOWN:
 				downKey = false;
-				player.duck(false);
+				//player.duck(false);
 			case KeyCodes.X:
 				xKey = false;
 			case KeyCodes.Z:

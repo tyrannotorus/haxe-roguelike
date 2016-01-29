@@ -1,8 +1,10 @@
-package bubblebobble.editor;
+package roguelike.editor;
 
-import bubblebobble.editor.LevelEditor;
+import roguelike.editor.LevelEditor;
+import roguelike.managers.TextManager;
 import openfl.display.Bitmap;
 import openfl.display.Sprite;
+import roguelike.TextData;
 
 /**
  * Editor.as.
@@ -18,21 +20,23 @@ class Editor extends Sprite {
 	public function new() {
 		
 		super();
+		
+		var textManager:TextManager = TextManager.getInstance();
 			
 		// Create text
-		var textData:TextData = new TextData( { text:"- Bubble Bobble Editor -" } );
-		var titleText:Bitmap = TextManager.getInstance().toBitmap(textData);
+		var textData:TextData = new TextData( { text:"- Tiny Tactics Editor -" } );
+		var titleText:Bitmap = textManager.toBitmap(textData);
 		titleText.x = Std.int((Main.GAME_WIDTH - titleText.width) / 2);
 		titleText.y = 1;
 		addChild(titleText);
 		
 		textData = new TextData( { text:"- Menu -" } );
-		var menuText:Bitmap = TextManager.getInstance().toBitmap(textData);
+		var menuText:Bitmap = textManager.toBitmap(textData);
 		menuText.y = 1;
 		addChild(menuText);
 		
 		textData = new TextData( { text:"- Stage 1 -" } );
-		var stageText:Bitmap = TextManager.getInstance().toBitmap(textData);
+		var stageText:Bitmap = textManager.toBitmap(textData);
 		stageText.x = Main.GAME_WIDTH - stageText.width;
 		stageText.y = 1;
 		addChild(stageText);

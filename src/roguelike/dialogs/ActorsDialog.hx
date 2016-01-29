@@ -1,7 +1,7 @@
-package bubblebobble.dialogs;
+package roguelike.dialogs;
 
-import bubblebobble.Actor;
-import bubblebobble.dialogs.DraggableDialog;
+import roguelike.Actor;
+import roguelike.dialogs.DraggableDialog;
 import com.tyrannotorus.assetloader.AssetEvent;
 import com.tyrannotorus.assetloader.AssetLoader;
 import com.tyrannotorus.utils.ActorUtils;
@@ -12,6 +12,7 @@ import openfl.display.Bitmap;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.geom.Rectangle;
+import roguelike.managers.ActorManager;
 
 /**
  * TilesDialog.hx.
@@ -49,70 +50,40 @@ class ActorsDialog extends DraggableDialog {
 		actorsContainer = new ItemContainer(actorsRectangle);
 		addChild(actorsContainer);
 		
-		actorsArray = new Array<Actor>();
-		
+		var actorManager:ActorManager = ActorManager.getInstance();
+		if (!actorManager.isReady()) {
+			actorManager.addEventListener(Event.COMPLETE, onActorsLoaded);
+		} else {
+			onActorsLoaded();
+		}
+				
 		addListeners();
 	}
 	
 	/**
-	 * Initiate load of the tileset.
+	 * All Actors have loaded. Load them into the container for display.
+	 * @param {Event.COMPLETE} e
 	 */
-	public function loadActors():Void {
-		var assetLoader:AssetLoader = new AssetLoader();
-		assetLoader.addEventListener(AssetEvent.LOAD_COMPLETE, onActorsLoaded);
-		assetLoader.loadAsset("actors/actors.zip");
-	}
+	private function onActorsLoaded(e:Event = null):Void {
 		
-	/**
-	 * Tileset has loaded.
-	 * @param {AssetEvent.LOAD_COMPLETE} e
-	 */
-	private function onActorsLoaded(e:AssetEvent):Void {
+		actorsArray = ActorManager.getInstance().getAllActors();
 		
-		var assetLoader:AssetLoader = cast(e.target, AssetLoader);
-		assetLoader.removeEventListener(AssetEvent.LOAD_COMPLETE, onActorsLoaded);
-		
-		if (e.assetData == null) {
-			trace("TilesDialog.onActorsLoaded() Failure.");
-			return;
+		for (idxActor in 0...actorsArray.length) {
+			actorsContainer.addItem(actorsArray[idxActor]);
 		}
 		
-		// Load the fields.
-		var fieldsArray:Array<String> = Reflect.fields(e.assetData);
-		fieldsArray.sort(Utils.sortAlphabetically);
-		
-		for (idxField in 0...fieldsArray.length) {
-			
-			var fieldString:String = fieldsArray[idxField];
-			var fieldArray:Array<String> = fieldString.split(".");
-			var fileType:String = fieldArray.pop().toLowerCase();
-			var fileName:String = fieldArray.join(".");
-						
-			if (fileType == AssetLoader.TXT) {
-				
-				var spriteSheet:Bitmap = Reflect.field(e.assetData, fileName + ".png");
-				var spriteLogic:String = Reflect.field(e.assetData, fieldString);
-				var actorData:Dynamic = ActorUtils.parseActorData(spriteSheet.bitmapData, spriteLogic);
-				var actor:Actor = new Actor(actorData);
-				actor.buttonMode = true;
-				
-				actorsArray.push(actor);
-				actorsContainer.addItem(actor);
-			}
-		}
+		this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 	}
 	
-	
 	/**
-	 * Animate an creatures on the level.
+	 * Animate the actors on the level.
 	 */	
 	private function onEnterFrame(e:Event):Void {
-				
 		for (idxActor in 0...actorsArray.length) {
 			actorsArray[idxActor].animate();
 		}
 	}
-	
+		
 	public function getActor(possibleActor:Dynamic):Actor {
 		
 		if(Std.is(possibleActor, Actor)){
@@ -139,7 +110,6 @@ class ActorsDialog extends DraggableDialog {
 	 * Add listeners.
 	 */
 	override private function addListeners():Void {
-		this.addEventListener(Event.ENTER_FRAME, onEnterFrame);
 		headerContainer.addEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.addEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
 		//this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
@@ -149,7 +119,6 @@ class ActorsDialog extends DraggableDialog {
 	 * Removes listeners.
 	 */
 	override private function removeListeners():Void {
-		this.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_DOWN, onStartDialogDrag);
 		headerContainer.removeEventListener(MouseEvent.MOUSE_UP, onStopDialogDrag);
 		//this.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);

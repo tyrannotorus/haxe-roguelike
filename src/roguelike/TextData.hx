@@ -1,7 +1,8 @@
-package bubblebobble;
+package roguelike;
 
 import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.Constants;
+import roguelike.managers.TextManager;
 
 /**
  * TextObject.hx

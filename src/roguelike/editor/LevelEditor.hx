@@ -1,13 +1,14 @@
-package bubblebobble.editor;
+package roguelike.editor;
 
-import bubblebobble.dialogs.ActorsDialog;
-import bubblebobble.dialogs.TilesDialog;
-import bubblebobble.dialogs.ItemContainer;
-import com.tyrannotorus.utils.Colors;
-import openfl.display.Bitmap;
+import roguelike.dialogs.ActorsDialog;
+import roguelike.dialogs.ItemContainer;
+import roguelike.dialogs.TilesDialog;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
+import roguelike.Actor;
+import roguelike.Main;
+import roguelike.managers.TileManager;
 
 /**
  * LevelEditor.as
@@ -46,13 +47,14 @@ class LevelEditor extends Sprite {
 		
 		// Create the level layer with black background.
 		levelLayer = new Sprite();
-		levelLayer.graphics.beginFill(Colors.BLACK);
-		levelLayer.graphics.drawRect(0, 0, Main.GAME_WIDTH, Main.GAME_HEIGHT);
-		levelLayer.graphics.endFill();
+		levelLayer.mouseEnabled = false;
 		addChild(levelLayer);
 		
 		// Create the tiles layers.
 		tilesLayer = new Sprite();
+		tilesLayer.addEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
+		tilesLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
+		tilesLayer.addEventListener(MouseEvent.CLICK, onTileClick);
 		levelLayer.addChild(tilesLayer);
 		
 		actorsLayer = new Sprite();
@@ -66,29 +68,65 @@ class LevelEditor extends Sprite {
 		// Create and add the tiles dialog.
 		tilesDialog = new TilesDialog();
 		tilesDialog.addEventListener(Event.COMPLETE, onTilesLoaded);
-		tilesDialog.loadTiles();
+		tilesDialog.addEventListener(Event.SELECT, onTileSelected);
 		dialogLayer.addChild(tilesDialog);
-		
+				
 		// Create and add the actors dialog.
 		actorsDialog = new ActorsDialog();
-		actorsDialog.loadActors();
 		dialogLayer.addChild(actorsDialog);
 		
 		actorsDialog.addEventListener(MouseEvent.ROLL_OUT, onMouseRollOut);
 		actorsDialog.addEventListener(MouseEvent.ROLL_OVER, onMouseRollOver);
-		this.addEventListener(MouseEvent.CLICK, onMouseClick);
+		//this.addEventListener(MouseEvent.CLICK, onMouseClick);
 		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-		this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		this.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		this.addEventListener(Event.MOUSE_LEAVE, onMouseUp);
+	}
+	
+	private function onTileClick(e:MouseEvent):Void {
+		
+		var selectedTile:Tile = tilesDialog.getSelectedTile();
+		if (selectedTile != null && Std.is(e.target, Tile)) {
+			var tile:Tile = cast(e.target, Tile);
+			tile.clone(selectedTile);
+		}
+	}
+	
+	private function onTileRollOver(e:MouseEvent):Void {
+		e.stopImmediatePropagation();
+		//trace("onTileRollOver " + e.target.name);
+		if (Std.is(e.target, Tile)) {
+			
+			var tile:Tile = cast(e.target, Tile);
+			
+			if (state == PLACE_TILE) {
+				var selectedTile:Tile = tilesDialog.getSelectedTile();
+				if(selectedTile != null) {
+					tile.clone(tilesDialog.getSelectedTile());
+				}					
+			}
+			
+			tile.highlight(true);
+		}
+	}
+	
+	private function onTileRollOut(e:MouseEvent):Void {
+		e.stopImmediatePropagation();
+		//trace("onTileRollOut " + e.target.name);
+		if (Std.is(e.target, Tile)) {
+			cast(e.target, Tile).highlight(false);
+		}
+	}
+	
+	private function onTileSelected(e:Event):Void {
+		trace("onTileSelected");
 	}
 	
 	private function onTilesLoaded(e:Event):Void {
 		
 		tilesDialog.removeEventListener(Event.COMPLETE, onTilesLoaded);
 		
-		//Fill tiles layer with tiles.
-		var fillTile:Tile = tilesDialog.getTileByName("terrain1.png");
+		var fillTile:Tile = TileManager.getInstance().getTile("empty.png");
 		tileWidth = Math.floor(fillTile.width);
 		halfWidth = Math.floor(tileWidth / 2);
 		tileHeight = halfWidth;
@@ -107,7 +145,7 @@ class LevelEditor extends Sprite {
 				xPosition += tileWidth;
 				
 				if (Math.floor(yPosition % tileHeight) == 0) {
-					tile.tint(Colors.BUBBLEGUM, 1);
+					tile.tint();
 				}
 			}
 			
@@ -119,6 +157,8 @@ class LevelEditor extends Sprite {
 				xPosition = tileWidth;
 			}
 			xPosition = (Math.floor(yPosition % tileHeight) == 0) ? tileWidth : halfWidth;
+			
+			//trace(xPosition + " " + yPosition);
 			
 			
 		}
@@ -162,11 +202,11 @@ class LevelEditor extends Sprite {
 	private function onMouseDown(e:MouseEvent):Void {
 
 		destroyActor();
-				
+		
 		// User has mouseDowned on an actor - on stage or in the inventory dialog.
 		if (Std.is(e.target, Actor)) {
 			
-			//trace("onMouseDown actor selected");
+			trace("onMouseDown actor selected");
 			
 			// Actor is being clicked in the level.
 			if (e.target.parent == actorsLayer) {
@@ -180,9 +220,17 @@ class LevelEditor extends Sprite {
 			state = DRAG_ACTOR;
 			selectedActorDragged = false;
 			actorsDialog.mouseChildren = false;
+			this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			
 		// A tile in the field was mouse downed upon.
-		} else if (e.target.parent != null && e.target.parent.parent == levelLayer) {
+		} else if (Std.is(e.target, Tile)) {
+			var tile:Tile = cast(e.target, Tile);
+			var selectedTile:Tile = tilesDialog.getSelectedTile();
+			if (selectedTile != null) {
+				tile.clone(selectedTile);
+			}
+			//mouseOverTile.clone(selectedTile);
+			//state = PLACE_TILE;
 		
 			// We are eyedropping the tile.
 			//if (e.shiftKey == true) {
@@ -190,11 +238,11 @@ class LevelEditor extends Sprite {
 				//tilesDialog.setSelectedTile(e.target);
 			
 			// We are setting the tile.
-			/*} else */if (selectedTile != null && Std.is(e.target, Tile)) {
-				var mouseOverTile:Tile = cast(e.target, Tile);
-				mouseOverTile.clone(selectedTile);
+			/*} else *///if (selectedTile != null && Std.is(e.target, Tile)) {
+				//var mouseOverTile:Tile = cast(e.target, Tile);
+				//mouseOverTile.clone(selectedTile);
 				state = PLACE_TILE;
-			}
+			//}
 					
 		}
 	}
@@ -261,6 +309,8 @@ class LevelEditor extends Sprite {
 		
 		if (state == DRAG_ACTOR) {
 			
+			this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			
 			// The user has begun dragging the character.
 			if (!selectedActorDragged) {
 				
@@ -278,52 +328,18 @@ class LevelEditor extends Sprite {
 			 // ADD ACTORS TO TILE
 			if (selectedActor.parent == actorsLayer) {
 				
-				// Position the actor in 8 pixel increments.
+				// Lock actor to a tile.
 				if (Std.is(e.target, Tile)) {
 					var tile:Tile = cast(e.target, Tile);
 					selectedActor.x = tile.x;
 					selectedActor.y = tile.y;
-				}
 				
-				// Ensure the actor is inside the ounds of the level.
-				//selectedActor.x = (x <= 0) ? halfWidth : (x < Main.GAME_WIDTH) ? x : Main.GAME_WIDTH - halfWidth;
-				//selectedActor.y = (y < this.y) ? this.y : (y >= Main.GAME_HEIGHT - this.y - halfWidth) ? Main.GAME_HEIGHT - this.y - halfWidth : y;
+				} 
 			}
 		
-		// We are placing tiles.
-		} else if (state == PLACE_TILE && Std.is(e.target, Tile)) {
-			var mouseOverTile:Tile = cast(e.target, Tile);
-			mouseOverTile.clone(selectedTile);
+		
 		}
 	}
 	
-	/**
-	 * User mouse clicked.
-	 * @param {MouseEvent.CLICK} e
-	 */
-	private function onMouseClick(e:MouseEvent):Void {
 		
-		if (Std.is(e.target, Tile)) {
-			
-			var tile:Tile = cast(e.target, Tile);
-			
-			if (e.shiftKey == true) {
-				tile.reduceHeight();
-			} else {
-				tile.increaseHeight();
-			}
-		}
-
-		
-		// A tile in the tiles dialog was selected.
-		if (tilesDialog.getSelectedTile(e.target) != null) {
-			//trace("onMouseClick selectedTile " + selectedTile);
-			selectedTile = tilesDialog.getSelectedTile(e.target, true);
-			//selectedTile.name = e.target.name;
-			
-		}
-	}
-	
-	
-	
 }

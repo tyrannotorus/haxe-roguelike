@@ -1,6 +1,6 @@
-package bubblebobble.dialogs;
+package roguelike.dialogs;
 
-import bubblebobble.dialogs.DraggableDialog;
+import roguelike.dialogs.DraggableDialog;
 import com.tyrannotorus.assetloader.AssetEvent;
 import com.tyrannotorus.assetloader.AssetLoader;
 import com.tyrannotorus.utils.Colors;
@@ -58,7 +58,6 @@ class ItemContainer extends Sprite {
 						
 			var lastItem:Dynamic = rowArray[rowArray.length - 1];
 			var lastItemRect:Rectangle = lastItem.getBounds(lastItem);
-			trace(lastItemRect);
 			xPosition = Std.int(lastItem.x + lastItemRect.width);
 			yPosition = Std.int(lastItem.y + lastItemRect.y);
 			

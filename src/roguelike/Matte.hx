@@ -1,4 +1,4 @@
-package bubblebobble;
+package roguelike;
 
 import com.tyrannotorus.utils.Colors;
 import openfl.display.Bitmap;

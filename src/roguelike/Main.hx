@@ -1,22 +1,38 @@
-package bubblebobble;
+package roguelike;
 
+import com.tyrannotorus.utils.Colors;
+import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.display.StageDisplayState;
+import openfl.display.StageQuality;
 import openfl.events.Event;
-import openfl.geom.Rectangle;
+import roguelike.managers.ActorManager;
+import roguelike.managers.TextManager;
+import roguelike.managers.TileManager;
 
+/**
+ * Main.as.
+ */
 class Main extends Sprite {
 	
 	/**
-	 * TO DO
-	 * - Ignore transparent bits of tile when clicked (replace transparent tile with red)
+	 * GET FUNCTIONAL
+	 * - Save level
+	 * - load level
+	 * - start game with player actor
+	 * - move from tile to tile
+	 * 
+	 * EXCITING STUFF
+	 * - Stack tiles
 	 * - Allow different tiles / no tiles in stacks.
 	 * - Add liquid aquafer
+	 * - consider 16x16 hitArea block for actors.
 	 */
 	
+	public static inline var GAME_SCALE:Int = 1;
 	public static inline var GAME_WIDTH:Int = 384;
 	public static inline var GAME_HEIGHT:Int = 216;
-	public static inline var GAME_SCALE:Int = 3;
+	
 
 	private var game:Game;
 	
@@ -26,12 +42,21 @@ class Main extends Sprite {
 	public function new() {
 		
 		super();
+		
+		stage.quality = StageQuality.LOW;
+		
+		TileManager.getInstance().init();
+		TextManager.getInstance().init();
+		ActorManager.getInstance().init();
 				
 		game = new Game();
 		addChild(game);
 		
 		game.scaleX = game.scaleY = GAME_SCALE;
 		game.loadGame();
+		
+		var fps:FPS = new FPS(10, 10, Colors.RED);
+		addChild(fps);
 				
 		addListeners();
 	}
@@ -47,16 +72,34 @@ class Main extends Sprite {
 	 * Returns width of stage in windowed or fullscreen
 	 * @return {Int}
 	 */
-	private function getStageWidth():Int {
-		return (stage.displayState == StageDisplayState.FULL_SCREEN_INTERACTIVE) ? stage.fullScreenWidth : stage.stageWidth;
+	private function getStageWidth():UInt {
+		
+		var stageWidth:UInt = stage.stageWidth;
+		
+		#if flash
+		if (stage.displayState == StageDisplayState.FULL_SCREEN_INTERACTIVE) {
+			stageWidth = stage.fullScreenWidth;
+		}
+		#end
+		
+		return stageWidth;
 	}
 	
 	/**
 	 * Returns height of stage in windowed or fullscreen
 	 * @return {Int}
 	 */
-	private function getStageHeight():Int {
-		return (stage.displayState == StageDisplayState.FULL_SCREEN_INTERACTIVE) ? stage.fullScreenHeight : stage.stageHeight;
+	private function getStageHeight():UInt {
+		
+		var stageHeight:UInt = stage.stageHeight;
+		
+		#if flash
+		if (stage.displayState == StageDisplayState.FULL_SCREEN_INTERACTIVE) {
+			stageHeight = stage.fullScreenHeight;
+		}
+		#end
+		
+		return stageHeight;
 	}
 	
 	/**
@@ -66,8 +109,8 @@ class Main extends Sprite {
 	private function onGameResize(e:Event):Void {
 		
 		var scale:Float = 1;
-		var stageWidth:Int = getStageWidth();
-		var stageHeight:Int = getStageHeight();
+		var stageWidth:UInt = getStageWidth();
+		var stageHeight:UInt = getStageHeight();
 				
 		// Find which dimension to scale by
 		if (GAME_WIDTH / stageWidth > GAME_HEIGHT / stageHeight) {

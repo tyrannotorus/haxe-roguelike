@@ -1,4 +1,4 @@
-package bubblebobble;
+package roguelike;
 
 import com.tyrannotorus.utils.Constants;
 import com.tyrannotorus.utils.Utils;
@@ -9,6 +9,7 @@ import flash.display.Sprite;
 import flash.Lib;
 import flash.events.Event;
 import flash.events.MouseEvent;
+import roguelike.managers.TextManager;
 
 import motion.Actuate;
 import motion.easing.Bounce;

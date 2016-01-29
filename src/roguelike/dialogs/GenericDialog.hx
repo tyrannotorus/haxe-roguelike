@@ -1,7 +1,11 @@
-package bubblebobble.dialogs;
+package roguelike.dialogs;
 
 import openfl.display.Bitmap;
 import openfl.display.Sprite;
+import roguelike.Matte;
+import roguelike.MatteData;
+import roguelike.TextData;
+import roguelike.managers.TextManager;
 
 /**
  * GenericDialog.hx.

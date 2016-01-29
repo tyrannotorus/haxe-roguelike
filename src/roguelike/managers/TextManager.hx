@@ -1,4 +1,4 @@
-package bubblebobble;
+package roguelike.managers;
 
 import com.tyrannotorus.utils.Colors;
 import flash.display.Bitmap;
@@ -41,17 +41,29 @@ class TextManager {
 	private var glyphBmds:Array<Array<BitmapData>> = [];
 	private var textBitmapArray:Array<Bitmap>;
 		
+	/**
+	 * TextManager is a singleton.
+	 * @return {TextManager}
+	 */
 	public static function getInstance():TextManager {
 		return (textManager != null) ? textManager : textManager = new TextManager();
 	}
 		
+	/**
+	 * Constructor.
+	 */
 	public function new():Void {
 		
 		if (textManager != null) {
 			trace("TextManager.new() is already instantiated.");
 			return;
 		}
-		
+	}
+	
+	/**
+	 * Initializes the TextManager.
+	 */
+	public function init():Void {
 		constructFont(LARGE, new FontLarge(0, 0));
 		constructFont(SMALL, new FontSmall(0, 0));
 		constructFont(IRONSWORD, new FontIronsword(0, 0));

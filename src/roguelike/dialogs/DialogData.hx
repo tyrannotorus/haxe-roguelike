@@ -1,6 +1,6 @@
-package bubblebobble.dialogs;
+package roguelike.dialogs;
 
-import bubblebobble.MatteData;
+import roguelike.MatteData;
 import com.tyrannotorus.utils.Colors;
 
 /**
@@ -26,7 +26,7 @@ class DialogData extends MatteData {
 		super(parameters);
 		
 		// Set up the default dialog shadow.
-		shadowColor = Colors.modifyAlpha(Colors.BLACK, 0.4);
+		shadowColor = Colors.setAlpha(Colors.BLACK, 0.4);
 		shadowOffsetX = 4;
 		shadowOffsetY = 6;
 		

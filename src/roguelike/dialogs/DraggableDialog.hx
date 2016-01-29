@@ -1,4 +1,4 @@
-package bubblebobble.dialogs;
+package roguelike.dialogs;
 
 import haxe.ds.StringMap;
 import openfl.events.Event;

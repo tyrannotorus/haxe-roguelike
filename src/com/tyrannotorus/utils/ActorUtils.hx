@@ -1,12 +1,12 @@
 package com.tyrannotorus.utils;
 
-import openfl.display.DisplayObject;
 import format.swf.Data.Sound;
-import openfl.display.DisplayObject;
 import openfl.display.BitmapData;
-import openfl.geom.Rectangle;
+import openfl.display.Shape;
+import openfl.display.Sprite;
 import openfl.geom.Point;
-import motion.Actuate;
+import openfl.geom.Rectangle;
+import openfl.Vector;
 
 class ActorUtils {
 	
@@ -80,23 +80,44 @@ class ActorUtils {
 		
 		var rect:Rectangle = actorSpritesheet.rect;
 		var zeroPoint:Point = new Point(0, 0);
-		
+				
 		// Copy and Fill animation cells
 		var fields:Array<Dynamic> = Reflect.fields(actions);
 		for (key in Reflect.fields(actions)) {
+			
 			var actionData:Dynamic = Reflect.field(actions, key);
 			var point:Point = Reflect.field(frameCoordinates, key);
 			Reflect.setField(actionData, "bitmaps", new Array<BitmapData>());
+			Reflect.setField(actionData, "shapes", new Array<Sprite>());
 			var len:Int = Reflect.field(actionData, "timing").length;
 			for(i in 0...len) {
+				
+				// Create the original bitmapData for the cell frame.
 				var posX:Int = Std.int(point.x * cellWidth + point.x + i * (cellWidth + 1));
 				var posY:Int = Std.int(point.y * cellHeight + point.y);
-				var rect:Rectangle = new Rectangle(posX, posY, cellWidth, cellHeight);
-				var cell:BitmapData = new BitmapData(cellWidth, cellHeight, true);
-				cell.copyPixels(actorSpritesheet, rect, zeroPoint);
-				cell.threshold(cell, cell.rect, zeroPoint, "==", Colors.MAGENTA);
-				cell.threshold(cell, cell.rect, zeroPoint, "==", Colors.BLUE, Colors.SHADOW);
-				Reflect.field(actionData, "bitmaps")[i] = cell;
+				var cellBmd:BitmapData = new BitmapData(cellWidth, cellHeight, true, 0);
+				var cellRect:Rectangle = cellBmd.rect;
+				cellBmd.copyPixels(actorSpritesheet, new Rectangle(posX, posY, cellWidth, cellHeight), zeroPoint);
+				cellBmd.threshold(cellBmd, cellRect, zeroPoint, "==", Colors.MAGENTA);
+				cellBmd.threshold(cellBmd, cellRect, zeroPoint, "==", Colors.BLUE, Colors.ACTOR_SHADOW);
+				Reflect.field(actionData, "bitmaps")[i] = cellBmd;
+				
+				// Create the shape vector for the cell frame.
+				// This is used for determining the actual mouse hit area for the actor.
+				var idxPixel:Int = 0;
+				var cellShape:Sprite = new Sprite();
+				var cellVector:Vector<UInt> = cellBmd.getVector(cellRect);
+				cellShape.graphics.beginFill(Colors.BLACK, 1);
+				for(yPosition in 0...cellHeight) {
+					for (xPosition in 0...cellWidth) {
+						if (cellVector[idxPixel] != Colors.TRANSPARENT) {
+							cellShape.graphics.drawRect(xPosition, yPosition, 1, 1);
+						}
+						idxPixel++;
+					}
+				}
+				cellShape.graphics.endFill();
+				Reflect.field(actionData, "shapes")[i] = cellShape;
 			}
 		}
 		

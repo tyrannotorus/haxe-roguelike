@@ -1,4 +1,4 @@
-package bubblebobble.events;
+package roguelike.events;
 
 import flash.events.Event;
 

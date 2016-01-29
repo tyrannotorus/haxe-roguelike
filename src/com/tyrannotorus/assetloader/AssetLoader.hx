@@ -149,7 +149,7 @@ class AssetLoader extends EventDispatcher {
 	 * Unpack a loaded asset that's a zip file.
 	 * @param {ByteArray} byteArray
 	 */
-	private function unpackZip(byteArray:ByteArray):Void {
+	private function unpackZip(byteArray:Dynamic):Void {
 		
 		// Read the file entries in the zip.
 		var bytes:Bytes = Bytes.ofData(byteArray);
@@ -175,7 +175,7 @@ class AssetLoader extends EventDispatcher {
 				loader.name = fileName;
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageFromZipLoaded);
 				loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, onImageFromZipError);
-				loader.loadBytes(entry.data.getData());
+				loader.loadBytes(cast(entry.data.getData(), ByteArray));
 			
 			// parse .txt from the zip
 			} else if (fileType == TXT) {

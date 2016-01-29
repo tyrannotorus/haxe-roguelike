@@ -1,4 +1,4 @@
-package bubblebobble;
+package roguelike;
 
 import openfl.display.Sprite;
 import openfl.display.Bitmap;
