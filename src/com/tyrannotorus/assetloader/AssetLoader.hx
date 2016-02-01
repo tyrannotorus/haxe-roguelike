@@ -161,8 +161,7 @@ class AssetLoader extends EventDispatcher {
 		assetEvent.assetData = { };
 		
 		filesLeft = zipEntries.length;
-		trace("loading " + filesLeft);
-				
+						
 		// Cycle through entries in the zip
 		for(entry in zipEntries) {
 			
