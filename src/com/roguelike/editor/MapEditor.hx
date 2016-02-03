@@ -1,11 +1,10 @@
 package com.roguelike.editor;
 
 import com.roguelike.Actor;
-import com.roguelike.editor.ActorSelectionBar;
-import com.roguelike.dialogs.ItemContainer;
+import com.roguelike.dialogs.DialogData;
+import com.roguelike.dialogs.GenericDialog;
 import com.roguelike.editor.EditorSelectionBar;
 import com.roguelike.managers.MapManager;
-import com.roguelike.MatteData;
 import com.tyrannotorus.utils.Colors;
 import openfl.display.Sprite;
 import openfl.events.Event;
@@ -27,6 +26,7 @@ class MapEditor extends Map {
 	private var selectedTile:Tile;
 	private var selectedActor:Actor;
 	private var dragStarted:Bool;
+	private var mouseDown:Bool;
 			
 	/**
 	 * Constructor.
@@ -35,11 +35,13 @@ class MapEditor extends Map {
 		
 		super();
 		
-		// Create the tiles layers.
-		mapLayer.addEventListener(MouseEvent.CLICK, onTileClick);
-				
+		// Listen for dispatches from the editorDispatcher.
+		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
+		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
+		
 		// Create the dialog layer.
 		dialogLayer = new Sprite();
+		dialogLayer.mouseEnabled = false;
 		addChild(dialogLayer);
 		
 		editorSelectionBar = new EditorSelectionBar();
@@ -47,27 +49,15 @@ class MapEditor extends Map {
 		editorSelectionBar.y = Main.GAME_HEIGHT - 35;
 		dialogLayer.addChild(editorSelectionBar);
 				
-		/*		
-		actorSelectionBar = new ActorSelectionBar();
-		actorSelectionBar.x = 10;
-		actorSelectionBar.y = Main.GAME_HEIGHT - 35;
-		actorSelectionBar.addEventListener(MouseEvent.ROLL_OUT, onMouseRollOut);
-		actorSelectionBar.addEventListener(MouseEvent.ROLL_OVER, onMouseRollOver);
-		dialogLayer.addChild(actorSelectionBar);
-		actorSelectionBar.visible = false;
-		*/
-		
-		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-		this.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-		this.addEventListener(Event.MOUSE_LEAVE, onMouseUp);
-		
-		// Listen for dispatches from the editorDispatcher.
-		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
-		
 		// Load the map.
 		var mapData:MapData = MapManager.getInstance().getMapData("hellmouth.txt");
 		loadMap(mapData);
+		
+		addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
+		addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
+		addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+		addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+		addEventListener(Event.MOUSE_LEAVE, onMouseUp);
 	}
 	
 	/**
@@ -76,20 +66,36 @@ class MapEditor extends Map {
 	 */
 	private function onEditorDispatch(e:EditorEvent):Void {
 		
-		var eventType:String = e.data;
+		var editorEvent:String = e.data;
 		
-		switch(eventType) {
+		switch(editorEvent) {
+			
+			case EditorEvent.FILE:
+				var dialogData:DialogData = new DialogData();
+				dialogData.headerHeight = 0;
+				dialogData.width = 100;
+				dialogData.height = 100;
+				dialogData.headerText = "File";
+				dialogData.matteColor = Colors.setAlpha(Colors.BLACK, 0.7);
+				dialogData.borderColor = Colors.TRANSPARENT;
+				dialogData.shadowColor = Colors.TRANSPARENT;
+				var genericDialog:GenericDialog = new GenericDialog(dialogData);
+				addChild(genericDialog);
 			
 			case EditorEvent.TILES:
 				currentState = EditorEvent.TILES;
 				enableActorsOnMap(false);
-								
+				
 			case EditorEvent.ACTORS:
 				currentState = EditorEvent.ACTORS;
 				enableActorsOnMap(true);
-								
+				
 			case EditorEvent.PROPS:
 				currentState = EditorEvent.PROPS;
+				enableActorsOnMap(false);
+				
+			case EditorEvent.TILE_SELECTED:
+				selectedTile = editorSelectionBar.getSelectedTile();
 				enableActorsOnMap(false);
 				
 			case EditorEvent.ZOOM_OUT:
@@ -101,69 +107,76 @@ class MapEditor extends Map {
 			case EditorEvent.HELP:
 				trace("EditorEvent.HELP");
 		}
-		
 	}
 	
-	private function onTileClick(e:MouseEvent):Void {
+	/**
+	 * Something on-screen has been moused over.
+	 * @param {MouseEvent.MOUSE_OVER} e
+	 */
+	private function onMouseOver(e:MouseEvent):Void {
 		
-		var selectedTile:Tile = editorSelectionBar.getSelectedTile();
-		if (selectedTile != null && Std.is(e.target, Tile)) {
-			var tile:Tile = cast(e.target, Tile);
-			tile.clone(selectedTile);
+		// An actor as been dragged from the field back to the EditorSelectionBar.
+		if (currentState == EditorEvent.ACTORS && Std.is(e.target, EditorSelectionBar)) {
+			if (selectedActor != null) {
+				if (selectedActor.currentTile != null) {
+					selectedActor.currentTile.removeOccupant();
+					selectedActor.currentTile.highlight(false);
+					selectedActor.startDrag(true);
+					addChild(selectedActor);
+				}
+			}
+		
+		// Otherwise
+		} else {
+			e.stopImmediatePropagation();
+			highlightTile(e.target, true);
 		}
 	}
 	
 	/**
-	 * A Tile on the map has been rolled over. Highlight it.
-	 * @param {MouseEvent.ROLL_OVER} e
+	 * Something on-screen has been moused out.
+	 * @param {MouseEvent.MOUSE_OUT} e
 	 */
-	override private function onTileRollOver(e:MouseEvent):Void {
-		
+	private function onMouseOut(e:MouseEvent):Void {
 		e.stopImmediatePropagation();
-		
-		if (Std.is(e.target, Tile)) {
-			
-			var tile:Tile = cast(e.target, Tile);
-			
-			if (currentState == EditorEvent.TILES) {
-				var selectedTile:Tile = editorSelectionBar.getSelectedTile();
-				if(selectedTile != null) {
-					tile.clone(editorSelectionBar.getSelectedTile());
-				}					
-			}
-			
-			tile.highlight(true);
-		}
+		highlightTile(e.target, false);
 	}
-		
+
 	/**
-	 * If we're dragging an actor onto the actors dialog.
-	 * @param {MouseEvent.ROLL_OVER} e
+	 * Highlight/Unhighlight a tile.
+	 * @param {Dynamic} displayObject
+	 * @param {Bool} value
 	 */
-	private function onMouseRollOver(e:MouseEvent):Void {
+	private function highlightTile(displayObject:Dynamic, value:Bool):Void {
+		
+		switch(currentState) {
+			
+			// Highlight the tile an actor is on.
+			case EditorEvent.ACTORS:
+				if (Std.is(displayObject, Actor)) {
+					var actor:Actor = cast displayObject;
+					if (actor.currentTile != null) {
+						actor.currentTile.highlight(value);
+					}
+				} else if (Std.is(displayObject, Tile)) {
+					var tile:Tile = cast displayObject;
+					if (Std.is(tile.occupant, Actor)) {
+						tile.highlight(value);
+					}
+				}
 				
-		if (currentState == EditorEvent.ACTORS) {
-			
-			if (selectedActor != null) {
-				selectedActor.startDrag(true);
-				addChild(selectedActor);
-			}
-		}		
-	}
-	
-	/**
-	 * If we're dragging an actor from the actors dialog.
-	 * @param {MouseEvent.ROLL_OUT} e
-	 */
-	private function onMouseRollOut(e:MouseEvent):Void {
-			
-		if (currentState == EditorEvent.ACTORS) {
-			
-			if (selectedActor != null) {
-				//selectedActor.stopDrag();
-			//	actorsLayer.addChild(selectedActor);
-			}
-		}		
+			// Highlight the tile.
+			case EditorEvent.TILES:
+				if (Std.is(displayObject, Tile)) {
+					var tile:Tile = cast displayObject;
+					
+					if (mouseDown) {
+						tile.clone(selectedTile);
+					}
+					
+					tile.highlight(value);
+				}
+		}
 	}
 	
 	/**
@@ -171,45 +184,56 @@ class MapEditor extends Map {
 	 * @param {MouseEvent.MOUSE_DOWN} e
 	 */
 	private function onMouseDown(e:MouseEvent):Void {
-
-		destroyActor();
 		
-		// User has mouseDowned on an actor - on stage or in the inventory dialog.
-		if (Std.is(e.target, Actor)) {
+		mouseDown = true;
+
+		switch(currentState) {
 			
-			// Actor is being clicked in the level.
-			if (Std.is(e.target.parent, Tile)) {
-				selectedActor = cast(e.target, Actor);
-							
-			// Actor is being clikced in the actors inventory dialog. Duplicate him.
-			} else {
-				var actor:Actor = cast(e.target, Actor);
-				selectedActor = actor.clone();
-				allActors.push(selectedActor);
-				addEventListener(Event.ENTER_FRAME, animateActors);
-			}
-						
-			currentState = EditorEvent.ACTORS;
-			dragStarted = false;
-			editorSelectionBar.mouseChildren = false;
-			this.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-						
-		// A tile in the field was mouse downed upon.
-		} else if (Std.is(e.target, Tile)) {
-			
-			if (e.shiftKey == true) {
-				currentState = DRAG_MAP;
-				mapLayer.mouseChildren = false;
-				mapLayer.startDrag();
-			
-			} else {		
-				currentState = EditorEvent.TILES;
-				var tile:Tile = cast(e.target, Tile);
-				var selectedTile:Tile = editorSelectionBar.getSelectedTile();
-				if (selectedTile != null) {
-					tile.clone(selectedTile);
+			case EditorEvent.ACTORS:
+				
+				destroyActor();
+		
+				// Mousedown upon an actor.
+				if (Std.is(e.target, Actor)) {
+					var actor:Actor = cast e.target;
+					if (actor.currentTile != null) {
+						selectedActor = actor;
+					} else {
+						selectedActor = actor.clone();
+						allActors.push(selectedActor);
+						addEventListener(Event.ENTER_FRAME, animateActors);
+					}
+				
+				// Mousedown upon a tile.
+				} else if (Std.is(e.target, Tile)) {
+					var tile:Tile = cast e.target;
+					if (tile.occupant != null) {
+						selectedActor = tile.occupant;
+					}
 				}
-			}
+				
+				if(selectedActor != null) {
+					dragStarted = false;
+					selectedActor.mouseEnabled = false;
+					editorSelectionBar.mouseChildren = false;
+					addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+				}
+			
+			case EditorEvent.TILES:
+						
+				if (Std.is(e.target, Tile)) {
+					
+					var tile:Tile = cast e.target;
+			
+					if (e.shiftKey == true) {
+						currentState = DRAG_MAP;
+						mapLayer.mouseChildren = false;
+						mapLayer.startDrag();
+			
+					} else if (selectedTile != null) {
+						tile.clone(selectedTile);
+					}
+				}
 		}
 	}
 	
@@ -221,6 +245,8 @@ class MapEditor extends Map {
 			
 		editorSelectionBar.mouseChildren = true;
 		
+		mouseDown = false;
+		
 		switch(currentState) {
 			
 			case DRAG_MAP:
@@ -228,14 +254,17 @@ class MapEditor extends Map {
 				mapLayer.stopDrag();
 				mapLayer.x = Math.floor(mapLayer.x);
 				mapLayer.y = Math.floor(mapLayer.y);
-				currentState = null;			
-					
+									
 			case EditorEvent.ACTORS:
 			
 				// The character has been dragged.
 				if (dragStarted) {
 					selectedActor.mouseEnabled = true;
 					selectedActor.mouseChildren = true;
+					
+					if(selectedActor.currentTile != null) {
+						selectedActor.currentTile.highlight(false);
+					}
 								
 					// Drop the character back into the inventory.
 					if (Std.is(e.target, EditorSelectionBar)) {
@@ -243,7 +272,7 @@ class MapEditor extends Map {
 					}
 			
 				// Actor was clicked, not dragged. Flip him horizontally.
-				} else if(!Std.is(selectedActor.parent, ItemContainer)){
+				} else if (selectedActor != null && selectedActor.currentTile != null) {
 					selectedActor.scaleX *= -1;
 				}
 			
@@ -254,8 +283,6 @@ class MapEditor extends Map {
 				selectedActor = null;
 				dragStarted = false;
 		}
-		
-		currentState = null;
 	}
 	
 	/**
@@ -265,7 +292,7 @@ class MapEditor extends Map {
 	private function enableActorsOnMap(value:Bool):Void {
 		for (i in 0...allActors.length) {
 			allActors[i].currentTile.mouseChildren = value;
-			allActors[i].buttonMode = value;
+			allActors[i].currentTile.buttonMode = value;
 		}
 	}
 	
@@ -298,14 +325,17 @@ class MapEditor extends Map {
 	 * @param {MouseEvent.MOUSE_MOVE} e
 	 */
 	private function onMouseMove(e:MouseEvent):Void {
-		trace("onMouseMove");
+
 		if (currentState == EditorEvent.ACTORS) {
 			
-			// The user has now started dragging the character.
+			editorSelectionBar.mouseChildren = false;
+			
+			// The user has now started to drag an actor.
 			if (!dragStarted) {
 				selectedActor.mouseEnabled = false;
 				selectedActor.mouseChildren = false;
 				dragStarted = true;
+				
 				if(selectedActor.currentTile == null){
 					selectedActor.startDrag(true);
 					addChild(selectedActor);
@@ -314,10 +344,12 @@ class MapEditor extends Map {
 			
 			// Add actor to a tile.
 			if (e.target != selectedActor.currentTile) {
-				if(Std.is(e.target, Tile)) {
-					selectedActor.stopDrag();
-					var tile:Tile = cast(e.target, Tile);
-					tile.addOccupant(selectedActor);
+				if (Std.is(e.target, Tile)) {
+					var tile:Tile = cast e.target;
+					if(tile.occupant == null) {
+						selectedActor.stopDrag();
+						tile.addOccupant(selectedActor);
+					}
 				}
 			}
 		}

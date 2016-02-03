@@ -33,8 +33,9 @@ class Map extends Sprite {
 		
 		// Create the layer holding the map tiles.
 		mapLayer = new Sprite();
-		mapLayer.addEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
-		mapLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
+		mapLayer.mouseEnabled = false;
+		//mapLayer.addEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
+		//mapLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
 		mapLayer.cacheAsBitmap = true;
 		addChild(mapLayer);
 	}

@@ -29,31 +29,34 @@ class GenericDialog extends Sprite {
 		}
 		
 		// Create the backing matte for the dialog.
-		var tilesBackground:Sprite = Matte.toSprite(dialogData);
-		addChild(tilesBackground);
+		var matteBackground:Sprite = Matte.toSprite(dialogData);
+		addChild(matteBackground);
 		
 		// Create the header and header backing matte.
-		var headerData:MatteData = new MatteData();
-		headerData.width = dialogData.width;
-		headerData.height = dialogData.headerHeight;
-		headerData.topRadius = dialogData.topRadius;
-		headerData.bottomRadius = 0;
-		headerData.borderColor = dialogData.headerBorderColor;
-		headerData.matteColor = dialogData.headerMatteColor;
-		headerContainer = Matte.toSprite(headerData);
-		headerContainer.buttonMode = true;
-		addChild(headerContainer);
+		if(dialogData.headerHeight > 0) {
+			var headerData:MatteData = new MatteData();
+			headerData.width = dialogData.width;
+			headerData.height = dialogData.headerHeight;
+			headerData.topRadius = dialogData.topRadius;
+			headerData.bottomRadius = 0;
+			headerData.borderColor = dialogData.headerBorderColor;
+			headerData.matteColor = dialogData.headerMatteColor;
+			headerContainer = Matte.toSprite(headerData);
+			headerContainer.buttonMode = true;
+			addChild(headerContainer);
+		}
 		
 		// Create the header text data.
-		var textObject:TextData = new TextData();
-		textObject.text = dialogData.headerText;
-		textObject.upColor = dialogData.headerTextColor;
-		textObject.shadowColor = dialogData.headerTextShadowColor;
+		var textData:TextData = new TextData();
+		textData.text = dialogData.headerText;
+		textData.upColor = dialogData.headerTextColor;
+		textData.shadowColor = dialogData.headerTextShadowColor;
 		
 		// Add the header text.
-		headerText = TextManager.getInstance().toBitmap(textObject);
-		headerText.y = 3;
+		headerText = TextManager.getInstance().toBitmap(textData);
+		headerText.y = -1;
 		headerText.x = 4;
-		headerContainer.addChild(headerText);
+		addChild(headerText);
+		
 	}
 }

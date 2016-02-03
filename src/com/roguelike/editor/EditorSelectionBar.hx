@@ -1,22 +1,19 @@
 package com.roguelike.editor;
 
-import com.roguelike.dialogs.ButtonSprite;
 import com.roguelike.dialogs.ItemContainer;
+import com.roguelike.editor.EditorDispatcher;
+import com.roguelike.editor.EditorEvent;
 import com.roguelike.editor.Tile;
 import com.roguelike.managers.ActorManager;
-import com.roguelike.managers.TextManager;
 import com.roguelike.managers.TileManager;
 import com.roguelike.TextData;
 import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.Utils;
 import haxe.ds.ObjectMap;
-import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.geom.Rectangle;
-import com.roguelike.editor.EditorEvent;
-import com.roguelike.editor.EditorDispatcher;
 
 /**
  * ActorsDialog.hx.
@@ -54,14 +51,11 @@ class EditorSelectionBar extends Sprite {
 		
 		// Create the backing matte.
 		var matteData:MatteData = new MatteData();
-		matteData.width = Math.floor(rect.width);
-		matteData.height = Math.floor(rect.height);
-		matteData.topRadius = 0;
-		matteData.bottomRadius = 0;
+		matteData.width = cast rect.width;
+		matteData.height = cast rect.height;
 		matteData.borderColor = Colors.TRANSPARENT;
-		matteData.matteColor = Colors.BLACK;
+		matteData.matteColor = Colors.setAlpha(Colors.BLACK, 0.7);
 		var matteSprite:Sprite = Matte.toSprite(matteData);
-		matteSprite.alpha = 0.7;
 		addChild(matteSprite);
 		
 		// Create the actor's section.
@@ -95,9 +89,6 @@ class EditorSelectionBar extends Sprite {
 		menuBar.addItem("Settings", EditorEvent.SETTINGS);
 		addChild(menuBar);
 		
-		this.addEventListener(Event.ENTER_FRAME, animateActors);
-		actorsContainer.visible = true;
-		
 		// Create the standard textData to be used for the menu bar.
 		var helpData:TextData = new TextData();
 		helpData.upColor = Colors.WHITE;
@@ -113,10 +104,22 @@ class EditorSelectionBar extends Sprite {
 		helpBar.y = -1;
 		addChild(helpBar);
 		
+		this.cacheAsBitmap = true;
+		
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
 		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
 		
-		this.cacheAsBitmap = true;
+		var editorEvent:EditorEvent = new EditorEvent(Event.CHANGE, EditorEvent.ACTORS);
+		editorDispatcher.dispatchEvent(editorEvent);
+	}
+	
+	/**
+	 * Determine whether a specified tile is in the menu.
+	 * @param {Tile} tile
+	 * @return {Bool}
+	 */
+	public function isMenuTile(tile:Tile):Bool {
+		return (tile.parent == tilesContainer);
 	}
 	
 	/**
@@ -129,10 +132,6 @@ class EditorSelectionBar extends Sprite {
 		
 		switch(eventType) {
 			
-			case EditorEvent.FILE:
-				this.addEventListener(Event.ENTER_FRAME, animateActors);
-				actorsContainer.visible = true;
-				
 			case EditorEvent.TILES:
 				this.removeEventListener(Event.ENTER_FRAME, animateActors);
 				actorsContainer.visible = false;
@@ -206,7 +205,23 @@ class EditorSelectionBar extends Sprite {
 			actorsContainer.addItem(actorsArray[idxActor]);
 		}
 	}
+	
+	/**
+	 * Swallow mousedown clicks on tiles. We listen to clicks.
+	 * @param {MouseEvent.MOUSE_DOWN} e
+	 */
+	private function onMouseDown(e:MouseEvent):Void {
 		
+		if (Std.is(e.target, Tile)) {
+			e.stopImmediatePropagation();
+			e.stopPropagation();
+		}
+	}
+	
+	/**
+	 * User has clicked the editorSelectionBar
+	 * @param {MouseEvent.CLICK} e
+	 */
 	private function onMouseClick(e:MouseEvent):Void {
 		
 		e.stopImmediatePropagation();
@@ -218,7 +233,7 @@ class EditorSelectionBar extends Sprite {
 				highlightTile.parent.removeChild(highlightTile);
 			}
 			
-			selectedTile = cast(e.target, Tile);
+			selectedTile = cast e.target;
 			
 			// Create the tile highlight.
 			highlightTile = highlightMap.get(selectedTile);
@@ -233,6 +248,9 @@ class EditorSelectionBar extends Sprite {
 			highlightTile.x = selectedTile.x;
 			highlightTile.y = selectedTile.y;
 			tilesContainer.addChild(highlightTile);
+			
+			var editorEvent:EditorEvent = new EditorEvent(Event.CHANGE, EditorEvent.TILE_SELECTED);
+			EditorDispatcher.getInstance().dispatchEvent(editorEvent);
 		}
 	}
 	
@@ -240,35 +258,20 @@ class EditorSelectionBar extends Sprite {
 		return (selectedTile != null) ? selectedTile.clone() : null;
 	}
 	
-	public function getActor(possibleActor:Dynamic):Actor {
-		
-		if(Std.is(possibleActor, Actor)){
-			
-			var actor:Actor = cast(possibleActor, Actor);
-			var selectedActor:Actor = actor.clone();
-			selectedActor.buttonMode = true;
-			actorsArray.push(selectedActor);
-			
-			return selectedActor;
-		}
-		
-		return null;
-	}
-	
 	/**
 	 * Add listeners.
 	 */
 	private function addListeners():Void {
-		this.addEventListener(MouseEvent.CLICK, onMouseClick);
-		//this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+		addEventListener(MouseEvent.CLICK, onMouseClick);
+		addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
 	
 	/**
 	 * Removes listeners.
 	 */
 	private function removeListeners():Void {
-		this.removeEventListener(MouseEvent.CLICK, onMouseClick);
-		//this.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+		removeEventListener(MouseEvent.CLICK, onMouseClick);
+		removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
 
 }

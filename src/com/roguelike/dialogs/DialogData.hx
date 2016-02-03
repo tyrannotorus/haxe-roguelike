@@ -12,7 +12,7 @@ class DialogData extends MatteData {
 	
 	public var headerText:String = "Generic Dialog";
 	public var headerTextColor:Int = Colors.WHITE;
-	public var headerTextShadowColor:Int = Colors.TRANSPARENT;
+	public var headerTextShadowColor:Int = Colors.BLACK;
 	public var headerMatteColor:Int = Colors.MIDNIGHT_BLUE;
 	public var headerBorderColor:Int = Colors.TRANSPARENT;
 	public var headerHeight:Int = 16;

@@ -47,7 +47,7 @@ class Main extends Sprite {
 	public function new() {
 		
 		super();
-		stage.quality = StageQuality.LOW;
+		stage.quality = StageQuality.MEDIUM;
 		
 		TextManager.getInstance().init();
 		
@@ -72,13 +72,9 @@ class Main extends Sprite {
 		
 		if (!MapManager.getInstance().isReady()) {
 			return;
-		}
-		
-		if (!TileManager.getInstance().isReady()) {
+		} else if (!TileManager.getInstance().isReady()) {
 			return;
-		}
-		
-		if (!ActorManager.getInstance().isReady()) {
+		} else if (!ActorManager.getInstance().isReady()) {
 			return;
 		}
 						
@@ -89,8 +85,8 @@ class Main extends Sprite {
 		game.scaleX = game.scaleY = GAME_SCALE;
 		game.loadGame();
 		
-		var fps:FPS = new FPS(10, 10, Colors.RED);
-		addChild(fps);
+		//var fps:FPS = new FPS(10, 10, Colors.RED);
+		//addChild(fps);
 				
 		addListeners();
 	}

@@ -95,6 +95,7 @@ class Tile extends Sprite {
 		occupant.y = 0;
 		occupant.currentTile = this;
 		occupant.mouseEnabled = false;
+		highlight(true);
 		addChild(occupant);
 	}
 	
@@ -104,6 +105,7 @@ class Tile extends Sprite {
 	public function removeOccupant():Void {
 		if(occupant != null) {
 			removeChild(occupant);
+			highlight(false);
 			occupant = null;
 		}
 	}

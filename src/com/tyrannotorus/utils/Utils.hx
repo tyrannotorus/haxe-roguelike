@@ -74,8 +74,8 @@ class Utils {
 		
 		var rect:Rectangle = bmd.rect;
 		var vector:Vector<UInt> = bmd.getVector(rect);
-		var bmdWidth:Int = cast(rect.width, Int);
-		var bmdHeight:Int = cast(rect.height, Int);
+		var bmdWidth:Int = cast rect.width;
+		var bmdHeight:Int = cast rect.height;
 		var idxPixel:Int = 0;
 		
 		var sprite:Sprite = new Sprite();
@@ -106,8 +106,8 @@ class Utils {
 			
 		var rect:Rectangle = sourceBitmap.bitmapData.rect;
 		var vector:Vector<UInt> = sourceBitmap.bitmapData.getVector(rect);
-		var bmdWidth:Int = cast(rect.width, Int);
-		var bmdHeight:Int = cast(rect.height, Int);
+		var bmdWidth:Int = cast rect.width;
+		var bmdHeight:Int = cast rect.height;
 		var idxPixel:Int = 0;
 		
 		var fillRectangle:Rectangle = new Rectangle(0, 0, 3, 3);

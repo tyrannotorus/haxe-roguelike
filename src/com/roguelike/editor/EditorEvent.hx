@@ -12,6 +12,7 @@ class EditorEvent extends DataEvent {
 	public static inline var ZOOM_IN:String = "ZOOM_IN";
 	public static inline var ZOOM_OUT:String = "ZOOM_OUT";
 	public static inline var HELP:String = "HELP";
+	public static inline var TILE_SELECTED:String = "TILE_SELECTED";
 	
 	/**
 	 * A standard event with an added data parameter
