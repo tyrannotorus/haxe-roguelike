@@ -16,7 +16,9 @@ class DialogData extends MatteData {
 	public var headerMatteColor:Int = Colors.MIDNIGHT_BLUE;
 	public var headerBorderColor:Int = Colors.TRANSPARENT;
 	public var headerHeight:Int = 16;
-			
+	public var dialogPositionX:Float = 0.5;
+	public var dialogPositionY:Float = 0.5;
+				
 	/**
 	 * Constructor.
 	 * @param {Dynamic} parameters

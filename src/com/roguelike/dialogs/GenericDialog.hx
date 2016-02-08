@@ -29,8 +29,10 @@ class GenericDialog extends Sprite {
 		}
 		
 		// Create the backing matte for the dialog.
-		var matteBackground:Sprite = Matte.toSprite(dialogData);
-		addChild(matteBackground);
+		var matteBitmap:Bitmap = Matte.toBitmap(dialogData);
+		matteBitmap.x = -matteBitmap.width / 2;
+		matteBitmap.y = -matteBitmap.height / 2;
+		addChild(matteBitmap);
 		
 		// Create the header and header backing matte.
 		if(dialogData.headerHeight > 0) {
@@ -54,9 +56,12 @@ class GenericDialog extends Sprite {
 		
 		// Add the header text.
 		headerText = TextManager.getInstance().toBitmap(textData);
-		headerText.y = -1;
-		headerText.x = 4;
+		headerText.y = matteBitmap.x - 1;
+		headerText.x = matteBitmap.y + 4;
 		addChild(headerText);
+		
+		x = Main.GAME_WIDTH * dialogData.dialogPositionX;
+		y = Main.GAME_HEIGHT * dialogData.dialogPositionY;
 		
 	}
 }

@@ -16,7 +16,7 @@ import openfl.geom.Rectangle;
  * - A draggable dialog with for use within the level editor.
  * - Loads a selection of tiles.
  */
-class ItemContainer extends Sprite {
+class ContentContainer extends Sprite {
 	
 	private var itemsArray:Array<Array<Dynamic>>;
 	private var maxWidth:Int;

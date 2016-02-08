@@ -1,9 +1,9 @@
 package com.roguelike.managers;
 
 import com.roguelike.Actor;
+import com.roguelike.editor.ActorData;
 import com.tyrannotorus.assetloader.AssetEvent;
 import com.tyrannotorus.assetloader.AssetLoader;
-import com.tyrannotorus.utils.ActorUtils;
 import com.tyrannotorus.utils.Utils;
 import haxe.ds.ObjectMap;
 import openfl.display.Bitmap;
@@ -87,13 +87,12 @@ class ActorManager extends EventDispatcher {
 			if (fileType == AssetLoader.TXT) {
 				
 				var spriteSheet:Bitmap = Reflect.field(e.assetData, fileName + ".png");
-				var spriteLogic:String = Reflect.field(e.assetData, fieldString);
+				var actorJsonString:String = Reflect.field(e.assetData, fieldString);
 				trace("parsing " + fileName);
-				var actorData:Dynamic = ActorUtils.parseActorData(spriteSheet.bitmapData, spriteLogic);
+				var actorData:ActorData = new ActorData(actorJsonString, spriteSheet.bitmapData);
 				var actor:Actor = new Actor(actorData);
 				actor.buttonMode = true;
 				actorsArray.push(actor);
-				//actorsContainer.addItem(actor);
 			}
 		}
 		

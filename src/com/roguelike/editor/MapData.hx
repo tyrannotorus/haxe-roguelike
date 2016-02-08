@@ -16,6 +16,8 @@ class MapData {
 	public var height:Int;
 	public var tileMap:Object;
 	public var tileArray:Array<Int>;
+	public var actorArray:Array<Int>;
+	public var propArray:Array<Int>;
 			
 	/**
 	 * Constructor.
@@ -26,11 +28,29 @@ class MapData {
 	}
 	
 	/**
-	 * Returns map data as a json string for saving.
-	 * @return {String}
+	 * Saves actors and props placed on tiles during map edit.
+	 * @param {Array<Tile>} allTiles
 	 */
-	public function serialize():String {
-		return " ";
+	public function save(allTiles:Array<Tile>):Void {
+		
+		var idxTile:Int = 0;
+		
+		tileArray = new Array<Int>();
+		actorArray = new Array<Int>();
+		propArray = new Array<Int>();
+		
+		
+		// Save the changes to the tiles with a new tile:file map
+		// loop throught the tiles and create an actor#:actorfile map array<int>
+		for (yy in 0...height) {
+			
+			for (xx in 0...width) {
+				var tile:Tile = allTiles[idxTile];
+				
+				//if(tile.)
+				
+			}
+		}
 	}
 	
 	/**

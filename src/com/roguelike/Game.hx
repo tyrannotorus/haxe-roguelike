@@ -2,6 +2,9 @@ package com.roguelike;
 
 import com.roguelike.dialogs.TilesDialogOld;
 import com.roguelike.editor.Editor;
+import com.roguelike.editor.EditorEvent;
+import com.roguelike.editor.Map;
+import com.roguelike.editor.MapData;
 import com.tyrannotorus.utils.KeyCodes;
 import openfl.display.Sprite;
 import openfl.events.KeyboardEvent;
@@ -21,6 +24,7 @@ class Game extends Sprite {
 	private var healthBars:HealthBars;
 	private var menu:Menu;
 	private var tilesDialog:TilesDialogOld;
+	private var editor:Editor;
 	
 	// Keyboard Controls
 	private var zKey:Bool = false;
@@ -48,23 +52,31 @@ class Game extends Sprite {
 	 */
 	public function loadGame():Void {
 		
-		var editor:Editor = new Editor();
+		editor = new Editor();
+		editor.addEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
 		addChild(editor);
 				
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
 		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);
-		
-		//var testText:Dynamic = { };
-		//testText.text = "Mike Tysons\nPunch\nout!!";
-		//testText.fontColor1 = Colors.WHITE;
-		//testText.fontSet = 4;
-		//addChild(textManager.typeText(testText));
-		
+			
 		
 		//musicTransform = new SoundTransform(0.1);
 		//music = Assets.getSound("audio/title_music.mp3", true);
 		//musicChannel = music.play();
 		//musicChannel.soundTransform = musicTransform;
+	}
+	
+	public function onCloseEditor(e:EditorEvent):Void {
+		
+		var mapData:MapData = cast e.data;
+		var map:Map = new Map(mapData);
+		
+		editor.removeEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
+		editor.parent.removeChild(editor);
+		editor.cleanUp();
+		editor = null;
+		
+		addChild(map);
 	}
 	
 

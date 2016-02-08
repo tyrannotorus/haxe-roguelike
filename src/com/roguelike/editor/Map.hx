@@ -24,7 +24,7 @@ class Map extends Sprite {
 	/**
 	 * Constructor.
 	 */
-	public function new() {
+	public function new(mapData:MapData = null) {
 		
 		super();
 		
@@ -34,10 +34,14 @@ class Map extends Sprite {
 		// Create the layer holding the map tiles.
 		mapLayer = new Sprite();
 		mapLayer.mouseEnabled = false;
-		//mapLayer.addEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
-		//mapLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
 		mapLayer.cacheAsBitmap = true;
 		addChild(mapLayer);
+		
+		addListeners();
+		
+		if (mapData != null) {
+			loadMap(mapData);
+		}
 	}
 	
 	/**
@@ -85,7 +89,6 @@ class Map extends Sprite {
 			}
 			xPosition = (Math.floor(yPosition % tileHeight) == 0) ? tileWidth : halfWidth;
 		}
-				
 	}
 	
 	/**
@@ -137,6 +140,16 @@ class Map extends Sprite {
 		if (Std.is(e.target, Tile)) {
 			cast(e.target, Tile).highlight(false);
 		}
+	}
+	
+	private function addListeners():Void {
+		mapLayer.addEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
+		mapLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
+	}
+	
+	private function removeListeners():Void {
+		mapLayer.removeEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
+		mapLayer.removeEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
 	}
 	
 }

@@ -42,31 +42,7 @@ class Matte {
 			matteBmd.fillRect(new Rectangle(1, 0, width - 2, height), matteColor);
 			matteBmd.fillRect(new Rectangle(0, 1, width, height-2), matteColor);
 		}
-		
-		
-		
-		
-		/*
-		var borderBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
-		var borderSprite:Sprite = new Sprite();
-		borderSprite.graphics.beginFill(borderColor);
-		borderSprite.graphics.drawRoundRectComplex(0, 0, width, height, topRadius, topRadius, bottomRadius, bottomRadius);
-		borderSprite.graphics.endFill();
-		borderBmd.draw(borderSprite);
-		borderBmd.threshold(borderBmd, borderBmd.rect, new Point(), "!=", borderColor, Colors.TRANSPARENT);
-		
-		// Create the inner matte.
-		var innerBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
-		var innerSprite:Sprite = new Sprite();
-		innerSprite.graphics.beginFill(matteColor);
-		innerSprite.graphics.drawRoundRectComplex(borderWidth, borderWidth, width - twiceBorderWidth, height - twiceBorderWidth, topRadius, topRadius, bottomRadius, bottomRadius);
-		innerSprite.graphics.endFill();
-		innerBmd.draw(innerSprite);
-		innerBmd.threshold(innerBmd, innerBmd.rect, new Point(), "!=", matteColor, Colors.TRANSPARENT);
-		
-		// Copy the inner matte onto the border matte.
-		borderBmd.copyPixels(innerBmd, innerBmd.rect, new Point(), null, null, true);
-		*/		
+				
 		return new Bitmap(matteBmd);
 	}
 	

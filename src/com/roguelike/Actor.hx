@@ -1,5 +1,6 @@
 ﻿package com.roguelike;
 	
+import com.roguelike.editor.ActorData;
 import com.roguelike.editor.Tile;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
@@ -18,19 +19,15 @@ class Actor extends Sprite {
 	
 	public var currentTile:Tile;
 	
-	private var cellBitmaps:Array<Array<Bitmap>>;
-	private var cellHitSprites:Array<Array<Sprite>>;
-	
-	private var frames		:Array<Array<Int>>; 		// Frame timings
-	private var hit			:Array<Array<Int>>;			// Hit power
-	private var xshift		:Array<Array<Int>>;  		// x displacement
-	private var yshift		:Array<Array<Int>>;  		// y displacement
-	private var xshove		:Array<Array<Int>>;  		// Add x momentum
-	private var yshove		:Array<Array<Int>>;  		// Add y momentum
-	private var flip		:Array<Array<Int>>; 		// flip frames
-	private var blockHigh	:Array<Array<Int>>; 		// flip frames
-	private var blockLow	:Array<Array<Int>>; 		// flip frames
-	private var dodge		:Array<Array<Int>>; 		// flip frames
+	private var frameTimings:Array<Array<Int>>;
+	private var frameBitmaps:Array<Array<Bitmap>>;
+	private var frameHitAreas:Array<Array<Sprite>>;
+	private var hitFrames:Array<Array<Int>>;
+	private var xShiftFrames:Array<Array<Int>>;
+	private var yShiftFrames:Array<Array<Int>>;
+	private var xShoveFrames:Array<Array<Int>>;
+	private var yShoveFrames:Array<Array<Int>>;
+	private var flipFrames:Array<Array<Int>>;
 	//private var sfx			:Array<Array<Sound>>;		// sound effects
 		
 	//public var sfxtransform	:SoundTransform;
@@ -49,7 +46,7 @@ class Actor extends Sprite {
 		
 	public var currentBitmap:Bitmap;
 	public var currentHitSprite:Sprite;
-	public var cellContainer:Sprite;
+	public var frameContainer:Sprite;
 			
 	// Actor Stats
 	public  var actorName	:String;
@@ -71,8 +68,8 @@ class Actor extends Sprite {
 	public var vy			:Int;	// Characters Y momentum
 	
 	// TEMPORARY VARIABLE HOLDERS
-	private var tmpxshift	:Int;	// xshift[currentAnimation][currentFrame] holder should declare these when needed = faster
-	private var tmpyshift	:Int;	// yshift[currentAnimation][currentFrame] holder
+	private var tmpxShiftFrames	:Int;	// xShiftFrames[currentAnimation][currentFrame] holder should declare these when needed = faster
+	private var tmpyShiftFrames	:Int;	// yShiftFrames[currentAnimation][currentFrame] holder
 			
 	private var tick		:Int = 0;		
 	private var combo		:Int;
@@ -84,109 +81,83 @@ class Actor extends Sprite {
 	private var player:Actor;
 	private var opponent:Actor;
 	
-	private var actorData:Dynamic;
+	private var actorData:ActorData;
 		
 	/**
 	 * Constructor.
-	 * @param {Dynamic} actorData
+	 * @param {ActorData} actorData
 	 */
-	public function new(actorData:Dynamic):Void {
+	public function new(actorData:ActorData):Void {
 		
 		super();
 		
 		this.actorData = actorData;
+		this.actorName = actorData.name;
 		
-		cellContainer = new Sprite();
-		cellContainer.mouseChildren = false;
-		
-		cellBitmaps	= new Array<Array<Bitmap>>();
-		cellHitSprites = new Array<Array<Sprite>>();
-		
-		frames = new Array<Array<Int>>();
-		hit = new Array<Array<Int>>();
-		xshift = new Array<Array<Int>>();
-		yshift = new Array<Array<Int>>();
-		xshove = new Array<Array<Int>>();
-		yshove = new Array<Array<Int>>();
-		flip = new Array<Array<Int>>();
-				
-		// Populate local variables with actionData
-		var actionData:Dynamic = Reflect.field(actorData, "actions");
-		var fields:Array<String> = Reflect.fields(actionData);
-		var fieldName:String;
-		var index:Int = 1;
-		var idx:Int = 0;
-		try{
-			for (i in 0...fields.length) {
-				
-				fieldName = fields[i];
-				
-				// Reserve IDLE = 0, regardless of where in the logic IDLE is defined
-				if (fieldName.toUpperCase() == "IDLE") {
-					idx = 0;
-				} else {
-					idx = index++;
-				}
-				
-				trace(i + " " + fields[i] + " setting idx to " + idx + " index:" + index);
-				Reflect.setField(Reflect.field(actionData, fieldName), "idx", idx);
-				Reflect.setField(this, fields[i].toUpperCase(), idx);
-				//sfx[index]			= $actor.actions[action].sfx;
-				frames[idx]	= Reflect.field(Reflect.field(actionData, fieldName), "timing");
-				hit[idx]	= Reflect.field(Reflect.field(actionData, fieldName), "hit");
-				xshift[idx] = Reflect.field(Reflect.field(actionData, fieldName), "xshift");
-				yshift[idx] = Reflect.field(Reflect.field(actionData, fieldName), "yshift");
-				xshove[idx] = Reflect.field(Reflect.field(actionData, fieldName), "xshove");
-				yshove[idx] = Reflect.field(Reflect.field(actionData, fieldName), "yshove");
-				flip[idx] = Reflect.field(Reflect.field(actionData, fieldName), "flip");
-								
-				var cellBmds:Array<BitmapData> = Reflect.field(Reflect.field(actionData, fieldName), "bitmaps");
-				var cellShapes:Array<Sprite> = Reflect.field(Reflect.field(actionData, fieldName), "shapes");
-				
-				cellBitmaps[idx] = new Array<Bitmap>();
-				cellHitSprites[idx] = new Array<Sprite>();
-				for (j in 0...cellBmds.length) {
-				
-					// Add the bitmap cell.
-					var cellBitmap:Bitmap = new Bitmap(cellBmds[j]);
-					cellBitmap.visible = false;
-					cellBitmaps[idx][j] = cellBitmap;
-					cellContainer.addChild(cellBitmap);
-				
-					// Add the cell hitArea.
-					var hitSprite:Sprite = new Sprite();
-					hitSprite.graphics.copyFrom(cellShapes[j].graphics);
-					hitSprite.visible = false;
-					hitSprite.mouseEnabled = false;
-					cellHitSprites[idx][j] = hitSprite;
-					cellContainer.addChild(hitSprite);
-				}
-			}
-
-		} catch(e:String) {
-			trace("Unable to set variable " + e);
-			return;
-		}
-		
-		var statsData:Dynamic = Reflect.field(actorData, "stats");
-		actorName = Reflect.field(statsData, "NAME");
-		
+		frameContainer = new Sprite();
+		frameContainer.mouseChildren = false;
 		currentBitmap = new Bitmap();
-		currentBitmap.bitmapData = cellBitmaps[0][0].bitmapData;
 		currentBitmap.visible = true;
 		
-		currentHitSprite = cellHitSprites[0][0];
-		//currentHitSprite.visible = false;
+		// Copy over the animation types to our local variables.
+		for (idxAnimation in 0...actorData.animationTypes.length) {
+			var animationType:String = actorData.animationTypes[idxAnimation];
+			try {
+				Reflect.setField(this, animationType, idxAnimation);
+			} catch(e:String) {
+				trace("Actor.hx " + animationType + " does not exist on Actor.hx " + e);
+			}
+		}
+		
+		frameBitmaps = new Array<Array<Bitmap>>();
+		frameHitAreas = new Array<Array<Sprite>>();
+		frameTimings = actorData.frameTimings;
+		hitFrames = actorData.hitFrames;
+		xShiftFrames = actorData.xShiftFrames;
+		yShiftFrames = actorData.yShiftFrames;
+		xShoveFrames = actorData.xShoveFrames;
+		yShoveFrames = actorData.yShoveFrames;
+		flipFrames = actorData.flipFrames;
+			
+		for (idxAnimation in 0...frameTimings.length) {
+			
+			var bitmapArray:Array<Bitmap> = new Array<Bitmap>();
+			var hitAreaArray:Array<Sprite> = new Array<Sprite>();
+			
+			for (idxFrame in 0...frameTimings[idxAnimation].length) {
+				
+				// Add the bitmap cell.
+				var frameBitmap:Bitmap = new Bitmap(actorData.frameBitmapDatas[idxAnimation][idxFrame]);
+				frameBitmap.visible = false;
+				bitmapArray.push(frameBitmap);
+				frameContainer.addChild(frameBitmap);
+				
+				// Add the cell hitArea.
+				var hitAreaSprite:Sprite = new Sprite();
+				hitAreaSprite.graphics.copyFrom(actorData.frameHitAreas[idxAnimation][idxFrame].graphics);
+				hitAreaSprite.visible = false;
+				hitAreaSprite.mouseEnabled = false;
+				hitAreaArray.push(hitAreaSprite);
+				frameContainer.addChild(hitAreaSprite);
+			}
+			
+			frameBitmaps.push(bitmapArray);
+			frameHitAreas.push(hitAreaArray);			
+		}
+				
+		currentBitmap.bitmapData = frameBitmaps[0][0].bitmapData;
+		currentHitSprite = frameHitAreas[0][0];
+		
 		#if flash
 			this.hitArea = currentHitSprite;
 		#end
 						
-		cellContainer.x = -Math.floor(currentBitmap.width / 2);
-		cellContainer.y = -Math.floor(currentBitmap.height) + 1;
-		cellContainer.mouseChildren = false;
-		cellContainer.mouseEnabled = false;
+		frameContainer.x = -Math.floor(currentBitmap.width / 2);
+		frameContainer.y = -Math.floor(currentBitmap.height) + 1;
+		frameContainer.mouseChildren = false;
+		frameContainer.mouseEnabled = false;
 		
-		addChild(cellContainer);
+		addChild(frameContainer);
 	}
 	
 	/**
@@ -209,10 +180,10 @@ class Actor extends Sprite {
 		// Update the frame of the actor immediately.
 		//if (updateNow) {
 		//	currentBitmap.visible = false;
-		//	currentBitmap = cellBitmaps[currentAnimation][currentFrame];
+		//	currentBitmap = frameBitmaps[currentAnimation][currentFrame];
 		//	currentBitmap.visible = false;
 		//	currentHitSprite.visible = false;
-		//	currentHitSprite = cellHitSprites[currentAnimation][currentFrame];
+		//	currentHitSprite = frameHitAreas[currentAnimation][currentFrame];
 		//	currentHitSprite.visible = true;
 		//	this.hitArea = currentHitSprite;
 		//}
@@ -225,12 +196,12 @@ class Actor extends Sprite {
 	public function animate():Void {
 			
 		// If end of frame, go to next frame
-		if(tick == frames[currentAnimation][currentFrame]) {
+		if(tick == frameTimings[currentAnimation][currentFrame]) {
 				
 			tick = 0;
 				
 			// Animation turnover
-			if (++currentFrame == frames[currentAnimation].length) {
+			if (++currentFrame == frameTimings[currentAnimation].length) {
 					
 				// If stunned, repeat stun animation until recovery time = 0
 				if( recovery > 0) {
@@ -258,25 +229,25 @@ class Actor extends Sprite {
 		if ( tick++ == 0) {
 				
 			// ADD ADDITIONAL X VELOCITY
-			vx += Std.int(scaleX * xshove[currentAnimation][currentFrame]);
+			vx += Std.int(scaleX * xShoveFrames[currentAnimation][currentFrame]);
 				
 			// ADD ADDITIONAL Y VELOCITY
-			if (yshove[currentAnimation][currentFrame] > 0) {
-				vy += yshove[currentAnimation][currentFrame];
+			if (yShoveFrames[currentAnimation][currentFrame] > 0) {
+				vy += yShoveFrames[currentAnimation][currentFrame];
 				//if( altitude != altitude ) altitude = elevation;
 			}
 				
 			// SHIFT BITMAP PIXELS
-			cellContainer.x -= tmpxshift;
-			cellContainer.x += (tmpxshift = xshift[currentAnimation][currentFrame]);
-			cellContainer.y -= tmpyshift;
-			cellContainer.y += (tmpyshift = yshift[currentAnimation][currentFrame]);
+			frameContainer.x -= tmpxShiftFrames;
+			frameContainer.x += (tmpxShiftFrames = xShiftFrames[currentAnimation][currentFrame]);
+			frameContainer.y -= tmpyShiftFrames;
+			frameContainer.y += (tmpyShiftFrames = yShiftFrames[currentAnimation][currentFrame]);
 				
 			// FLIP FRAME
-			scaleX *= flip[currentAnimation][currentFrame];
+			scaleX *= flipFrames[currentAnimation][currentFrame];
 				
 			// HIT FRAME
-			hitPower = hit[currentAnimation][currentFrame];
+			hitPower = hitFrames[currentAnimation][currentFrame];
 			if (hitPower > 0) {
 				//opponent.punch(currentAnimation, hitPower);
 			}
@@ -287,10 +258,10 @@ class Actor extends Sprite {
 				
 			// Update the frame.
 			currentBitmap.visible = false;
-			currentBitmap = cellBitmaps[currentAnimation][currentFrame];
+			currentBitmap = frameBitmaps[currentAnimation][currentFrame];
 			currentBitmap.visible = true;
 			//currentHitSprite.visible = false;
-			currentHitSprite = cellHitSprites[currentAnimation][currentFrame];
+			currentHitSprite = frameHitAreas[currentAnimation][currentFrame];
 			//currentHitSprite.visible = false;
 			#if flash
 				this.hitArea = currentHitSprite;

@@ -1,11 +1,8 @@
 package com.roguelike.editor;
 
 import com.roguelike.Actor;
-import com.roguelike.dialogs.DialogData;
-import com.roguelike.dialogs.GenericDialog;
 import com.roguelike.editor.EditorSelectionBar;
 import com.roguelike.managers.MapManager;
-import com.tyrannotorus.utils.Colors;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
@@ -52,12 +49,6 @@ class MapEditor extends Map {
 		// Load the map.
 		var mapData:MapData = MapManager.getInstance().getMapData("hellmouth.txt");
 		loadMap(mapData);
-		
-		addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
-		addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
-		addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-		addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-		addEventListener(Event.MOUSE_LEAVE, onMouseUp);
 	}
 	
 	/**
@@ -69,18 +60,6 @@ class MapEditor extends Map {
 		var editorEvent:String = e.data;
 		
 		switch(editorEvent) {
-			
-			case EditorEvent.FILE:
-				var dialogData:DialogData = new DialogData();
-				dialogData.headerHeight = 0;
-				dialogData.width = 100;
-				dialogData.height = 100;
-				dialogData.headerText = "File";
-				dialogData.matteColor = Colors.setAlpha(Colors.BLACK, 0.7);
-				dialogData.borderColor = Colors.TRANSPARENT;
-				dialogData.shadowColor = Colors.TRANSPARENT;
-				var genericDialog:GenericDialog = new GenericDialog(dialogData);
-				addChild(genericDialog);
 			
 			case EditorEvent.TILES:
 				currentState = EditorEvent.TILES;
@@ -106,6 +85,9 @@ class MapEditor extends Map {
 				
 			case EditorEvent.HELP:
 				trace("EditorEvent.HELP");
+				
+			case EditorEvent.CLOSE_EDITOR:
+				dispatchEvent(new EditorEvent(EditorEvent.CLOSE_EDITOR, mapData, true));
 		}
 	}
 	
@@ -355,5 +337,25 @@ class MapEditor extends Map {
 		}
 	}
 	
-		
+	override private function addListeners():Void {
+		addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
+		addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
+		addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+		addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+		addEventListener(Event.MOUSE_LEAVE, onMouseUp);
+	}
+	
+	override private function removeListeners():Void {
+		removeEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
+		removeEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
+		removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+		removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+		removeEventListener(Event.MOUSE_LEAVE, onMouseUp);
+	}
+	
+	public function cleanUp():Void {
+		EditorDispatcher.getInstance().removeEventListener(Event.CHANGE, onEditorDispatch);
+		removeListeners();
+		removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+	}
 }

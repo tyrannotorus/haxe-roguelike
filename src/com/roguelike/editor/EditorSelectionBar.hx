@@ -1,6 +1,6 @@
 package com.roguelike.editor;
 
-import com.roguelike.dialogs.ItemContainer;
+import com.roguelike.dialogs.ContentContainer;
 import com.roguelike.editor.EditorDispatcher;
 import com.roguelike.editor.EditorEvent;
 import com.roguelike.editor.Tile;
@@ -28,11 +28,11 @@ class EditorSelectionBar extends Sprite {
 	private var helpBar:MenuBar;
 	
 	// Actor selection functionality.
-	private var actorsContainer:ItemContainer;
+	private var actorsContainer:ContentContainer;
 	private var actorsArray:Array<Actor>;
 	
 	// Tile selection functionality.
-	private var tilesContainer:ItemContainer;
+	private var tilesContainer:ContentContainer;
 	private var selectedTile:Tile;
 	private var highlightMap:ObjectMap<Tile, Sprite>;
 	private var highlightTile:Sprite;
@@ -59,13 +59,13 @@ class EditorSelectionBar extends Sprite {
 		addChild(matteSprite);
 		
 		// Create the actor's section.
-		actorsContainer = new ItemContainer(rect);
+		actorsContainer = new ContentContainer(rect);
 		actorsContainer.visible = false;
 		addChild(actorsContainer);
 		onActorsLoaded();
 		
 		// Create the tiles section.
-		tilesContainer = new ItemContainer(rect);
+		tilesContainer = new ContentContainer(rect);
 		tilesContainer.y = 6;
 		tilesContainer.visible = false;
 		addChild(tilesContainer);
@@ -87,6 +87,7 @@ class EditorSelectionBar extends Sprite {
 		menuBar.addItem("Tiles", EditorEvent.TILES);
 		menuBar.addItem("Props", EditorEvent.PROPS);
 		menuBar.addItem("Settings", EditorEvent.SETTINGS);
+		menuBar.addItem("Play", EditorEvent.CLOSE_EDITOR);
 		addChild(menuBar);
 		
 		// Create the standard textData to be used for the menu bar.

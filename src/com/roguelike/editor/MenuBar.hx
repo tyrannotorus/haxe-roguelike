@@ -1,7 +1,7 @@
 package com.roguelike.editor;
 
 import com.roguelike.dialogs.ButtonSprite;
-import com.roguelike.dialogs.ItemContainer;
+import com.roguelike.dialogs.ContentContainer;
 import com.roguelike.editor.Tile;
 import com.roguelike.managers.TextManager;
 import com.roguelike.managers.TileManager;

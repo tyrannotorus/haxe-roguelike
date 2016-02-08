@@ -20,7 +20,7 @@ class TilesDialogOld extends DraggableDialog {
 	private static inline var HEIGHT:Int = 128;
 	private static inline var XMARGIN:Int = 6;
 
-	private var tilesContainer:ItemContainer;
+	private var tilesContainer:ContentContainer;
 	private var selectedTileContainer:Sprite;
 	private var selectedTile:Tile;
 	
@@ -41,7 +41,7 @@ class TilesDialogOld extends DraggableDialog {
 		headerText.y += 1;
 		var tilesContainerY:Int = Std.int(headerContainer.y + headerContainer.height - 4);
 		var tilesRectangle:Rectangle = new Rectangle(XMARGIN, tilesContainerY, WIDTH - 2 * XMARGIN, 50);
-		tilesContainer = new ItemContainer(tilesRectangle);
+		tilesContainer = new ContentContainer(tilesRectangle);
 		addChild(tilesContainer);
 		
 		selectedTileContainer = new Sprite();
