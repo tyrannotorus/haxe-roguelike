@@ -1,12 +1,9 @@
 package com.roguelike.editor;
 
-import com.tyrannotorus.utils.Colors;
+import com.tyrannotorus.utils.KeyCodes;
 import openfl.display.Bitmap;
-import openfl.display.BlendMode;
 import openfl.display.Sprite;
-import openfl.events.MouseEvent;
-import openfl.geom.Rectangle;
-import openfl.Vector;
+import openfl.utils.Object;
 
 /**
  * Tile.hx.
@@ -15,6 +12,7 @@ import openfl.Vector;
 class Tile extends Sprite {
 	
 	public var tileData:TileData;
+	public var neighbourTiles:Object;
 	public var bitmapStack:Array<Bitmap>;
 	public var tilesContainer:Sprite;
 	public var tileBitmap:Bitmap;
@@ -30,7 +28,9 @@ class Tile extends Sprite {
 		
 		super();
 		
-		this.tileData = tileData;		
+		this.tileData = tileData;
+		
+		neighbourTiles = { };
 		
 		tilesContainer = new Sprite();
 		tilesContainer.mouseChildren = false;
@@ -140,6 +140,14 @@ class Tile extends Sprite {
 	public function tint(value:Bool = true):Void {
 		tintBitmap.visible = value;
 		tileBitmap.visible = !value;
+	}
+	
+	public function setNeighbourTile(tile:Tile, tileKey:Int):Void {
+		neighbourTiles[tileKey] = tile;
+	}
+	
+	public function getNeighbourTile(tileKey:Int):Tile {
+		return neighbourTiles[tileKey];
 	}
 	
 	/**

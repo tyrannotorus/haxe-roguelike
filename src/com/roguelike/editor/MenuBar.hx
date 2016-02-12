@@ -83,7 +83,9 @@ class MenuBar extends Sprite {
 		
 	/**
 	 * Add an item to the menu.
-	 * @param {TextData} textData
+	 * @param {TextData} menuText
+	 * @param {String} editorEvent
+	 * @param {Bool} autoSelect
 	 */
 	public function addItem(menuText:String, editorEvent:String, autoSelect:Bool = false):Void {
 		

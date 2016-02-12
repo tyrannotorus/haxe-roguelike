@@ -1,10 +1,8 @@
 package com.roguelike;
 
-import com.roguelike.dialogs.TilesDialogOld;
 import com.roguelike.editor.Editor;
 import com.roguelike.editor.EditorEvent;
 import com.roguelike.editor.Map;
-import com.roguelike.editor.MapData;
 import com.tyrannotorus.utils.KeyCodes;
 import openfl.display.Sprite;
 import openfl.events.KeyboardEvent;
@@ -18,13 +16,10 @@ import openfl.media.SoundTransform;
  */
 class Game extends Sprite {
 		
-	private var screen:Sprite;
 	private var player:Actor;
 	private var opponent:Actor;
-	private var healthBars:HealthBars;
-	private var menu:Menu;
-	private var tilesDialog:TilesDialogOld;
 	private var editor:Editor;
+	private var map:Map;
 	
 	// Keyboard Controls
 	private var zKey:Bool = false;
@@ -34,6 +29,7 @@ class Game extends Sprite {
 	private var downKey:Bool = false;
 	private var leftKey:Bool = false;
 	private var rightKey:Bool = false;
+	private var shiftKey:Bool = false;
 		
 	// Music and sfx
 	private var music:Sound;
@@ -55,7 +51,7 @@ class Game extends Sprite {
 		editor = new Editor();
 		editor.addEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
 		addChild(editor);
-				
+		
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
 		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);
 			
@@ -67,8 +63,11 @@ class Game extends Sprite {
 	}
 	
 	public function onCloseEditor(e:EditorEvent):Void {
-		trace("onCloseEditor");
-		var map:Map = cast e.data;
+		
+		map = cast e.data;
+		map.setCurrentTile();
+		
+		player = map.allActors[0];
 			
 		editor.removeEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
 		editor.parent.removeChild(editor);
@@ -81,15 +80,18 @@ class Game extends Sprite {
 
 	
 	private function onGameKeyDown(e:KeyboardEvent):Void {
-		/*
+		
+		trace(e.keyCode + " " + e.shiftKey);
+		
+		map.setCurrentTile(e.keyCode);
+		
 		switch(e.keyCode) {
 			
 			// Left key
 			case KeyCodes.LEFT:
-				//if (leftKey == false) {
+				if (leftKey == false) {
 					leftKey = true;
-					player.xMove(-1, -1, player.WALK);
-				//}
+				}
 			
 			// Up key
 			case KeyCodes.UP:
@@ -97,18 +99,16 @@ class Game extends Sprite {
 					upKey = true;
 				}
 			
-			// Right Key	
+			// Right Key
 			case KeyCodes.RIGHT:
-				//if (rightKey == false) {
+				if (rightKey == false) {
 					rightKey = true;
-					player.xMove(1, 1, player.WALK);
-				//}
+				}
 			
 			// Down Key
 			case KeyCodes.DOWN:
 				if (downKey == false) {
 					downKey = true;
-					//player.duck(true);
 				}
 			
 			// X Key
@@ -132,7 +132,7 @@ class Game extends Sprite {
 						//player.lowPunchB();
 					}
 				}
-		}*/
+		}
 			
 	}
 	

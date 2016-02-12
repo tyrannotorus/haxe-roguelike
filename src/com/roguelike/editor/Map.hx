@@ -3,6 +3,7 @@ package com.roguelike.editor;
 import com.roguelike.Actor;
 import com.roguelike.editor.MapData;
 import com.roguelike.managers.TileManager;
+import com.tyrannotorus.utils.KeyCodes;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
@@ -19,6 +20,7 @@ class Map extends Sprite {
 	private var mapData:MapData;
 	private var currentScale:Float = 1;
 	private var allTiles:Array<Tile>;
+	private var currentTile:Tile;
 			
 	/**
 	 * Constructor.
@@ -44,6 +46,24 @@ class Map extends Sprite {
 		}
 	}
 	
+	public function setCurrentTile(tileCode:Int = 0):Void {
+
+		if (tileCode != 0) {
+			
+			var neighbourTile:Tile = currentTile.getNeighbourTile(tileCode);
+			trace(neighbourTile);
+			if (neighbourTile != null) {
+				currentTile.highlight(false);
+				currentTile = neighbourTile;
+				currentTile.highlight(true);
+			}		
+			
+		} else {
+			currentTile = allTiles[0];
+			currentTile.highlight(true);
+		}
+	}
+	
 	/**
 	 * Load a map with mapData
 	 * @param {MapData} mapData
@@ -62,10 +82,14 @@ class Map extends Sprite {
 		var yPosition:Int = halfHeight;
 		var tileArray:Array<Int> = mapData.tileArray;
 		var idxTile:Int = 0;
+		var tileMap:Array<Array<Tile>> = new Array<Array<Tile>>();
 		
 		for (yy in 0...mapData.height) {
 			
+			tileMap[yy] = new Array<Tile>();
+						
 			for (xx in 0...mapData.width) {
+				
 				var tileNum:Int = tileArray[idxTile++];
 				var tileName:String = mapData.tileMap[tileNum];
 				var tile:Tile = tileManager.getTile(tileName);
@@ -73,6 +97,7 @@ class Map extends Sprite {
 				tile.y = yPosition;
 				allTiles.push(tile);
 				mapLayer.addChild(tile);
+				tileMap[yy].push(tile);
 				xPosition += tileWidth;
 				
 				if (Math.floor(yPosition % tileHeight) == 0) {
@@ -88,6 +113,35 @@ class Map extends Sprite {
 				xPosition = tileWidth;
 			}
 			xPosition = (Math.floor(yPosition % tileHeight) == 0) ? tileWidth : halfWidth;
+		}
+		
+		// Populate each tile with their direct neighbours.
+		for (yy in 0...tileMap.length) {
+			
+			for (xx in 1...tileMap[yy].length) {
+				
+				tileMap[yy][xx].setNeighbourTile(tileMap[yy][xx - 1], KeyCodes.LEFT);
+				tileMap[yy][xx - 1].setNeighbourTile(tileMap[yy][xx], KeyCodes.RIGHT);
+				
+				if (yy + 1 < tileMap.length) {
+					if(yy % 2 == 0) {
+						tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx - 1], KeyCodes.SW);
+						tileMap[yy + 1][xx - 1].setNeighbourTile(tileMap[yy][xx], KeyCodes.NE);
+						tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx], KeyCodes.SE);
+						tileMap[yy + 1][xx].setNeighbourTile(tileMap[yy][xx], KeyCodes.NW);
+					} else if(xx + 1 < tileMap[yy].length){
+						tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx], KeyCodes.SW);
+						tileMap[yy + 1][xx].setNeighbourTile(tileMap[yy][xx], KeyCodes.NE);
+						tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx+1], KeyCodes.SE);
+						tileMap[yy + 1][xx+1].setNeighbourTile(tileMap[yy][xx], KeyCodes.NW);
+					}
+				}
+				
+				if (yy + 2 < tileMap.length) {
+					tileMap[yy][xx].setNeighbourTile(tileMap[yy + 2][xx], KeyCodes.DOWN);
+					tileMap[yy + 2][xx].setNeighbourTile(tileMap[yy][xx], KeyCodes.UP);
+				}
+			}
 		}
 	}
 	

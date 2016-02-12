@@ -28,32 +28,6 @@ class MapData {
 	}
 	
 	/**
-	 * Saves actors and props placed on tiles during map edit.
-	 * @param {Array<Tile>} allTiles
-	 */
-	public function save(allTiles:Array<Tile>):Void {
-		
-		var idxTile:Int = 0;
-		
-		tileArray = new Array<Int>();
-		actorArray = new Array<Int>();
-		propArray = new Array<Int>();
-		
-		
-		// Save the changes to the tiles with a new tile:file map
-		// loop throught the tiles and create an actor#:actorfile map array<int>
-		for (yy in 0...height) {
-			
-			for (xx in 0...width) {
-				var tile:Tile = allTiles[idxTile];
-				
-				//if(tile.)
-				
-			}
-		}
-	}
-	
-	/**
 	 * Deserializes json string into mapData.
 	 * @param {String} jsonString
 	 */

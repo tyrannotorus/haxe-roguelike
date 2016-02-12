@@ -1,14 +1,6 @@
 package com.roguelike.dialogs;
 
-import com.roguelike.dialogs.DraggableDialog;
-import com.tyrannotorus.assetloader.AssetEvent;
-import com.tyrannotorus.assetloader.AssetLoader;
-import com.tyrannotorus.utils.Colors;
-import com.tyrannotorus.utils.Utils;
-import haxe.ds.ObjectMap;
-import openfl.display.Bitmap;
 import openfl.display.Sprite;
-import openfl.events.MouseEvent;
 import openfl.geom.Rectangle;
 
 /**
