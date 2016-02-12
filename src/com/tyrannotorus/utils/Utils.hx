@@ -32,29 +32,6 @@ class Utils {
     }
 	
 	/**
-	 * Positions a display object on the screen
-	 * @param {DisplayObject} displayObject
-	 * @param {Dynamic} x
-	 * @param {Dynamic} y
-	 */
-	public static function position(displayObject:DisplayObject, x:Dynamic = null, y:Dynamic = null):Void {
-		
-		var rect:Rectangle = displayObject.getRect(displayObject);
-		
-		if (x == Constants.CENTER) {
-			displayObject.x = Std.int((Main.GAME_WIDTH - rect.width) * 0.5);
-		} else if (Std.is(x, Float)) {
-			displayObject.x = x;
-		}
-		
-		if (y == Constants.CENTER) {
-			displayObject.y = Std.int((Main.GAME_HEIGHT - rect.height) * 0.5);
-		} else if (Std.is(x, Float)) {
-			displayObject.y = y;
-		}
-	}
-	
-	/**
 	 * Returns field of object if it exists, otherwise returns defaultField
 	 * @param	object
 	 * @param	field

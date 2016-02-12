@@ -1,8 +1,7 @@
 package com.roguelike;
 
-import com.tyrannotorus.utils.Colors;
-import com.tyrannotorus.utils.Constants;
 import com.roguelike.managers.TextManager;
+import com.tyrannotorus.utils.Colors;
 
 /**
  * TextObject.hx
