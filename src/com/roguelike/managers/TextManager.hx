@@ -1,5 +1,6 @@
-package bubblebobble;
+package com.roguelike.managers;
 
+import com.roguelike.TextData;
 import com.tyrannotorus.utils.Colors;
 import flash.display.Bitmap;
 import flash.display.BitmapData;
@@ -7,24 +8,21 @@ import flash.display.Sprite;
 import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.geom.Rectangle;
-import motion.Actuate;
-import motion.easing.Cubic;
 
-
-@:bitmap("assets/fonts/bmd_font_custom7x7.png")
-class FontLarge extends BitmapData { }
+//@:bitmap("assets/fonts/bmd_font_custom7x7.png")
+//class FontLarge extends BitmapData { }
 
 @:bitmap("assets/fonts/bmd_font_custom5x5.png")
 class FontSmall extends BitmapData { }
 
-@:bitmap("assets/fonts/bmd_font_ironsword.png")
-class FontIronsword extends BitmapData { }
+//@:bitmap("assets/fonts/bmd_font_ironsword.png")
+//class FontIronsword extends BitmapData { }
 
-@:bitmap("assets/fonts/bmd_font_sopwith.png")
-class FontSopwith extends BitmapData { }
+//@:bitmap("assets/fonts/bmd_font_sopwith.png")
+//class FontSopwith extends BitmapData { }
 
-@:bitmap("assets/fonts/bmd_font_punchout.png")
-class FontPunchOut extends BitmapData { }
+//@:bitmap("assets/fonts/bmd_font_punchout.png")
+//class FontPunchOut extends BitmapData { }
 
 class TextManager {
 	
@@ -33,7 +31,7 @@ class TextManager {
 	public static inline var IRONSWORD:Int = 2;
 	public static inline var SOPWITH:Int = 3;
 	public static inline var PUNCHOUT:Int = 4;
-	public static inline var ALPHABET:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopkrstuvwxyz0123456789?!.<>|()@:- ";
+	public static inline var ALPHABET:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopkrstuvwxyz0123456789?!.<>|()@:+- ";
 	
 	private static var textManager:TextManager;
 	
@@ -41,22 +39,34 @@ class TextManager {
 	private var glyphBmds:Array<Array<BitmapData>> = [];
 	private var textBitmapArray:Array<Bitmap>;
 		
+	/**
+	 * TextManager is a singleton.
+	 * @return {TextManager}
+	 */
 	public static function getInstance():TextManager {
 		return (textManager != null) ? textManager : textManager = new TextManager();
 	}
 		
+	/**
+	 * Constructor.
+	 */
 	public function new():Void {
 		
 		if (textManager != null) {
 			trace("TextManager.new() is already instantiated.");
 			return;
 		}
-		
-		constructFont(LARGE, new FontLarge(0, 0));
+	}
+	
+	/**
+	 * Initializes the TextManager.
+	 */
+	public function init():Void {
+		//constructFont(LARGE, new FontLarge(0, 0));
 		constructFont(SMALL, new FontSmall(0, 0));
-		constructFont(IRONSWORD, new FontIronsword(0, 0));
-		constructFont(SOPWITH, new FontSopwith(0, 0));
-		constructFont(PUNCHOUT, new FontPunchOut(0, 0));
+		//constructFont(IRONSWORD, new FontIronsword(0, 0));
+		//constructFont(SOPWITH, new FontSopwith(0, 0));
+		//constructFont(PUNCHOUT, new FontPunchOut(0, 0));
 	}
 	
 	/**
@@ -121,15 +131,8 @@ class TextManager {
 	 */
 	public function toBitmapData(textData:TextData):BitmapData {
 		
-		trace(textData.text);
-		
 		var textArray:Array<String> = textData.text.split("\n");
-		
-		trace(textArray.join(","));
-		
 		var textRect:Rectangle = getTextRect(textData);	
-		
-		trace(textRect);
 		var bmd:BitmapData = new BitmapData(Std.int(textRect.width), Std.int(textRect.height), true, Colors.TRANSPARENT);
 		var textArrayLength:Int = textArray.length;
 		var idxGlyph:Int;
@@ -151,7 +154,7 @@ class TextManager {
 			}
 		}
 		
-		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.BLACK, textData.primaryColor);		// Colour opaque text
+		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.BLACK, textData.upColor);		// Colour opaque text
 		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.YELLOW, textData.secondaryColor);		// Colour opaque text
 			
 		// Render shadow text and lay opaque text on top.
@@ -222,7 +225,7 @@ class TextManager {
 		var textArrayLength:Int = textArray.length;
 		var point:Point = new Point();
 		var idxChar:Int;
-		var primaryColor:Int = textData.primaryColor;
+		var upColor:Int = textData.upColor;
 		var fontSet:Int = textData.fontSet;
 		var matteMarginX:Int = textData.matteMarginX;
 		
@@ -244,7 +247,7 @@ class TextManager {
 				}
 				var glyph:Bitmap = new Bitmap(glyphBmds[fontSet][idxChar]);
 				rect = glyph.bitmapData.rect;
-				glyph.bitmapData.threshold(glyph.bitmapData, rect, thresholdPoint, "==", Colors.BLACK, primaryColor);
+				glyph.bitmapData.threshold(glyph.bitmapData, rect, thresholdPoint, "==", Colors.BLACK, upColor);
 				glyph.x = positionPoint.x;
 				glyph.y = positionPoint.y;
 				glyph.alpha = 0;

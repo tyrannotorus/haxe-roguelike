@@ -1,6 +1,8 @@
 package com.tyrannotorus.utils;
 
-import motion.Actuate;
+import openfl.Vector;
+import openfl.display.BitmapData;
+import openfl.geom.Rectangle;
 
 /**
  * Color.as
@@ -39,9 +41,14 @@ class Colors {
 	public static inline var GARYS_PINK_LACE:Int = 0xFFFFCFE9;
 	public static inline var YO_COIN_GOLD:Int = 0xFFFEF07E;
 	public static inline var YO_CASH_GREEN:Int = 0xFF53A551;
+	public static inline var BLUE:Int = 0xFF0000FF;
+	
+	public static var ACTOR_SHADOW:Int = setAlpha(BLACK, 0.3);
+	public static var TILE_HIGHLIGHT:UInt = setAlpha(PIZAZZ, 0.7);
+	public static var TILE_OFFSET_COLOR:UInt = setAlpha(BLACK, 0.08);
 
 	/**
-	 * Converts an Int color (like those in this class) to a hex string.
+	 * Converts an Int color (like those in this class) to a 16 bit hex string.
 	 * @param {Int} color
 	 * @return {String}
 	 */
@@ -55,13 +62,15 @@ class Colors {
 	}
 	
 	/**
-	 * Tweens the color of an object, with on optional callback function on complete
-	 * @param	object
-	 * @param	callBackFunction
+	 * Set the alpha for a 32-bit color by a decimal. Return the new color.
+	 * @param {Int} color
+	 * @param {Float} alpha
+	 * @return {Int}
 	 */
-	public static function tweenColor(object:Dynamic, callBackFunction:Dynamic = null):Void {
-		var i:Int = Math.floor(Math.random() * Constants.colors.length);
-		Actuate.transform(object, 1).color(Constants.colors[i], 0.5).onComplete(callBackFunction);
+	public static function setAlpha(color:Int, alpha:Float = 1):Int {
+		var rgb:Int = 0xFFFFFF & color;
+		var argb:Int = cast(alpha * 255, Int) << 24 | rgb;
+		return argb;
 	}
 	
 	/**
@@ -127,5 +136,47 @@ class Colors {
 		}
 		return val;
 	}
+	
+	/**
+	* Tints and returns a copy of the bitmapData.
+	* @param {BitmapData} bmd
+	* @param {Int} color (32-bit)
+	* @return {BitmapData}
+	*/
+	public static inline function tintBitmapData(bmd:BitmapData, color:Int):BitmapData {
+				
+		var tintAmount:Float = (color >> 24 & 0xFF) / 255;
+		var origAmount:Float = 1 - tintAmount;
+		var tintR:Int = cast((color >> 16 & 0xFF) * tintAmount, Int);
+		var tintG:Int = cast((color >> 8 & 0xFF) * tintAmount, Int);
+		var tintB:Int = cast((color & 0xFF) * tintAmount, Int);
+		
+		var rect:Rectangle = bmd.rect;
+		var bmdWidth:Int = Math.floor(rect.width);
+		var bmdHeight:Int = Math.floor(rect.height);
+		
+		var bmdVector:Vector<UInt> = bmd.getVector(rect);
+		var idxPixel:Int = 0;
+		for(yPosition in 0...bmdHeight) {
+			for (xPosition in 0...bmdWidth) {
+				if (bmdVector[idxPixel] != TRANSPARENT) {
+					var pixelColor:UInt = bmdVector[idxPixel];
+					var a:Int = pixelColor >> 24 & 0xFF;
+					var r:Int = cast(tintR + ((pixelColor >> 16 & 0xFF) * origAmount), Int);
+					var g:Int = cast(tintG + ((pixelColor >> 8 & 0xFF) * origAmount), Int);
+					var b:Int = cast(tintB + ((pixelColor & 0xFF) * origAmount), Int);
+					bmdVector[idxPixel] = a << 24 | r << 16 | g << 8 | b;
+				}
+				idxPixel++;
+			}
+		}
+		
+		var tintBmd:BitmapData = new BitmapData(bmdWidth, bmdHeight, true);
+		tintBmd.setVector(rect, bmdVector);
+		
+		return tintBmd;
+	}
+		
+	
 
 }

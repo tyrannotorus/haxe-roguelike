@@ -1,4 +1,4 @@
-package bubblebobble.dialogs;
+package com.roguelike.dialogs;
 
 import haxe.ds.StringMap;
 import openfl.events.Event;
@@ -27,14 +27,17 @@ class DraggableDialog extends GenericDialog {
 	 * @param {MouseEvent.MOUSE_DOWN} e
 	 */
 	private function onStartDialogDrag(e:MouseEvent):Void {
+		e.stopImmediatePropagation();
+		this.parent.setChildIndex(this, this.parent.numChildren - 1);
 		startDrag();
 	}
 
 	/**
 	 * Stop dragging the dialog.
-	 * @param {MouseEvent.MOUSE_MOVE} e
+	 * @param {MouseEvent.MOUSE_UP} e
 	 */
 	private function onStopDialogDrag(e:MouseEvent):Void {
+		e.stopImmediatePropagation();
 		stopDrag();
 	}
 

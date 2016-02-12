@@ -6,7 +6,9 @@ import haxe.io.BytesInput;
 import haxe.zip.Entry;
 import haxe.zip.Reader;
 import List;
+import openfl.Assets;
 import openfl.display.Bitmap;
+import openfl.display.BitmapData;
 import openfl.display.Loader;
 import openfl.display.LoaderInfo;
 import openfl.events.Event;
@@ -28,9 +30,9 @@ import openfl.utils.ByteArray;
 class AssetLoader extends EventDispatcher {
 	
 	// Handled File types.
-	private static inline var PNG:String = "png";
-	private static inline var TXT:String = "txt";
-	private static inline var ZIP:String = "zip";
+	public static inline var PNG:String = "png";
+	public static inline var TXT:String = "txt";
+	public static inline var ZIP:String = "zip";
 	
 	// Cache of previously loaded assets.
 	private static var assetCache:ObjectMap<Dynamic,AssetEvent> = new ObjectMap<Dynamic,AssetEvent>();
@@ -48,7 +50,7 @@ class AssetLoader extends EventDispatcher {
 	}
 	
 	/**
-	 * Loads an external asset (like a zip file)
+	 * Loads an asset from cache if it has been previously loaded; otherwise from locally or the web.
 	 * @param {String} assetPath
 	 */
 	public function loadAsset(assetPath:String):Void {
@@ -65,13 +67,43 @@ class AssetLoader extends EventDispatcher {
 		assetEvent.assetPath = assetPath;
 		assetEvent.assetType = assetPath.split(".").pop().toLowerCase();
 		
-		// Initiate loading the asset.
-		urlLoader = new URLLoader();
-		urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
-		urlLoader.addEventListener(Event.COMPLETE, onAssetLoaded);
-		urlLoader.addEventListener(IOErrorEvent.IO_ERROR, onAssetLoadedError);
-		urlLoader.addEventListener(ProgressEvent.PROGRESS, onAssetProgress);
-		urlLoader.load(new URLRequest(assetPath));
+		// We're loading the asset from the web.
+		if (assetPath.toLowerCase().indexOf("http") == 0) {
+			
+			// Initiate loading the asset.
+			urlLoader = new URLLoader();
+			urlLoader.dataFormat = URLLoaderDataFormat.BINARY;
+			urlLoader.addEventListener(Event.COMPLETE, onAssetLoaded);
+			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, onAssetLoadedError);
+			urlLoader.addEventListener(ProgressEvent.PROGRESS, onAssetProgress);
+			urlLoader.load(new URLRequest(assetPath));
+			return;
+		}
+		
+		// Otherwise, we're loading the asset from our local environment.
+		switch(assetEvent.assetType) {
+			
+			// Load a zip.
+			case ZIP:
+				var zipFile:ByteArray = Assets.getBytes(assetPath);
+				unpackZip(zipFile);
+					
+			// Load a bitmap.
+			case PNG:
+				var bitmapData:BitmapData = Assets.getBitmapData(assetPath);
+				var bitmapFile:Bitmap = new Bitmap(bitmapData);
+				assetEvent.assetData = bitmapFile;
+			
+			// Load a text file.
+			case TXT:
+				var textFile:String = Assets.getText(assetPath);
+				assetEvent.assetData = textFile;
+		}
+		
+		// Dispatch assetEvent if asset was successfully loaded.
+		if (assetEvent.assetData != null) {
+			dispatchComplete();
+		}
 	}
 	
 	/**
@@ -88,11 +120,11 @@ class AssetLoader extends EventDispatcher {
 				unpackZip(urlLoader.data);
 				
 			case PNG:
+				assetEvent.assetData = cast(urlLoader.data, Bitmap);
+				dispatchComplete();
 				
 			default:
 		}
-		
-		cleanUp();
 	}
 	
 	/**
@@ -117,7 +149,7 @@ class AssetLoader extends EventDispatcher {
 	 * Unpack a loaded asset that's a zip file.
 	 * @param {ByteArray} byteArray
 	 */
-	private function unpackZip(byteArray:ByteArray):Void {
+	private function unpackZip(byteArray:Dynamic):Void {
 		
 		// Read the file entries in the zip.
 		var bytes:Bytes = Bytes.ofData(byteArray);
@@ -129,7 +161,7 @@ class AssetLoader extends EventDispatcher {
 		assetEvent.assetData = { };
 		
 		filesLeft = zipEntries.length;
-		
+						
 		// Cycle through entries in the zip
 		for(entry in zipEntries) {
 			
@@ -142,11 +174,12 @@ class AssetLoader extends EventDispatcher {
 				loader.name = fileName;
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageFromZipLoaded);
 				loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, onImageFromZipError);
-				loader.loadBytes(entry.data.getData());
+				loader.loadBytes(cast(entry.data.getData(), ByteArray));
 			
 			// parse .txt from the zip
 			} else if (fileType == TXT) {
 				assetEvent.addData(fileName, entry.data.toString());
+				filesLeft--;
 				dispatchComplete();
 			}
 		} 
@@ -162,8 +195,10 @@ class AssetLoader extends EventDispatcher {
 		var loaderInfo:LoaderInfo = cast(e.target, LoaderInfo);
 		loaderInfo.removeEventListener(Event.COMPLETE, onImageFromZipLoaded);
 		loaderInfo.removeEventListener(IOErrorEvent.IO_ERROR, onImageFromZipError);
-		
+		trace("loaded png " + loaderInfo.loader.name);
 		assetEvent.addData(loaderInfo.loader.name, cast(loaderInfo.content, Bitmap));
+		
+		filesLeft--;
 		dispatchComplete();
 	}
 	
@@ -178,6 +213,7 @@ class AssetLoader extends EventDispatcher {
 		loaderInfo.removeEventListener(Event.COMPLETE, onImageFromZipLoaded);
 		loaderInfo.removeEventListener(IOErrorEvent.IO_ERROR, onImageFromZipError);
 		
+		filesLeft--;
 		dispatchComplete();
 	}
 	
@@ -187,24 +223,28 @@ class AssetLoader extends EventDispatcher {
 	private function dispatchComplete():Void {
 		
 		// We're still waiting on files to load.
-		if (--filesLeft > 0) {
+		if (filesLeft > 0) {
 			return;
 		}
-		
+		trace("dispatching assetEvent " + assetEvent.type + " " + filesLeft);
 		// Save the assetData to the assetCache and dispatch compelete.
 		var assetPath:String = assetEvent.assetPath;
 		assetCache.set(assetPath, assetEvent);
 		dispatchEvent(assetEvent);
+		
+		cleanUp();
 	}
 	
 	/**
 	 * Always clean up your mess.
 	 */
 	private function cleanUp():Void {
-		urlLoader.removeEventListener(Event.COMPLETE, onAssetLoaded);
-		urlLoader.removeEventListener(IOErrorEvent.IO_ERROR, onAssetLoadedError);
-		urlLoader.removeEventListener(ProgressEvent.PROGRESS, onAssetProgress);
-		urlLoader = null;
+		if(urlLoader != null) {
+			urlLoader.removeEventListener(Event.COMPLETE, onAssetLoaded);
+			urlLoader.removeEventListener(IOErrorEvent.IO_ERROR, onAssetLoadedError);
+			urlLoader.removeEventListener(ProgressEvent.PROGRESS, onAssetProgress);
+			urlLoader = null;
+		}
 	}
 	
 	

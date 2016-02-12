@@ -1,4 +1,4 @@
-package bubblebobble;
+package com.roguelike;
 
 import com.tyrannotorus.utils.Colors;
 

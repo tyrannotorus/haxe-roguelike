@@ -1,7 +1,8 @@
-package bubblebobble;
+package com.roguelike;
 
 import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.Constants;
+import com.roguelike.managers.TextManager;
 
 /**
  * TextObject.hx
@@ -11,7 +12,10 @@ class TextData {
 	
 	public var text:String = " ";
 	public var fontSet:Int = TextManager.SMALL;
-	public var primaryColor:Int = Colors.WHITE;
+	public var upColor:Int = Colors.WHITE;
+	public var overColor:Int = Colors.WHITE;
+	public var downColor:Int = Colors.WHITE;
+	public var selectedColor:Int = Colors.WHITE;
 	public var secondaryColor:Int = Colors.GALLERY;
 	public var shadowColor:Int = Colors.TRANSPARENT;
 	public var shadowOffsetX:Int = 0;

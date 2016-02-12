@@ -1,10 +1,11 @@
-package bubblebobble;
+package com.roguelike;
 
 import com.tyrannotorus.utils.Colors;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.geom.Point;
+import openfl.geom.Rectangle;
 
 /**
  * Matte.hx
@@ -28,33 +29,21 @@ class Matte {
 		var height:Int = matteData.height;
 		var borderColor:UInt = matteData.borderColor;
 		var borderWidth:UInt = matteData.borderWidth;
-		var twiceBorderWidth:UInt = borderWidth * 2;
 		var matteColor:UInt = matteData.matteColor;
-		var topRadius:Int = matteData.topRadius;
-		var bottomRadius:Int = matteData.bottomRadius;
-		
-		// Create the backing matte which will act as the border.
-		var borderBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
-		var borderSprite:Sprite = new Sprite();
-		borderSprite.graphics.beginFill(borderColor);
-		borderSprite.graphics.drawRoundRectComplex(0, 0, width, height, topRadius, topRadius, bottomRadius, bottomRadius);
-		borderSprite.graphics.endFill();
-		borderBmd.draw(borderSprite);
-		borderBmd.threshold(borderBmd, borderBmd.rect, new Point(), "!=", borderColor, Colors.TRANSPARENT);
-		
-		// Create the inner matte.
-		var innerBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
-		var innerSprite:Sprite = new Sprite();
-		innerSprite.graphics.beginFill(matteColor);
-		innerSprite.graphics.drawRoundRectComplex(borderWidth, borderWidth, width - twiceBorderWidth, height - twiceBorderWidth, topRadius, topRadius, bottomRadius, bottomRadius);
-		innerSprite.graphics.endFill();
-		innerBmd.draw(innerSprite);
-		innerBmd.threshold(innerBmd, innerBmd.rect, new Point(), "!=", matteColor, Colors.TRANSPARENT);
-		
-		// Copy the inner matte onto the border matte.
-		borderBmd.copyPixels(innerBmd, innerBmd.rect, new Point(), null, null, true);
 				
-		return new Bitmap(borderBmd);
+		// Create the backing matte which will act as the border.
+		var matteBmd:BitmapData = new BitmapData(width, height, true, Colors.TRANSPARENT);
+		if(borderWidth > 0) {
+			matteBmd.fillRect(new Rectangle(1, 0, width - 2, height), borderColor);
+			matteBmd.fillRect(new Rectangle(0, 1, width, height-2), borderColor);
+			matteBmd.fillRect(new Rectangle(2, 1, width - 4, height -2), matteColor);
+			matteBmd.fillRect(new Rectangle(1, 2, width - 2, height-4), matteColor);
+		} else {
+			matteBmd.fillRect(new Rectangle(1, 0, width - 2, height), matteColor);
+			matteBmd.fillRect(new Rectangle(0, 1, width, height-2), matteColor);
+		}
+				
+		return new Bitmap(matteBmd);
 	}
 	
 	/**
