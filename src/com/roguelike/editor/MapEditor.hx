@@ -86,8 +86,8 @@ class MapEditor extends Map {
 			case EditorEvent.HELP:
 				trace("EditorEvent.HELP");
 				
-			case EditorEvent.CLOSE_EDITOR:
-				dispatchEvent(new EditorEvent(EditorEvent.CLOSE_EDITOR, mapData, true));
+			//case EditorEvent.CLOSE_EDITOR:
+			//	dispatchEvent(new EditorEvent(EditorEvent.CLOSE_EDITOR, mapData, true));
 		}
 	}
 	

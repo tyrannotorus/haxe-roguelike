@@ -1,20 +1,11 @@
 package com.roguelike.editor;
 
 import com.roguelike.dialogs.ButtonSprite;
-import com.roguelike.dialogs.ContentContainer;
-import com.roguelike.editor.Tile;
 import com.roguelike.managers.TextManager;
-import com.roguelike.managers.TileManager;
 import com.roguelike.TextData;
-import com.tyrannotorus.utils.Colors;
-import com.tyrannotorus.utils.Utils;
-import haxe.ds.ObjectMap;
-import haxe.macro.Expr.Function;
-import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
-import openfl.geom.Rectangle;
 
 /**
  * ActorsDialog.hx.

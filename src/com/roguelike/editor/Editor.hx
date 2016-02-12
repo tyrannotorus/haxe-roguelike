@@ -62,7 +62,7 @@ class Editor extends Sprite {
 	private function onEditorDispatch(e:EditorEvent):Void {
 		
 		var editorEvent:String = e.data;
-		
+		trace("onEditorDispatch() " + editorEvent);
 		switch(editorEvent) {
 			
 			case EditorEvent.FILE:
