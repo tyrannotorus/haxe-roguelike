@@ -67,10 +67,9 @@ class Game extends Sprite {
 	}
 	
 	public function onCloseEditor(e:EditorEvent):Void {
-		
-		var mapData:MapData = cast e.data;
-		var map:Map = new Map(mapData);
-		
+		trace("onCloseEditor");
+		var map:Map = cast e.data;
+			
 		editor.removeEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
 		editor.parent.removeChild(editor);
 		editor.cleanUp();

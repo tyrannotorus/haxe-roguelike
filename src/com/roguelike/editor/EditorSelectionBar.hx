@@ -148,7 +148,6 @@ class EditorSelectionBar extends Sprite {
 				actorsContainer.visible = false;
 				tilesContainer.visible = false;
 		}
-		
 	}
 	
 	/**

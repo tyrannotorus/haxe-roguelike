@@ -3,6 +3,7 @@ package com.roguelike.editor;
 import com.roguelike.dialogs.DialogData;
 import com.roguelike.dialogs.GenericDialog;
 import com.roguelike.editor.MapEditor;
+import com.roguelike.managers.MapManager;
 import com.roguelike.managers.TextManager;
 import com.roguelike.TextData;
 import com.tyrannotorus.utils.Colors;
@@ -15,7 +16,8 @@ import openfl.events.Event;
  * - The game editor.
  */
 class Editor extends Sprite {
-		
+	
+	private var map:Map;
 	private var mapEditor:MapEditor;
 			
 	/**
@@ -45,8 +47,13 @@ class Editor extends Sprite {
 		stageText.y = 1;
 		addChild(stageText);
 		
-		// Create and add the level editor
-		mapEditor = new MapEditor();
+		// Create the map.
+		var mapData:MapData = MapManager.getInstance().getMapData("hellmouth.txt");
+		map = new Map(mapData);
+		addChild(map);
+		
+		// Create the map editor.
+		mapEditor = new MapEditor(map);
 		mapEditor.y = 8;
 		addChild(mapEditor);
 		

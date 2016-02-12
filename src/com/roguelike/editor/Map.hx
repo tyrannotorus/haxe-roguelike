@@ -2,9 +2,7 @@ package com.roguelike.editor;
 
 import com.roguelike.Actor;
 import com.roguelike.editor.MapData;
-import com.roguelike.Main;
 import com.roguelike.managers.TileManager;
-import haxe.ds.ObjectMap;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
@@ -15,14 +13,16 @@ import openfl.events.MouseEvent;
  */
 class Map extends Sprite {
 	
+	public var mapLayer:Sprite;
+	public var allActors:Array<Actor>;
+	
 	private var mapData:MapData;
-	private var mapLayer:Sprite;
 	private var currentScale:Float = 1;
 	private var allTiles:Array<Tile>;
-	private var allActors:Array<Actor>;
-		
+			
 	/**
 	 * Constructor.
+	 * @param {MapData} mapData
 	 */
 	public function new(mapData:MapData = null) {
 		
@@ -110,7 +110,7 @@ class Map extends Sprite {
 	 * Animate the actors on the level.
 	 * @param {Event.ENTER_FRAME} e
 	 */	
-	private function animateActors(e:Event):Void {
+	public function animateActors(e:Event):Void {
 		for (idxActor in 0...allActors.length) {
 			allActors[idxActor].animate();
 		}
@@ -142,12 +142,12 @@ class Map extends Sprite {
 		}
 	}
 	
-	private function addListeners():Void {
+	public function addListeners():Void {
 		mapLayer.addEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
 		mapLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
 	}
 	
-	private function removeListeners():Void {
+	public function removeListeners():Void {
 		mapLayer.removeEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
 		mapLayer.removeEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
 	}

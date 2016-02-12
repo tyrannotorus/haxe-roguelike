@@ -11,30 +11,36 @@ import openfl.events.MouseEvent;
  * MapEditor.as
  * - Like map, but editable.
  */
-class MapEditor extends Map {
+class MapEditor extends Sprite {
 	
 	// currentStates
 	private static inline var DRAG_MAP:String = "DRAG_MAP";
 		
 	private var currentState:String;
 	private var dialogLayer:Sprite;
-
+	private var map:Map;
 	private var editorSelectionBar:EditorSelectionBar;
 	private var selectedTile:Tile;
 	private var selectedActor:Actor;
 	private var dragStarted:Bool;
 	private var mouseDown:Bool;
-			
+		
 	/**
 	 * Constructor.
+	 * @param {Map} map
 	 */
-	public function new() {
+	public function new(map:Map) {
 		
 		super();
 		
 		// Listen for dispatches from the editorDispatcher.
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
 		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
+		
+		// Add the map to the editor.
+		this.map = map;
+		this.map.removeListeners();
+		this.addChild(map);
 		
 		// Create the dialog layer.
 		dialogLayer = new Sprite();
@@ -45,10 +51,8 @@ class MapEditor extends Map {
 		editorSelectionBar.x = 10;
 		editorSelectionBar.y = Main.GAME_HEIGHT - 35;
 		dialogLayer.addChild(editorSelectionBar);
-				
-		// Load the map.
-		var mapData:MapData = MapManager.getInstance().getMapData("hellmouth.txt");
-		loadMap(mapData);
+		
+		addListeners();
 	}
 	
 	/**
@@ -78,16 +82,17 @@ class MapEditor extends Map {
 				enableActorsOnMap(false);
 				
 			case EditorEvent.ZOOM_OUT:
-				modifyScale(-0.1);
+				map.modifyScale(-0.1);
 				
 			case EditorEvent.ZOOM_IN:
-				modifyScale(0.1);
+				map.modifyScale(0.1);
+				
+			case EditorEvent.CLOSE_EDITOR:
+				map.addListeners();
+				dispatchEvent(new EditorEvent(EditorEvent.CLOSE_EDITOR, map, true));
 				
 			case EditorEvent.HELP:
 				trace("EditorEvent.HELP");
-				
-			//case EditorEvent.CLOSE_EDITOR:
-			//	dispatchEvent(new EditorEvent(EditorEvent.CLOSE_EDITOR, mapData, true));
 		}
 	}
 	
@@ -182,8 +187,8 @@ class MapEditor extends Map {
 						selectedActor = actor;
 					} else {
 						selectedActor = actor.clone();
-						allActors.push(selectedActor);
-						addEventListener(Event.ENTER_FRAME, animateActors);
+						map.allActors.push(selectedActor);
+						addEventListener(Event.ENTER_FRAME, map.animateActors);
 					}
 				
 				// Mousedown upon a tile.
@@ -209,8 +214,8 @@ class MapEditor extends Map {
 			
 					if (e.shiftKey == true) {
 						currentState = DRAG_MAP;
-						mapLayer.mouseChildren = false;
-						mapLayer.startDrag();
+						map.mapLayer.mouseChildren = false;
+						map.mapLayer.startDrag();
 			
 					} else if (selectedTile != null) {
 						tile.clone(selectedTile);
@@ -232,10 +237,10 @@ class MapEditor extends Map {
 		switch(currentState) {
 			
 			case DRAG_MAP:
-				mapLayer.mouseChildren = true;
-				mapLayer.stopDrag();
-				mapLayer.x = Math.floor(mapLayer.x);
-				mapLayer.y = Math.floor(mapLayer.y);
+				map.mapLayer.mouseChildren = true;
+				map.mapLayer.stopDrag();
+				map.mapLayer.x = Math.floor(map.mapLayer.x);
+				map.mapLayer.y = Math.floor(map.mapLayer.y);
 									
 			case EditorEvent.ACTORS:
 			
@@ -272,9 +277,9 @@ class MapEditor extends Map {
 	 * @param {Bool} value
 	 */
 	private function enableActorsOnMap(value:Bool):Void {
-		for (i in 0...allActors.length) {
-			allActors[i].currentTile.mouseChildren = value;
-			allActors[i].currentTile.buttonMode = value;
+		for (i in 0...map.allActors.length) {
+			map.allActors[i].currentTile.mouseChildren = value;
+			map.allActors[i].currentTile.buttonMode = value;
 		}
 	}
 	
@@ -288,13 +293,13 @@ class MapEditor extends Map {
 				
 			selectedActor.stopDrag();
 			
-			var actorIndex:Int = allActors.indexOf(selectedActor);
+			var actorIndex:Int = map.allActors.indexOf(selectedActor);
 			if (actorIndex != -1) {
-				allActors.splice(actorIndex, 1);
+				map.allActors.splice(actorIndex, 1);
 			}
 			
-			if (allActors.length == 0) {
-				this.removeEventListener(Event.ENTER_FRAME, animateActors);
+			if (map.allActors.length == 0) {
+				this.removeEventListener(Event.ENTER_FRAME, map.animateActors);
 			}
 		}
 		
@@ -337,7 +342,7 @@ class MapEditor extends Map {
 		}
 	}
 	
-	override private function addListeners():Void {
+	private function addListeners():Void {
 		addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
 		addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
 		addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
@@ -345,7 +350,7 @@ class MapEditor extends Map {
 		addEventListener(Event.MOUSE_LEAVE, onMouseUp);
 	}
 	
-	override private function removeListeners():Void {
+	private function removeListeners():Void {
 		removeEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
 		removeEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
 		removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
