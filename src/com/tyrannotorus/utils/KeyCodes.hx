@@ -1,5 +1,4 @@
 package com.tyrannotorus.utils;
-import openfl.utils.Object;
 
 /**
  * KeyCodes.as
@@ -17,14 +16,4 @@ class KeyCodes {
 	public static inline var Z:Int = 90;
 	public static inline var X:Int = 88;
 	
-	public static var opposingKeyCodes:Object = {
-		LEFT:RIGHT,
-		RIGHT:LEFT,
-		UP:DOWN,
-		DOWN:UP,
-		NW:SE,
-		SE:NW,
-		NE:SW,
-		SW:NE
-	}
 }

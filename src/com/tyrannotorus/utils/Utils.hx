@@ -98,8 +98,9 @@ class Utils {
 	}
 	
 	/**
-	 * Returns a hitArea sprite when passed a bitmapData, omitting the transparent bits.
-	 * @param {BitmapData} bmd
+	 * Returns a Sprite of the bitmap with a single pixel outline of specified color.
+	 * @param {Bitmap} sourceBitmap
+	 * @param {UInt} color
 	 * @return {Sprite}
 	 */
 	public static function getOutline(sourceBitmap:Bitmap, color:UInt):Sprite {
