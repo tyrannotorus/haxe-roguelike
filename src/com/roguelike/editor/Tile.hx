@@ -77,7 +77,7 @@ class Tile extends Sprite {
 	 * Add an occupant to this tile (Actor, Treasure, etc);
 	 * @param {Dynamic} occupant
 	 */
-	public function addOccupant(occupant:Dynamic):Void {
+	public function addOccupant(occupant:Dynamic, x:Float = 0, y:Float = 0):Void {
 		
 		// Occupant already occupies tile.
 		if (this.occupant == occupant) {
@@ -91,8 +91,8 @@ class Tile extends Sprite {
 		
 		// Add occupant to this tile.
 		this.occupant = occupant;
-		occupant.x = 0;
-		occupant.y = 0;
+		occupant.x = x;
+		occupant.y = y;
 		occupant.currentTile = this;
 		occupant.mouseEnabled = false;
 		highlight(true);

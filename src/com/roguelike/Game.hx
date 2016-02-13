@@ -65,9 +65,9 @@ class Game extends Sprite {
 	public function onCloseEditor(e:EditorEvent):Void {
 		
 		map = cast e.data;
-		map.setCurrentTile();
-		
+				
 		player = map.allActors[0];
+		map.setCurrentTile(player.currentTile);
 			
 		editor.removeEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
 		editor.parent.removeChild(editor);
@@ -83,7 +83,8 @@ class Game extends Sprite {
 		
 		trace(e.keyCode + " " + e.shiftKey);
 		
-		map.setCurrentTile(e.keyCode);
+		//map.moveCurrentTile(e.keyCode);
+		player.moveToTile(e.keyCode);
 		
 		switch(e.keyCode) {
 			

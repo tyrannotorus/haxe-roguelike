@@ -5,6 +5,8 @@ import com.roguelike.editor.Tile;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
+import motion.Actuate;
+import motion.easing.Cubic;
 
 /**
  * Actor.as
@@ -12,7 +14,11 @@ import openfl.display.Sprite;
  * - Used for all entities.
  */
 class Actor extends Sprite {
-		
+	
+	public static inline var HOP_HEIGHT:Int = 4;
+	public static inline var MOVE_SPEED:Float = 0.1;
+	
+	// Amimation types.
 	public var IDLE:Int = 0;
 	public var WALK:Int;
 	public var STUN:Int;
@@ -80,6 +86,7 @@ class Actor extends Sprite {
 						
 	private var player:Actor;
 	private var opponent:Actor;
+	private var isMoving:Bool;
 	
 	private var actorData:ActorData;
 		
@@ -269,6 +276,59 @@ class Actor extends Sprite {
 		}
 			
 		x += vx;
+	}
+	
+	/*
+	 * Move the actor to another Tile
+	 */
+	public function moveToTile(tileKey:Int):Void {
+		
+		if (isMoving) {
+			return;
+		}
+		
+		var newTile:Tile = currentTile.getNeighbourTile(tileKey);
+		
+		if (newTile != null) {
+			
+			//currentAnimation = 0;
+			//tick = 0;// setAnimation(WALK);
+		
+			if (newTile.x < currentTile.x) {
+				scaleX = -1;
+			} else if (newTile.x > currentTile.x) {
+				scaleX = 1;
+			}
+			
+			currentTile.highlight(false);
+			
+			var xDistance:Float = (newTile.x - currentTile.x);
+			var yDistance:Float = (newTile.y - currentTile.y);
+			
+			if (xDistance >= 0 && yDistance >= 0 || yDistance > 0) {
+				newTile.addOccupant(this, -xDistance, -yDistance);
+				currentTile.highlight(false);
+				Actuate.tween(this, MOVE_SPEED * 2, {x:0, y:0}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
+			} else {
+				Actuate.tween(this, MOVE_SPEED * 2, {x:xDistance, y:yDistance}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
+			}
+			isMoving = true;
+			//Actuate.tween(this, MOVE_SPEED * 2, { x:xDistance } ).onComplete(completeMoveTile, [newTile]);
+		}
+			
+	}
+	
+	private function changeTile():Void {
+		
+		//Actuate.tween(this, MOVE_SPEED, {y:0}).ease(Cubic.easeIn);
+				
+	}
+	
+	private function completeMoveTile(newTile:Tile):Void {
+		newTile.addOccupant(this);
+		currentTile.highlight(true);
+		//setAnimation(IDLE);
+		isMoving = false;
 	}
 	
 	/*

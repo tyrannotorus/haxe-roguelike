@@ -19,7 +19,7 @@ class Map extends Sprite {
 	
 	private var mapData:MapData;
 	private var currentScale:Float = 1;
-	private var allTiles:Array<Tile>;
+	private var tileMap:Array<Array<Tile>>;
 	private var currentTile:Tile;
 			
 	/**
@@ -30,7 +30,7 @@ class Map extends Sprite {
 		
 		super();
 		
-		allTiles = new Array<Tile>();
+		tileMap = new Array<Array<Tile>>();
 		allActors = new Array<Actor>();
 		
 		// Create the layer holding the map tiles.
@@ -46,7 +46,12 @@ class Map extends Sprite {
 		}
 	}
 	
-	public function setCurrentTile(tileCode:Int = 0):Void {
+	public function setCurrentTile(tile:Tile):Void {
+		currentTile = tile;
+		currentTile.highlight(true);
+	}
+	
+	public function moveCurrentTile(tileCode:Int = 0):Void {
 
 		if (tileCode != 0) {
 			
@@ -59,10 +64,12 @@ class Map extends Sprite {
 			}		
 			
 		} else {
-			currentTile = allTiles[0];
+			currentTile = tileMap[0][0];
 			currentTile.highlight(true);
 		}
 	}
+	
+	
 	
 	/**
 	 * Load a map with mapData
@@ -82,7 +89,7 @@ class Map extends Sprite {
 		var yPosition:Int = halfHeight;
 		var tileArray:Array<Int> = mapData.tileArray;
 		var idxTile:Int = 0;
-		var tileMap:Array<Array<Tile>> = new Array<Array<Tile>>();
+		
 		
 		for (yy in 0...mapData.height) {
 			
@@ -95,7 +102,7 @@ class Map extends Sprite {
 				var tile:Tile = tileManager.getTile(tileName);
 				tile.x = xPosition;
 				tile.y = yPosition;
-				allTiles.push(tile);
+				//allTiles.push(tile);
 				mapLayer.addChild(tile);
 				tileMap[yy].push(tile);
 				xPosition += tileWidth;
