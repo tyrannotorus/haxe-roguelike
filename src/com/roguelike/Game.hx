@@ -84,7 +84,9 @@ class Game extends Sprite {
 		trace(e.keyCode + " " + e.shiftKey);
 		
 		//map.moveCurrentTile(e.keyCode);
-		player.moveToTile(e.keyCode);
+		if(player != null) {
+			player.moveToTile(e.keyCode);
+		}
 		
 		switch(e.keyCode) {
 			

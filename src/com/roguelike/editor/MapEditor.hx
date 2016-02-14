@@ -204,24 +204,40 @@ class MapEditor extends Sprite {
 					dragStarted = false;
 					selectedActor.mouseEnabled = false;
 					editorSelectionBar.mouseChildren = false;
-					addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+					addEventListener(MouseEvent.MOUSE_MOVE, onActorMove);
 				}
 			
 			case EditorEvent.TILES:
 						
 				if (Std.is(e.target, Tile)) {
-					
-					var tile:Tile = cast e.target;
+					dragStarted = false;
+					addEventListener(MouseEvent.MOUSE_MOVE, onTileMove);
+					//var tile:Tile = cast e.target;
 			
-					if (e.shiftKey == true) {
-						currentState = DRAG_MAP;
-						map.mapLayer.mouseChildren = false;
-						map.mapLayer.startDrag();
+					//if (e.shiftKey == true) {
+					//	currentState = DRAG_MAP;
+					//	map.mapLayer.mouseChildren = false;
+					//	map.mapLayer.startDrag();
 			
-					} else if (selectedTile != null) {
-						tile.clone(selectedTile);
-					}
+					//} else if (selectedTile != null) {
+					//	tile.clone(selectedTile);
+					//}
 				}
+		}
+	}
+	
+	/**
+	 * The mouse is held and being dragged on the screen.
+	 * @param {MouseEvent.MOUSE_MOVE} e
+	 */
+	private function onTileMove(e:MouseEvent):Void {
+		
+		removeEventListener(MouseEvent.MOUSE_MOVE, onTileMove);
+		dragStarted = true;
+		
+		if (Std.is(e.target, Tile)) {
+			var tile:Tile = cast e.target;
+			tile.clone(selectedTile);
 		}
 	}
 	
@@ -242,7 +258,20 @@ class MapEditor extends Sprite {
 				map.mapLayer.stopDrag();
 				map.mapLayer.x = Math.floor(map.mapLayer.x);
 				map.mapLayer.y = Math.floor(map.mapLayer.y);
-									
+			
+			case EditorEvent.TILES:
+				
+				// A tile was clicked, not dragged. Add elevation to the tile.
+				if (Std.is(e, MouseEvent) && dragStarted == false) {
+					
+					if (Std.is(e.target, Tile)) {
+						
+						var tile:Tile = cast e.target;
+						var elevationModifier:Int = cast(e, MouseEvent).shiftKey ? -1 : 1;
+						tile.addElevation(elevationModifier);
+					}
+				}
+			
 			case EditorEvent.ACTORS:
 			
 				// The character has been dragged.
@@ -266,7 +295,7 @@ class MapEditor extends Sprite {
 			
 				enableActorsOnMap(true);
 				
-				removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+				removeEventListener(MouseEvent.MOUSE_MOVE, onActorMove);
 			
 				selectedActor = null;
 				dragStarted = false;
@@ -312,7 +341,7 @@ class MapEditor extends Sprite {
 	 * The mouse is held and being dragged on the screen.
 	 * @param {MouseEvent.MOUSE_MOVE} e
 	 */
-	private function onMouseMove(e:MouseEvent):Void {
+	private function onActorMove(e:MouseEvent):Void {
 
 		if (currentState == EditorEvent.ACTORS) {
 			
@@ -362,6 +391,6 @@ class MapEditor extends Sprite {
 	public function cleanUp():Void {
 		EditorDispatcher.getInstance().removeEventListener(Event.CHANGE, onEditorDispatch);
 		removeListeners();
-		removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+		removeEventListener(MouseEvent.MOUSE_MOVE, onActorMove);
 	}
 }

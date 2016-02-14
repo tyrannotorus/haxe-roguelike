@@ -16,6 +16,7 @@ class TileData {
 	
 	public var name:String;
 	public var fileName:String;
+	public var elevation:Int;
 	public var fireAtk:Float;
 	public var critAtk:Float;
 	public var coldAtk:Float;
@@ -60,7 +61,7 @@ class TileData {
 			var jsonData:Object = Json.parse(jsonString);
 			name = jsonData.name;
 			fileName = jsonData.fileName;
-			trace("created tile: " + name + " " + fileName);
+			elevation = jsonData.elevation;
 		}
 		
 		if (assetData != null && fileName != null) {

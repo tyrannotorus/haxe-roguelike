@@ -291,28 +291,28 @@ class Actor extends Sprite {
 		
 		if (newTile != null) {
 			
-			//currentAnimation = 0;
-			//tick = 0;// setAnimation(WALK);
-		
 			if (newTile.x < currentTile.x) {
 				scaleX = -1;
 			} else if (newTile.x > currentTile.x) {
 				scaleX = 1;
 			}
 			
-			currentTile.highlight(false);
+			if(newTile.elevation > 0) {
 			
-			var xDistance:Float = (newTile.x - currentTile.x);
-			var yDistance:Float = (newTile.y - currentTile.y);
-			
-			if (xDistance >= 0 && yDistance >= 0 || yDistance > 0) {
-				newTile.addOccupant(this, -xDistance, -yDistance);
 				currentTile.highlight(false);
-				Actuate.tween(this, MOVE_SPEED * 2, {x:0, y:0}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
-			} else {
-				Actuate.tween(this, MOVE_SPEED * 2, {x:xDistance, y:yDistance}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
+			
+				var xDistance:Float = (newTile.x - currentTile.x);
+				var yDistance:Float = (newTile.y - currentTile.y);
+			
+				if (xDistance >= 0 && yDistance >= 0 || yDistance > 0) {
+					newTile.addOccupant(this, -xDistance, -yDistance);
+					currentTile.highlight(false);
+					Actuate.tween(this, MOVE_SPEED * 2, {x:0, y:0}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
+				} else {
+					Actuate.tween(this, MOVE_SPEED * 2, {x:xDistance, y:yDistance}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
+				}
+				isMoving = true;
 			}
-			isMoving = true;
 			//Actuate.tween(this, MOVE_SPEED * 2, { x:xDistance } ).onComplete(completeMoveTile, [newTile]);
 		}
 			

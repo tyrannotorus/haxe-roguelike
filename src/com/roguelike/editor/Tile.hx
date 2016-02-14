@@ -13,13 +13,15 @@ class Tile extends Sprite {
 	
 	public var tileData:TileData;
 	public var neighbourTiles:Object;
-	public var bitmapStack:Array<Bitmap>;
+	public var tileStackArray:Array<Bitmap>;
 	public var tilesContainer:Sprite;
 	public var tileBitmap:Bitmap;
-	public var tintBitmap:Bitmap;
+	//public var tintBitmap:Bitmap;
 	public var highlightBitmap:Bitmap;
 	public var hitSprite:Sprite;
 	public var occupant:Dynamic;
+	public var elevation:Int;
+	public var tinted:Bool;
 		
 	/**
 	 * Constructor.
@@ -39,9 +41,12 @@ class Tile extends Sprite {
 		tileBitmap = new Bitmap(tileData.tileBmd);
 		tilesContainer.addChild(tileBitmap);
 		
-		tintBitmap = new Bitmap(tileData.tintBmd);
-		tintBitmap.visible = false;
-		tilesContainer.addChild(tintBitmap);
+		//tintBitmap = new Bitmap(tileData.tintBmd);
+		//tintBitmap.visible = false;
+		//tilesContainer.addChild(tintBitmap);
+		
+		tileStackArray = new Array<Bitmap>();
+		tileStackArray.push(tileBitmap);
 		
 		highlightBitmap = new Bitmap(tileData.highlightBmd);
 		highlightBitmap.visible = false;
@@ -69,8 +74,10 @@ class Tile extends Sprite {
 		
 		if (tileData.fileName == "empty.png") {
 			tileBitmap.bitmapData = null;
-			tintBitmap.bitmapData = null;
+			//tintBitmap.bitmapData = null;
 		}
+		
+		elevation = tileData.elevation;
 	}
 	
 	/**
@@ -110,23 +117,47 @@ class Tile extends Sprite {
 		}
 	}
 		
-	public function increaseHeight():Void {
-		/*
-		if (stackable && bitmapStack.length > 0) {
-			var lastTile:Bitmap = bitmapStack[bitmapStack.length - 1];
-			var newTile:Bitmap = new Bitmap(lastTile.bitmapData);
-			newTile.y = lastTile.y - (lastTile.height - (lastTile.width/2));
-			bitmapStack.push(newTile);
-			tilesContainer.addChild(newTile);
-		}*/
-	}
-	
-	public function reduceHeight():Void {
-		/*trace("reduceHeight()");
-		if (stackable && bitmapStack.length > 0) {
-			var lastTile:Bitmap = bitmapStack.pop();
-			tilesContainer.removeChild(lastTile);
-		}*/
+	/**
+	 * Add or subtract elevation from tile by modifier value
+	 * @param {Int} modifier
+	 */
+	public function addElevation(modifier:Int):Void {
+		
+		if (modifier == 0) {
+			return;
+		}
+		
+		var newElevation:Int = elevation + modifier;
+		var elevationIncrement:Int = cast (modifier / Math.abs(modifier));
+		var topTile:Bitmap;
+		var newTile:Bitmap;
+		
+		while (elevation != newElevation) {
+			
+			elevation += elevationIncrement;
+			
+			// Adding elevation to tile.
+			if (elevationIncrement > 0) {
+				topTile = tileStackArray[tileStackArray.length - 1];
+				newTile = new Bitmap(topTile.bitmapData);
+				newTile.y = topTile.y - (topTile.height - (topTile.width/2));
+				tileStackArray.push(newTile);
+				tilesContainer.addChild(newTile);
+			
+			// Subtracting elevation from tile.	
+			} else if(tileStackArray.length > 1) {
+				topTile = tileStackArray.pop();
+				tilesContainer.removeChild(topTile);
+			}
+			
+		}
+		
+		if (occupant != null) {
+			occupant.y = tileStackArray[tileStackArray.length - 1].y;
+		}
+		
+		
+		
 	}
 	
 	public function highlight(value:Bool):Void {
@@ -138,8 +169,13 @@ class Tile extends Sprite {
 	 * @param {Bool} value
 	 */
 	public function tint(value:Bool = true):Void {
-		tintBitmap.visible = value;
-		tileBitmap.visible = !value;
+		if(tileData.elevation != -1) {
+			tinted = value;
+			tileBitmap.bitmapData = tileData.tintBmd;
+		}
+		
+		//tintBitmap.visible = value;
+		//tileBitmap.visible = !value;
 	}
 	
 	public function setNeighbourTile(tile:Tile, tileKey:Int):Void {
@@ -157,14 +193,21 @@ class Tile extends Sprite {
 	 */
 	public function clone(tile:Tile = null):Tile {
 		
-		// We're cloning the tile parameter.
+		// This tile is becoming a clone of the tile parameter.
 		if (tile != null) {
 			this.tileData = tile.tileData;
-			tileBitmap.bitmapData = this.tileData.tileBmd;
-			tintBitmap.bitmapData = this.tileData.tintBmd;
+			
+			if(tinted) {
+				tileBitmap.bitmapData = this.tileData.tintBmd;
+			} else {
+				tileBitmap.bitmapData = this.tileData.tileBmd;
+			}
+			
+			//tintBitmap.bitmapData = this.tileData.tintBmd;
 			highlightBitmap.bitmapData = this.tileData.highlightBmd;
 			tilesContainer.x = tile.tilesContainer.x;
 			tilesContainer.y = tile.tilesContainer.y;
+			elevation = tile.elevation;
 			
 			#if flash
 				hitSprite.graphics.copyFrom(this.tileData.hitSprite.graphics);
