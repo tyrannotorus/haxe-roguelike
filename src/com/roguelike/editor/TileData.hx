@@ -32,6 +32,8 @@ class TileData {
 	public var tintBmd:BitmapData;
 	public var highlightBmd:BitmapData;
 	public var hitSprite:Sprite;
+	public var centerX:Int;
+	public var centerY:Int;
 	
 	/**
 	 * Constructor.
@@ -70,6 +72,8 @@ class TileData {
 			tintBmd = Colors.tintBitmapData(tileBmd, Colors.TILE_OFFSET_COLOR);
 			highlightBmd = Colors.tintBitmapData(tileBmd, Colors.TILE_HIGHLIGHT);
 			hitSprite = Utils.getHitArea(tileBmd);
+			centerX = cast(tileBmd.width / 2);
+			centerY = cast(tileBmd.height - centerX);
 		}
 	}
 	

@@ -279,7 +279,8 @@ class Actor extends Sprite {
 	}
 	
 	/*
-	 * Move the actor to another Tile
+	 * Attempt to move the actor to another Tile.
+	 * @param {Int} tileKey (NW, SE, SW, etc...)
 	 */
 	public function moveToTile(tileKey:Int):Void {
 		
@@ -288,7 +289,7 @@ class Actor extends Sprite {
 		}
 		
 		var newTile:Tile = currentTile.getNeighbourTile(tileKey);
-		
+		trace("newTile " + newTile);
 		if (newTile != null) {
 			
 			if (newTile.x < currentTile.x) {
@@ -297,7 +298,7 @@ class Actor extends Sprite {
 				scaleX = 1;
 			}
 			
-			if(newTile.elevation > 0) {
+			if(newTile.elevation > 0 && Math.abs(newTile.elevation - currentTile.elevation) <= 1) {
 			
 				currentTile.highlight(false);
 			
@@ -305,23 +306,21 @@ class Actor extends Sprite {
 				var yDistance:Float = (newTile.y - currentTile.y);
 			
 				if (xDistance >= 0 && yDistance >= 0 || yDistance > 0) {
-					newTile.addOccupant(this, -xDistance, -yDistance);
+					var xOffset:Int = cast(currentTile.centerX - xDistance - newTile.centerX);
+					var yOffset:Int = cast(currentTile.centerY - yDistance - newTile.centerY);
+					newTile.addOccupant(this, xOffset, yOffset);
 					currentTile.highlight(false);
-					Actuate.tween(this, MOVE_SPEED * 2, {x:0, y:0}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
+					Actuate.tween(this, MOVE_SPEED * 2, {x:currentTile.centerX, y:currentTile.centerY}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
 				} else {
-					Actuate.tween(this, MOVE_SPEED * 2, {x:xDistance, y:yDistance}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
+					var xOffset:Int = cast(newTile.centerX + xDistance);
+					var yOffset:Int = cast(newTile.centerY + yDistance);
+					Actuate.tween(this, MOVE_SPEED * 2, {x:xOffset, y:yOffset}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
 				}
 				isMoving = true;
 			}
 			//Actuate.tween(this, MOVE_SPEED * 2, { x:xDistance } ).onComplete(completeMoveTile, [newTile]);
 		}
 			
-	}
-	
-	private function changeTile():Void {
-		
-		//Actuate.tween(this, MOVE_SPEED, {y:0}).ease(Cubic.easeIn);
-				
 	}
 	
 	private function completeMoveTile(newTile:Tile):Void {

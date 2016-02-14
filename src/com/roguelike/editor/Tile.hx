@@ -16,12 +16,14 @@ class Tile extends Sprite {
 	public var tileStackArray:Array<Bitmap>;
 	public var tilesContainer:Sprite;
 	public var tileBitmap:Bitmap;
-	//public var tintBitmap:Bitmap;
 	public var highlightBitmap:Bitmap;
 	public var hitSprite:Sprite;
 	public var occupant:Dynamic;
 	public var elevation:Int;
 	public var tinted:Bool;
+	public var tileHeight:Int;
+	public var centerX:Int = 0;
+	public var centerY:Int = 0;
 		
 	/**
 	 * Constructor.
@@ -41,10 +43,6 @@ class Tile extends Sprite {
 		tileBitmap = new Bitmap(tileData.tileBmd);
 		tilesContainer.addChild(tileBitmap);
 		
-		//tintBitmap = new Bitmap(tileData.tintBmd);
-		//tintBitmap.visible = false;
-		//tilesContainer.addChild(tintBitmap);
-		
 		tileStackArray = new Array<Bitmap>();
 		tileStackArray.push(tileBitmap);
 		
@@ -54,9 +52,9 @@ class Tile extends Sprite {
 		
 		tilesContainer.x = -tileBitmap.width / 2;
 		tilesContainer.y = -tileBitmap.height / 2;
-				
+		
 		addChild(tilesContainer);
-				
+		
 		// HitAreas only work in flash apparently.
 		#if flash
 			hitSprite = new Sprite();
@@ -74,7 +72,6 @@ class Tile extends Sprite {
 		
 		if (tileData.fileName == "empty.png") {
 			tileBitmap.bitmapData = null;
-			//tintBitmap.bitmapData = null;
 		}
 		
 		elevation = tileData.elevation;
@@ -84,7 +81,7 @@ class Tile extends Sprite {
 	 * Add an occupant to this tile (Actor, Treasure, etc);
 	 * @param {Dynamic} occupant
 	 */
-	public function addOccupant(occupant:Dynamic, x:Float = 0, y:Float = 0):Void {
+	public function addOccupant(occupant:Dynamic, xOffset:Float = 0, yOffset:Float = 0):Void {
 		
 		// Occupant already occupies tile.
 		if (this.occupant == occupant) {
@@ -98,8 +95,8 @@ class Tile extends Sprite {
 		
 		// Add occupant to this tile.
 		this.occupant = occupant;
-		occupant.x = x;
-		occupant.y = y;
+		occupant.x = xOffset + centerX;
+		occupant.y = yOffset + centerY;
 		occupant.currentTile = this;
 		occupant.mouseEnabled = false;
 		highlight(true);
@@ -118,29 +115,31 @@ class Tile extends Sprite {
 	}
 		
 	/**
-	 * Add or subtract elevation from tile by modifier value
+	 * Add or subtract elevation from tile by modifier value.
 	 * @param {Int} modifier
 	 */
-	public function addElevation(modifier:Int):Void {
+	public function addElevation(value:Int):Void {
 		
-		if (modifier == 0) {
+		if (value == 0) {
 			return;
 		}
 		
-		var newElevation:Int = elevation + modifier;
-		var elevationIncrement:Int = cast (modifier / Math.abs(modifier));
+		var newElevation:Int = elevation + value;
+		var elevationIncrement:Int = cast(value / Math.abs(value));
 		var topTile:Bitmap;
 		var newTile:Bitmap;
 		
 		while (elevation != newElevation) {
 			
 			elevation += elevationIncrement;
+			centerX = 0;
+			centerY = (elevation - 1) * -tileData.centerY;
 			
 			// Adding elevation to tile.
 			if (elevationIncrement > 0) {
 				topTile = tileStackArray[tileStackArray.length - 1];
 				newTile = new Bitmap(topTile.bitmapData);
-				newTile.y = topTile.y - (topTile.height - (topTile.width/2));
+				newTile.y = centerY;
 				tileStackArray.push(newTile);
 				tilesContainer.addChild(newTile);
 			
@@ -149,15 +148,11 @@ class Tile extends Sprite {
 				topTile = tileStackArray.pop();
 				tilesContainer.removeChild(topTile);
 			}
-			
 		}
 		
 		if (occupant != null) {
-			occupant.y = tileStackArray[tileStackArray.length - 1].y;
+			occupant.y = centerY;
 		}
-		
-		
-		
 	}
 	
 	public function highlight(value:Bool):Void {
@@ -173,9 +168,6 @@ class Tile extends Sprite {
 			tinted = value;
 			tileBitmap.bitmapData = tileData.tintBmd;
 		}
-		
-		//tintBitmap.visible = value;
-		//tileBitmap.visible = !value;
 	}
 	
 	public function setNeighbourTile(tile:Tile, tileKey:Int):Void {

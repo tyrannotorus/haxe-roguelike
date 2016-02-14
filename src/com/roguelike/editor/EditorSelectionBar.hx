@@ -176,8 +176,8 @@ class EditorSelectionBar extends Sprite {
 		tileManager.removeEventListener(Event.COMPLETE, onTilesLoaded);
 		
 		var tileArray:Array<Tile> = tileManager.getAllTiles();
-		for (i in 0...tileArray.length) {
-			var tile:Tile = tileArray[i].clone();
+		for (idxTile in 0...tileArray.length) {
+			var tile:Tile = tileArray[idxTile].clone();
 			tile.buttonMode = true;
 			tilesContainer.addItem(tile);
 		}
