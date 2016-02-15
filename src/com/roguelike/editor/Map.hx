@@ -102,7 +102,6 @@ class Map extends Sprite {
 				var tile:Tile = tileManager.getTile(tileName);
 				tile.x = xPosition;
 				tile.y = yPosition;
-				//allTiles.push(tile);
 				mapLayer.addChild(tile);
 				tileMap[yy].push(tile);
 				xPosition += tileWidth;
@@ -125,15 +124,21 @@ class Map extends Sprite {
 		// Populate each tile with their direct neighbours.
 		for (yy in 0...tileMap.length) {
 			
-			for (xx in 1...tileMap[yy].length) {
+			for (xx in 0...tileMap[yy].length) {
 				
 				tileMap[yy][xx].setNeighbourTile(tileMap[yy][xx - 1], KeyCodes.LEFT);
-				tileMap[yy][xx - 1].setNeighbourTile(tileMap[yy][xx], KeyCodes.RIGHT);
+				
+				if(xx > 0) {
+					tileMap[yy][xx - 1].setNeighbourTile(tileMap[yy][xx], KeyCodes.RIGHT);
+				}
 				
 				if (yy + 1 < tileMap.length) {
 					if(yy % 2 == 0) {
-						tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx - 1], KeyCodes.SW);
-						tileMap[yy + 1][xx - 1].setNeighbourTile(tileMap[yy][xx], KeyCodes.NE);
+						
+						if(xx > 0) {
+							tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx - 1], KeyCodes.SW);
+							tileMap[yy + 1][xx - 1].setNeighbourTile(tileMap[yy][xx], KeyCodes.NE);
+						}
 						tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx], KeyCodes.SE);
 						tileMap[yy + 1][xx].setNeighbourTile(tileMap[yy][xx], KeyCodes.NW);
 					} else if(xx + 1 < tileMap[yy].length){
