@@ -126,6 +126,12 @@ class Map extends Sprite {
 			
 			for (xx in 0...tileMap[yy].length) {
 				
+				// Add random elevations.
+				if (tileMap[yy][xx].elevation > 0) {
+					var newElevation:Int = Math.floor(Math.random() * 3);
+					tileMap[yy][xx].addElevation(newElevation);
+				}
+				
 				tileMap[yy][xx].setNeighbourTile(tileMap[yy][xx - 1], KeyCodes.LEFT);
 				
 				if(xx > 0) {

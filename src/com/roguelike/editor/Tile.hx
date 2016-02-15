@@ -149,6 +149,10 @@ class Tile extends Sprite {
 				tilesContainer.removeChild(topTile);
 			}
 		}
+	
+		tilesContainer.setChildIndex(highlightBitmap, tileStackArray.length);
+		highlightBitmap.x = centerX;
+		highlightBitmap.y = centerY;
 		
 		if (occupant != null) {
 			occupant.y = centerY;
