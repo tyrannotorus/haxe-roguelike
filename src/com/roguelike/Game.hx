@@ -9,6 +9,7 @@ import openfl.events.KeyboardEvent;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.media.SoundTransform;
+import openfl.ui.Keyboard;
 
 /**
  * Game.as.
@@ -83,58 +84,41 @@ class Game extends Sprite {
 		
 		trace(e.keyCode + " " + e.shiftKey);
 		
-		//map.moveCurrentTile(e.keyCode);
-		if(player != null) {
-			player.moveToTile(e.keyCode);
+		var keyCode:Int = e.keyCode;
+		
+		
+		
+		
+		switch(keyCode) {
+			
+			case KeyCodes.LEFT, KeyCodes.LEFT_NUMLOCK:
+				keyCode = KeyCodes.LEFT;
+			
+			case KeyCodes.RIGHT, KeyCodes.RIGHT_NUMLOCK:
+				keyCode = KeyCodes.RIGHT;
+			
+			case KeyCodes.UP, KeyCodes.UP_NUMLOCK:
+				keyCode = KeyCodes.UP;
+			
+			case KeyCodes.DOWN, KeyCodes.DOWN_NUMLOCK:
+				keyCode = KeyCodes.DOWN;
+			
+			case KeyCodes.NE, KeyCodes.NE_NUMLOCK:
+				keyCode = KeyCodes.NE;
+			
+			case KeyCodes.NW, KeyCodes.NW_NUMLOCK:
+				keyCode = KeyCodes.NW;
+			
+			case KeyCodes.SE, KeyCodes.SE_NUMLOCK:
+				keyCode = KeyCodes.SE;
+			
+			case KeyCodes.SW, KeyCodes.SW_NUMLOCK:
+				keyCode = KeyCodes.SW;
 		}
 		
-		switch(e.keyCode) {
-			
-			// Left key
-			case KeyCodes.LEFT:
-				if (leftKey == false) {
-					leftKey = true;
-				}
-			
-			// Up key
-			case KeyCodes.UP:
-				if (upKey == false) {
-					upKey = true;
-				}
-			
-			// Right Key
-			case KeyCodes.RIGHT:
-				if (rightKey == false) {
-					rightKey = true;
-				}
-			
-			// Down Key
-			case KeyCodes.DOWN:
-				if (downKey == false) {
-					downKey = true;
-				}
-			
-			// X Key
-			case KeyCodes.X:
-				if (xKey == false && zKey == false) {
-					xKey = true;
-					if (upKey == true) {
-						//player.highPunchA();
-					} else {
-						//player.lowPunchA();
-					}
-				}
-			
-			// Z Key
-			case KeyCodes.Z:
-				if (zKey == false && xKey == false) {
-					zKey = true;
-					if (upKey == true) {
-						//player.highPunchB();
-					} else {
-						//player.lowPunchB();
-					}
-				}
+		//map.moveCurrentTile(e.keyCode);
+		if(player != null) {
+			player.moveToTile(keyCode);
 		}
 			
 	}

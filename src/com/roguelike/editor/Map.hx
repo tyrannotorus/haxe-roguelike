@@ -3,10 +3,17 @@ package com.roguelike.editor;
 import com.roguelike.Actor;
 import com.roguelike.editor.MapData;
 import com.roguelike.managers.TileManager;
+import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.KeyCodes;
+import openfl.display.Bitmap;
+import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
+import com.tyrannotorus.utils.OptimizedPerlin;
+import openfl.utils.Object;
+import openfl.Vector;
+import motion.Actuate;
 
 /**
  * Map.as
@@ -69,8 +76,12 @@ class Map extends Sprite {
 		}
 	}
 	
-	
-	
+	public function reset():Void {
+		allActors = new Array<Actor>();
+		mapLayer.removeChildren();
+		loadMap(mapData);
+	}
+		
 	/**
 	 * Load a map with mapData
 	 * @param {MapData} mapData
@@ -89,7 +100,46 @@ class Map extends Sprite {
 		var yPosition:Int = halfHeight;
 		var tileArray:Array<Int> = mapData.tileArray;
 		var idxTile:Int = 0;
+				
+		var mapSeed:Int = cast Math.random() * 6000;
+		var optimizedPerlin:OptimizedPerlin = new OptimizedPerlin(mapSeed);
+		var bmd:BitmapData = new BitmapData(mapData.width, mapData.height, true, Colors.TRANSPARENT);
+		optimizedPerlin.fill(bmd, 0.2, 0.4, 1.0);
+		var bitmap:Bitmap = new Bitmap(bmd);
+		var perlinVector:Vector<UInt> = bmd.getVector(bmd.rect);
+		var floatArray:Array<Float> = new Array<Float>();
+		var lowestElevation:Float = 1;
+		var highestElevation:Float = 0;
 		
+		for (ii in 0...perlinVector.length) {
+			var float:Float = Std.int(optimizedPerlin.determineBrightness(perlinVector[ii]) * 100) / 100;
+			lowestElevation = (float < lowestElevation) ? float : lowestElevation;
+			highestElevation = (float > highestElevation) ? float : highestElevation;
+			floatArray[ii] = Std.int(optimizedPerlin.determineBrightness(perlinVector[ii])*100)/100;
+		}
+				
+		trace(lowestElevation + " to " + highestElevation);
+		
+		var elevationRange:Array<Float> = [0, 1, 2, 3, 4];
+		var elevationIncrement:Float = (highestElevation - lowestElevation) / elevationRange.length;
+		for (ii in 0...elevationRange.length) {
+			elevationRange[ii] = Math.ceil((lowestElevation + ((ii + 1) * elevationIncrement)) * 100) / 100;
+			trace(elevationRange[ii]);
+		}
+		
+		var elevationMap:Object = {};
+		var currentElevation:Int = 0;
+		var currentIdx:Float = lowestElevation;
+		var numberIndexes:Int = cast((highestElevation - lowestElevation) * 100);
+		trace(elevationRange.join(","));
+		for (i in 0...numberIndexes) {
+			if (elevationRange.indexOf(currentIdx) != -1) {
+				currentElevation++;
+			}
+			trace(currentIdx + ":" + currentElevation);
+			elevationMap[Std.int(currentIdx*100)] = currentElevation;
+			currentIdx = Std.int((currentIdx + 0.01)*100)/100;
+		}
 		
 		for (yy in 0...mapData.height) {
 			
@@ -97,8 +147,11 @@ class Map extends Sprite {
 						
 			for (xx in 0...mapData.width) {
 				
+				var elevation:Int = elevationMap[Std.int(floatArray[idxTile]*100)];
+				
 				var tileNum:Int = tileArray[idxTile++];
-				var tileName:String = mapData.tileMap[tileNum];
+				tileNum = 1;
+				var tileName:String = (elevation > 0) ? mapData.tileMap[tileNum] : "water.png";
 				var tile:Tile = tileManager.getTile(tileName);
 				tile.x = xPosition;
 				tile.y = yPosition;
@@ -108,7 +161,11 @@ class Map extends Sprite {
 				
 				if (Math.floor(yPosition % tileHeight) == 0) {
 					tile.tint();
-				}				
+				}
+				
+				if(elevation > 0) {
+					tile.addElevation(elevation);
+				}
 			}
 			
 			yPosition += halfHeight;
@@ -125,12 +182,6 @@ class Map extends Sprite {
 		for (yy in 0...tileMap.length) {
 			
 			for (xx in 0...tileMap[yy].length) {
-				
-				// Add random elevations.
-				if (tileMap[yy][xx].elevation > 0) {
-					var newElevation:Int = Math.floor(Math.random() * 3);
-					tileMap[yy][xx].addElevation(newElevation);
-				}
 				
 				tileMap[yy][xx].setNeighbourTile(tileMap[yy][xx - 1], KeyCodes.LEFT);
 				
@@ -158,6 +209,54 @@ class Map extends Sprite {
 				if (yy + 2 < tileMap.length) {
 					tileMap[yy][xx].setNeighbourTile(tileMap[yy + 2][xx], KeyCodes.DOWN);
 					tileMap[yy + 2][xx].setNeighbourTile(tileMap[yy][xx], KeyCodes.UP);
+				}
+				
+				
+				
+				//var nNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.UP);
+				//if (nNeighbour != null && tileMap[yy][xx].elevation > nNeighbour.elevation) {
+				//	Actuate.transform(nNeighbour, 0).color(Colors.BLACK, 0.6);
+				//}
+				
+				//var neNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.NE);
+				//if (neNeighbour != null && tileMap[yy][xx].elevation > neNeighbour.elevation) {
+				//	Actuate.transform(neNeighbour, 0).color(Colors.BLACK, 0.6);
+				//}
+				
+				//var nwNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.NW);
+				//if (nwNeighbour != null && tileMap[yy][xx].elevation > nwNeighbour.elevation) {
+				//	Actuate.transform(nwNeighbour, 0).color(Colors.BLACK, 0.6);
+				//}
+			}
+		}
+		
+		// NORMALIZING CODE:
+		// EDGING CODE:
+		// Edge the upper tiles if they cover lower tiles.
+		for (yy in 0...tileMap.length) {
+			
+			for (xx in 0...tileMap[yy].length) {
+				tileMap[yy][xx].showEdges(true);
+			}
+		}
+		
+		for (yy in 0...tileMap.length) {
+			
+			for (xx in 0...tileMap[yy].length) {
+		
+		var swNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.SW);
+				if (swNeighbour != null && tileMap[yy][xx].elevation > swNeighbour.elevation) {
+					Actuate.transform(swNeighbour, 0).color(Colors.BLACK, 0.6);
+				}
+				
+				var sNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.DOWN);
+				if (sNeighbour != null && tileMap[yy][xx].elevation > sNeighbour.elevation) {
+					Actuate.transform(sNeighbour, 0).color(Colors.BLACK, 0.6);
+				}
+				
+				var seNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.SE);
+				if (seNeighbour != null && tileMap[yy][xx].elevation > seNeighbour.elevation) {
+					Actuate.transform(seNeighbour, 0).color(Colors.BLACK, 0.6);
 				}
 			}
 		}

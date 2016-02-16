@@ -84,9 +84,9 @@ class EditorSelectionBar extends Sprite {
 		menuBar.y = -1;
 		//menuBar.addItem("File", EditorEvent.FILE);
 		menuBar.addItem("Actors", EditorEvent.ACTORS, true);
-		menuBar.addItem("Tiles", EditorEvent.TILES);
+		//menuBar.addItem("Tiles", EditorEvent.TILES);
 		//menuBar.addItem("Props", EditorEvent.PROPS);
-		//menuBar.addItem("Settings", EditorEvent.SETTINGS);
+		menuBar.addItem("Reset Map", EditorEvent.RESET_MAP);
 		menuBar.addItem("Play", EditorEvent.CLOSE_EDITOR);
 		addChild(menuBar);
 		

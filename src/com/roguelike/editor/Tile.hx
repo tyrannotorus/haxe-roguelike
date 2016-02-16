@@ -24,6 +24,8 @@ class Tile extends Sprite {
 	public var tileHeight:Int;
 	public var centerX:Int = 0;
 	public var centerY:Int = 0;
+	public var neEdge:Bitmap;
+	public var nwEdge:Bitmap;
 		
 	/**
 	 * Constructor.
@@ -101,6 +103,7 @@ class Tile extends Sprite {
 		occupant.mouseEnabled = false;
 		highlight(true);
 		addChild(occupant);
+		setChildIndex(occupant, numChildren -1);
 	}
 	
 	/**
@@ -163,6 +166,57 @@ class Tile extends Sprite {
 		highlightBitmap.visible = value;
 	}
 	
+	public function showEdges(normalize:Bool = false):Void {
+		
+		nwEdge = new Bitmap(tileData.nwEdge);
+		nwEdge.x = tilesContainer.x;
+		nwEdge.y = centerY - nwEdge.height - 2;
+		nwEdge.visible = false;
+		addChild(nwEdge);
+		
+		neEdge = new Bitmap(tileData.neEdge);
+		neEdge.x = tilesContainer.x + neEdge.width;
+		neEdge.y = centerY - neEdge.height - 2;
+		neEdge.visible = false;
+		addChild(neEdge);
+		
+		if (tileData.fileName == "water.png") {
+			return;
+		}
+		
+		var nwTile:Tile = getNeighbourTile(KeyCodes.NW);
+		if (nwTile == null || elevation > nwTile.elevation && tileData.fileName == nwTile.tileData.fileName) {
+			
+			if (normalize) {
+				if(nwTile != null){
+					addElevation(nwTile.elevation - elevation);
+				}
+			
+			} else {
+				nwEdge.visible = true;
+			}
+		}
+		
+		var neTile:Tile = getNeighbourTile(KeyCodes.NE);
+		if (neTile == null || elevation > neTile.elevation && tileData.fileName == neTile.tileData.fileName) {
+			if (normalize) {
+				if(neTile != null){
+					addElevation(neTile.elevation - elevation);
+				}
+			
+			} else {
+				neEdge.visible = true;
+			}
+		}
+		
+		//var nTile:Tile = getNeighbourTile(KeyCodes.UP);
+		//if (nTile != null && elevation > nTile.elevation) {
+			
+			
+			//neEdge.visible = true;
+		//}
+	}
+	
 	/**
 	 * Use the tinted bitmap for the tile.
 	 * @param {Bool} value
@@ -171,6 +225,10 @@ class Tile extends Sprite {
 		if(tileData.elevation != -1) {
 			tinted = value;
 			tileBitmap.bitmapData = tileData.tintBmd;
+		}
+		
+		for (i in 0...tileStackArray.length) {
+			tileStackArray[i].bitmapData = tileData.tintBmd;
 		}
 	}
 	

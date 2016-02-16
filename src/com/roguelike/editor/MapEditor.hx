@@ -87,6 +87,9 @@ class MapEditor extends Sprite {
 			case EditorEvent.ZOOM_IN:
 				map.modifyScale(0.1);
 				
+			case EditorEvent.RESET_MAP:
+				map.reset();
+				
 			case EditorEvent.CLOSE_EDITOR:
 				enableActorsOnMap(false);
 				map.addListeners();

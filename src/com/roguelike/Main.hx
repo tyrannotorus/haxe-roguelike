@@ -4,11 +4,10 @@ import com.roguelike.managers.ActorManager;
 import com.roguelike.managers.MapManager;
 import com.roguelike.managers.TextManager;
 import com.roguelike.managers.TileManager;
-import com.tyrannotorus.utils.Colors;
-import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.display.StageDisplayState;
 import openfl.display.StageQuality;
+import openfl.display.StageScaleMode;
 import openfl.events.Event;
 import openfl.geom.Rectangle;
 
@@ -48,6 +47,7 @@ class Main extends Sprite {
 		
 		super();
 		stage.quality = StageQuality.MEDIUM;
+		stage.scaleMode = StageScaleMode.EXACT_FIT;
 		
 		TextManager.getInstance().init();
 		

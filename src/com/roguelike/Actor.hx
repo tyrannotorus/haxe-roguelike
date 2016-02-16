@@ -7,6 +7,7 @@ import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import motion.Actuate;
 import motion.easing.Cubic;
+import com.tyrannotorus.utils.KeyCodes;
 
 /**
  * Actor.as
@@ -289,7 +290,7 @@ class Actor extends Sprite {
 		}
 		
 		var newTile:Tile = currentTile.getNeighbourTile(tileKey);
-		trace("newTile " + newTile);
+		
 		if (newTile != null) {
 			
 			if (newTile.x < currentTile.x) {
@@ -300,6 +301,33 @@ class Actor extends Sprite {
 			
 			if(newTile.elevation > 0 && Math.abs(newTile.elevation - currentTile.elevation) <= 1) {
 			
+				switch (tileKey) {
+					case KeyCodes.LEFT:
+						var nwTile:Tile = currentTile.getNeighbourTile(KeyCodes.NW);
+						var swTile:Tile = currentTile.getNeighbourTile(KeyCodes.SW);
+						if (newTile.elevation > currentTile.elevation || nwTile != null && nwTile.elevation > currentTile.elevation && nwTile.elevation > newTile.elevation || swTile != null && swTile.elevation > currentTile.elevation && swTile.elevation > newTile.elevation) {
+							return;
+						}
+					case KeyCodes.RIGHT:
+						var neTile:Tile = currentTile.getNeighbourTile(KeyCodes.NE);
+						var seTile:Tile = currentTile.getNeighbourTile(KeyCodes.SE);
+						if (newTile.elevation > currentTile.elevation || neTile != null && neTile.elevation > currentTile.elevation && neTile.elevation > newTile.elevation || seTile != null && seTile.elevation > currentTile.elevation && seTile.elevation > newTile.elevation) {
+							return;
+						}
+					case KeyCodes.DOWN:
+						var seTile:Tile = currentTile.getNeighbourTile(KeyCodes.SE);
+						var swTile:Tile = currentTile.getNeighbourTile(KeyCodes.SW);
+						if (newTile.elevation > currentTile.elevation || seTile != null && seTile.elevation > currentTile.elevation && seTile.elevation > newTile.elevation || swTile != null && swTile.elevation > currentTile.elevation && swTile.elevation > newTile.elevation) {
+							return;
+						}
+					case KeyCodes.UP:
+						var neTile:Tile = currentTile.getNeighbourTile(KeyCodes.NE);
+						var nwTile:Tile = currentTile.getNeighbourTile(KeyCodes.NW);
+						if (newTile.elevation > currentTile.elevation || neTile != null && neTile.elevation > currentTile.elevation && neTile.elevation > newTile.elevation || nwTile != null && nwTile.elevation > currentTile.elevation && nwTile.elevation > newTile.elevation) {
+							return;
+						}
+				}
+				
 				currentTile.highlight(false);
 			
 				var xDistance:Float = (newTile.x - currentTile.x);
