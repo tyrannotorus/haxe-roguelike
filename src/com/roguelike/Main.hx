@@ -46,7 +46,7 @@ class Main extends Sprite {
 	public function new() {
 		
 		super();
-		stage.quality = StageQuality.MEDIUM;
+		stage.quality = StageQuality.HIGH;
 		stage.scaleMode = StageScaleMode.EXACT_FIT;
 		
 		TextManager.getInstance().init();

@@ -10,6 +10,7 @@ import com.tyrannotorus.utils.Colors;
 import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.events.Event;
+import openfl.geom.Rectangle;
 
 /**
  * Editor.as.
@@ -28,35 +29,20 @@ class Editor extends Sprite {
 		super();
 		
 		var textManager:TextManager = TextManager.getInstance();
+		
+		// Create the standard textData to be used for the menu bar.
+		var menuData:TextData = new TextData();
+		menuData.upColor = Colors.WHITE;
+		menuData.overColor = Colors.SCHOOL_BUS_YELLOW;
+		menuData.downColor = Colors.SCHOOL_BUS_YELLOW;
+		menuData.shadowColor = Colors.BLACK;
 			
-		// Create text
-		var textData:TextData = new TextData( { text:"- Tiny Tactics Editor -" } );
-		var titleText:Bitmap = textManager.toBitmap(textData);
-		titleText.x = Std.int((Main.GAME_WIDTH - titleText.width) / 2);
-		titleText.y = 1;
-		addChild(titleText);
-		
-		textData = new TextData( { text:"- Menu -" } );
-		var menuText:Bitmap = textManager.toBitmap(textData);
-		menuText.y = 1;
-		addChild(menuText);
-		
-		textData = new TextData( { text:"- Stage 1 -" } );
-		var stageText:Bitmap = textManager.toBitmap(textData);
-		stageText.x = Main.GAME_WIDTH - stageText.width;
-		stageText.y = 1;
-		addChild(stageText);
-		
-		// Create the map.
+		// Create the map and add it to the map editor.
 		var mapData:MapData = MapManager.getInstance().getMapData("hellmouth.txt");
 		map = new Map(mapData);
-		addChild(map);
-		
-		// Create the map editor.
 		mapEditor = new MapEditor(map);
-		mapEditor.y = 8;
 		addChild(mapEditor);
-		
+				
 		// Listen for dispatches from the editorDispatcher.
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
 		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);

@@ -5,19 +5,21 @@ import com.roguelike.editor.MapData;
 import com.roguelike.managers.TileManager;
 import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.KeyCodes;
+import com.tyrannotorus.utils.OptimizedPerlin;
+import motion.Actuate;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
-import com.tyrannotorus.utils.OptimizedPerlin;
+import openfl.geom.Rectangle;
 import openfl.utils.Object;
 import openfl.Vector;
-import motion.Actuate;
 
 /**
  * Map.as
- * - The game map..
+ * - The game map.
+ * - Allows dragging by click+drag
  */
 class Map extends Sprite {
 	
@@ -28,7 +30,12 @@ class Map extends Sprite {
 	private var currentScale:Float = 1;
 	private var tileMap:Array<Array<Tile>>;
 	private var currentTile:Tile;
-			
+	private var dragRect:Rectangle;
+	private var dragDifferenceX:Int;
+	private var dragDifferenceY:Int;
+	private var originalX:Int;
+	private var originalY:Int;
+	
 	/**
 	 * Constructor.
 	 * @param {MapData} mapData
@@ -40,12 +47,18 @@ class Map extends Sprite {
 		tileMap = new Array<Array<Tile>>();
 		allActors = new Array<Actor>();
 		
+		this.y = 4;
+		
+		
+		dragRect = new Rectangle(0, 0, Main.GAME_WIDTH, Main.GAME_HEIGHT - 8);
+		scrollRect = dragRect;
+		
 		// Create the layer holding the map tiles.
 		mapLayer = new Sprite();
 		mapLayer.mouseEnabled = false;
 		mapLayer.cacheAsBitmap = true;
 		addChild(mapLayer);
-		
+			
 		addListeners();
 		
 		if (mapData != null) {
@@ -79,6 +92,8 @@ class Map extends Sprite {
 	public function reset():Void {
 		allActors = new Array<Actor>();
 		mapLayer.removeChildren();
+		mapLayer.x = 0;
+		mapLayer.y = 0;
 		loadMap(mapData);
 	}
 		
@@ -163,7 +178,7 @@ class Map extends Sprite {
 					tile.tint();
 				}
 				
-				if(elevation > 0) {
+				if (elevation > 0) {
 					tile.addElevation(elevation);
 				}
 			}
@@ -210,56 +225,20 @@ class Map extends Sprite {
 					tileMap[yy][xx].setNeighbourTile(tileMap[yy + 2][xx], KeyCodes.DOWN);
 					tileMap[yy + 2][xx].setNeighbourTile(tileMap[yy][xx], KeyCodes.UP);
 				}
-				
-				
-				
-				//var nNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.UP);
-				//if (nNeighbour != null && tileMap[yy][xx].elevation > nNeighbour.elevation) {
-				//	Actuate.transform(nNeighbour, 0).color(Colors.BLACK, 0.6);
-				//}
-				
-				//var neNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.NE);
-				//if (neNeighbour != null && tileMap[yy][xx].elevation > neNeighbour.elevation) {
-				//	Actuate.transform(neNeighbour, 0).color(Colors.BLACK, 0.6);
-				//}
-				
-				//var nwNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.NW);
-				//if (nwNeighbour != null && tileMap[yy][xx].elevation > nwNeighbour.elevation) {
-				//	Actuate.transform(nwNeighbour, 0).color(Colors.BLACK, 0.6);
-				//}
 			}
 		}
 		
-		// NORMALIZING CODE:
-		// EDGING CODE:
-		// Edge the upper tiles if they cover lower tiles.
+		// Update shadows and edging of all tiles.
 		for (yy in 0...tileMap.length) {
-			
 			for (xx in 0...tileMap[yy].length) {
-				tileMap[yy][xx].showEdges(true);
+				tileMap[yy][xx].update();
 			}
 		}
 		
-		for (yy in 0...tileMap.length) {
-			
-			for (xx in 0...tileMap[yy].length) {
-		
-		var swNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.SW);
-				if (swNeighbour != null && tileMap[yy][xx].elevation > swNeighbour.elevation) {
-					Actuate.transform(swNeighbour, 0).color(Colors.BLACK, 0.6);
-				}
-				
-				var sNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.DOWN);
-				if (sNeighbour != null && tileMap[yy][xx].elevation > sNeighbour.elevation) {
-					Actuate.transform(sNeighbour, 0).color(Colors.BLACK, 0.6);
-				}
-				
-				var seNeighbour:Tile = tileMap[yy][xx].getNeighbourTile(KeyCodes.SE);
-				if (seNeighbour != null && tileMap[yy][xx].elevation > seNeighbour.elevation) {
-					Actuate.transform(seNeighbour, 0).color(Colors.BLACK, 0.6);
-				}
-			}
-		}
+		// Position the map.
+		var dragRect:Rectangle = mapLayer.getBounds(this);
+		mapLayer.x = Std.int( -dragRect.left + halfWidth);
+		mapLayer.y = Std.int(-dragRect.top + halfWidth);
 	}
 	
 	/**
@@ -313,12 +292,59 @@ class Map extends Sprite {
 		}
 	}
 	
+	public function onMouseDown(e:MouseEvent):Void {
+		if(Std.is(e.target, Tile)) {
+			addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, true);
+			addEventListener(MouseEvent.MOUSE_UP, onMouseUp, true);
+			addEventListener(Event.MOUSE_LEAVE, onMouseUp);
+			mapLayer.buttonMode = true;
+			originalX = cast dragRect.x;
+			originalY = cast dragRect.y;
+			dragDifferenceX = cast e.stageX;
+			dragDifferenceY = cast e.stageY;
+			mapLayer.removeEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
+			mapLayer.removeEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
+		}
+	}
+	
+	public function onMouseMove(e:MouseEvent):Void {
+		
+		if (!e.buttonDown) {
+			onMouseUp();
+			return;
+		}
+		
+		dragRect.x = originalX + (dragDifferenceX - e.stageX);
+		dragRect.y = originalY + (dragDifferenceY - e.stageY);
+		scrollRect = dragRect;
+	}
+	
+	public function onMouseUp(e:Event = null):Void {
+		
+		// Stop the drag and set the scrollRect.
+		dragRect.x = Std.int(dragRect.x);
+		dragRect.y = Std.int(dragRect.y);
+		scrollRect = dragRect;
+		
+		mapLayer.buttonMode = false;
+		removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, true);
+		removeEventListener(MouseEvent.MOUSE_UP, onMouseUp, true);
+		removeEventListener(Event.MOUSE_LEAVE, onMouseUp);
+		mapLayer.addEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
+		mapLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
+	}
+	
+	
+	
 	public function addListeners():Void {
+		mapLayer.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		mapLayer.addEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
 		mapLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
 	}
 	
 	public function removeListeners():Void {
+		mapLayer.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+		mapLayer.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		mapLayer.removeEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
 		mapLayer.removeEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
 	}

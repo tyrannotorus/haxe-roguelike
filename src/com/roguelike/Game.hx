@@ -22,16 +22,6 @@ class Game extends Sprite {
 	private var editor:Editor;
 	private var map:Map;
 	
-	// Keyboard Controls
-	private var zKey:Bool = false;
-	private var xKey:Bool = false;
-	private var cKey:Bool = false;
-	private var upKey:Bool = false;
-	private var downKey:Bool = false;
-	private var leftKey:Bool = false;
-	private var rightKey:Bool = false;
-	private var shiftKey:Bool = false;
-		
 	// Music and sfx
 	private var music:Sound;
 	private var musicChannel:SoundChannel;
@@ -54,7 +44,6 @@ class Game extends Sprite {
 		addChild(editor);
 		
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
-		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);
 			
 		
 		//musicTransform = new SoundTransform(0.1);
@@ -66,7 +55,7 @@ class Game extends Sprite {
 	public function onCloseEditor(e:EditorEvent):Void {
 		
 		map = cast e.data;
-				
+			
 		player = map.allActors[0];
 		map.setCurrentTile(player.currentTile);
 			
@@ -82,13 +71,8 @@ class Game extends Sprite {
 	
 	private function onGameKeyDown(e:KeyboardEvent):Void {
 		
-		trace(e.keyCode + " " + e.shiftKey);
-		
 		var keyCode:Int = e.keyCode;
-		
-		
-		
-		
+			
 		switch(keyCode) {
 			
 			case KeyCodes.LEFT, KeyCodes.LEFT_NUMLOCK:
@@ -122,29 +106,6 @@ class Game extends Sprite {
 		}
 			
 	}
-	
-	private function onGameKeyUp(e:KeyboardEvent):Void {
-				
-		switch(e.keyCode) {
-			case KeyCodes.LEFT:
-				leftKey = false;
-				//player.xMove(0, 0, player.IDLE);
-			case KeyCodes.UP:
-				upKey = false;
-			case KeyCodes.RIGHT:
-				rightKey = false;
-				//player.xMove(0, 0, player.IDLE);
-			case KeyCodes.DOWN:
-				downKey = false;
-				//player.duck(false);
-			case KeyCodes.X:
-				xKey = false;
-			case KeyCodes.Z:
-				zKey = false;
-		}
-		
-	}
-	
 	
 	
 }

@@ -1,9 +1,11 @@
 package com.roguelike.editor;
 
 import com.tyrannotorus.utils.KeyCodes;
+import motion.Actuate;
 import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.utils.Object;
+import com.tyrannotorus.utils.Colors;
 
 /**
  * Tile.hx.
@@ -55,6 +57,14 @@ class Tile extends Sprite {
 		tilesContainer.x = -tileBitmap.width / 2;
 		tilesContainer.y = -tileBitmap.height / 2;
 		
+		nwEdge = new Bitmap(tileData.nwEdge);
+		nwEdge.visible = false;
+		addChild(nwEdge);
+		
+		neEdge = new Bitmap(tileData.neEdge);
+		neEdge.visible = false;
+		addChild(neEdge);
+			
 		addChild(tilesContainer);
 		
 		// HitAreas only work in flash apparently.
@@ -123,17 +133,18 @@ class Tile extends Sprite {
 	 */
 	public function addElevation(value:Int):Void {
 		
-		if (value == 0) {
+		var newElevation:Int = elevation + value;
+		
+		if (value == 0 || newElevation < 1) {
 			return;
 		}
 		
-		var newElevation:Int = elevation + value;
 		var elevationIncrement:Int = cast(value / Math.abs(value));
 		var topTile:Bitmap;
 		var newTile:Bitmap;
 		
-		while (elevation != newElevation) {
-			
+		while(elevation != newElevation) {
+		
 			elevation += elevationIncrement;
 			centerX = 0;
 			centerY = (elevation - 1) * -tileData.centerY;
@@ -145,14 +156,14 @@ class Tile extends Sprite {
 				newTile.y = centerY;
 				tileStackArray.push(newTile);
 				tilesContainer.addChild(newTile);
-			
+				
 			// Subtracting elevation from tile.	
 			} else if(tileStackArray.length > 1) {
 				topTile = tileStackArray.pop();
 				tilesContainer.removeChild(topTile);
 			}
 		}
-	
+			
 		tilesContainer.setChildIndex(highlightBitmap, tileStackArray.length);
 		highlightBitmap.x = centerX;
 		highlightBitmap.y = centerY;
@@ -160,61 +171,88 @@ class Tile extends Sprite {
 		if (occupant != null) {
 			occupant.y = centerY;
 		}
+		
+		update();
 	}
 	
 	public function highlight(value:Bool):Void {
 		highlightBitmap.visible = value;
 	}
 	
-	public function showEdges(normalize:Bool = false):Void {
+	/**
+	 * Update the look of the tile
+	 */
+	public function update():Void {
 		
-		nwEdge = new Bitmap(tileData.nwEdge);
+		var tile:Tile;
+		var neighbours:Array<Int> = [KeyCodes.SW, KeyCodes.SE];
+			
+		// Update edges of this tile if it overshadows northernly neighbours.
+		for (idxTile in 0...neighbours.length) {
+			tile = getNeighbourTile(neighbours[idxTile]);
+			if (tile != null) {
+				tile.updateEdges();
+			}
+		}
+		
+		// Update the shadows of southernly neighbours.
+		neighbours = [KeyCodes.SE, KeyCodes.DOWN, KeyCodes.SW];
+		for (idxTile in 0...neighbours.length) {
+			tile = getNeighbourTile(neighbours[idxTile]);
+			if (tile != null) {
+				tile.updateShadow();
+			}
+		}
+			
+		// Update this tile's edges/shadow.
+		updateEdges();
+		updateShadow();
+	}
+	
+	public function updateEdges():Void {
+		
 		nwEdge.x = tilesContainer.x;
 		nwEdge.y = centerY - nwEdge.height - 2;
 		nwEdge.visible = false;
-		addChild(nwEdge);
 		
-		neEdge = new Bitmap(tileData.neEdge);
 		neEdge.x = tilesContainer.x + neEdge.width;
 		neEdge.y = centerY - neEdge.height - 2;
 		neEdge.visible = false;
-		addChild(neEdge);
 		
-		if (tileData.fileName == "water.png") {
-			return;
-		}
-		
-		var nwTile:Tile = getNeighbourTile(KeyCodes.NW);
-		if (nwTile == null || elevation > nwTile.elevation && tileData.fileName == nwTile.tileData.fileName) {
+		var tile:Tile;
+		var tileId:Int;
+		var neighbours:Array<Int> = [KeyCodes.NW, KeyCodes.NE];
 			
-			if (normalize) {
-				if(nwTile != null){
-					addElevation(nwTile.elevation - elevation);
+		// Update edges of this tile if it overshadows northernly neighbours.
+		for (idxTile in 0...neighbours.length) {
+			
+			tileId = neighbours[idxTile];
+			tile = getNeighbourTile(tileId);
+						
+			if (tile != null && elevation > tile.elevation && tileData.fileName == tile.tileData.fileName) {
+				if (tileId == KeyCodes.NW) {
+					nwEdge.visible = true;
+				} else if (tileId == KeyCodes.NE) {
+					neEdge.visible = true;
 				}
+			}
+		}
+	}
+	
+	public function updateShadow():Void {
+		
+		var tile:Tile;
+		var neighbours:Array<Int> = [KeyCodes.NE, KeyCodes.UP, KeyCodes.NW];
 			
-			} else {
-				nwEdge.visible = true;
+		for (idxTile in 0...neighbours.length) {
+			tile = getNeighbourTile(neighbours[idxTile]);
+			if (tile != null && elevation < tile.elevation) {
+				Actuate.transform(this, 0).color(Colors.BLACK, 0.6);
+				return;
 			}
 		}
 		
-		var neTile:Tile = getNeighbourTile(KeyCodes.NE);
-		if (neTile == null || elevation > neTile.elevation && tileData.fileName == neTile.tileData.fileName) {
-			if (normalize) {
-				if(neTile != null){
-					addElevation(neTile.elevation - elevation);
-				}
-			
-			} else {
-				neEdge.visible = true;
-			}
-		}
-		
-		//var nTile:Tile = getNeighbourTile(KeyCodes.UP);
-		//if (nTile != null && elevation > nTile.elevation) {
-			
-			
-			//neEdge.visible = true;
-		//}
+		Actuate.transform(this, 0).color(Colors.BLACK, 0);
 	}
 	
 	/**

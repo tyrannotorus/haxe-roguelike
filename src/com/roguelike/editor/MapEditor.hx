@@ -39,7 +39,6 @@ class MapEditor extends Sprite {
 		
 		// Add the map to the editor.
 		this.map = map;
-		this.map.removeListeners();
 		this.addChild(map);
 		
 		// Create the dialog layer.
@@ -162,7 +161,7 @@ class MapEditor extends Sprite {
 					var tile:Tile = cast displayObject;
 					
 					if (mouseDown) {
-						tile.clone(selectedTile);
+					//	tile.clone(selectedTile);
 					}
 					
 					tile.highlight(value);
@@ -240,7 +239,7 @@ class MapEditor extends Sprite {
 		
 		if (Std.is(e.target, Tile)) {
 			var tile:Tile = cast e.target;
-			tile.clone(selectedTile);
+			//tile.clone(selectedTile);
 		}
 	}
 	

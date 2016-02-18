@@ -13,8 +13,6 @@ class KeyCodes {
 	public static inline var SE:Int = 34;
 	public static inline var SW:Int = 35;
 	public static inline var NW:Int = 36;
-	public static inline var Z:Int = 90;
-	public static inline var X:Int = 88;
 	public static inline var SW_NUMLOCK:Int = 97;
 	public static inline var DOWN_NUMLOCK:Int = 98;
 	public static inline var SE_NUMLOCK:Int = 99;
@@ -23,5 +21,7 @@ class KeyCodes {
 	public static inline var NW_NUMLOCK:Int = 103;
 	public static inline var UP_NUMLOCK:Int = 104;
 	public static inline var NE_NUMLOCK:Int = 105;
+	public static inline var ESC:Int = 27;
+	public static inline var ENTER:Int = 13;
 	
 }
