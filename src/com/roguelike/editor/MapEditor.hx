@@ -2,10 +2,12 @@ package com.roguelike.editor;
 
 import com.roguelike.Actor;
 import com.roguelike.editor.EditorSelectionBar;
-import com.roguelike.managers.MapManager;
 import openfl.display.Sprite;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
 import openfl.events.MouseEvent;
+import motion.Actuate;
+import motion.easing.Cubic;
 
 /**
  * MapEditor.as
@@ -89,10 +91,10 @@ class MapEditor extends Sprite {
 			case EditorEvent.RESET_MAP:
 				map.reset();
 				
-			case EditorEvent.CLOSE_EDITOR:
-				enableActorsOnMap(false);
-				map.addListeners();
-				dispatchEvent(new EditorEvent(EditorEvent.CLOSE_EDITOR, map, true));
+			//case EditorEvent.CLOSE_EDITOR:
+			//	enableActorsOnMap(false);
+			//	map.addListeners();
+			//	dispatchEvent(new EditorEvent(EditorEvent.CLOSE_EDITOR, map, true));
 				
 			case EditorEvent.HELP:
 				trace("EditorEvent.HELP");
@@ -373,6 +375,23 @@ class MapEditor extends Sprite {
 			}
 		}
 	}
+	
+	public function hide():Void {
+		Actuate.tween(editorSelectionBar, 0.3, { y:Main.GAME_HEIGHT + 3 } ).ease(Cubic.easeOut).onComplete(onEditorClosed);
+	}
+	
+	public function show():Void {
+		addChildAt(map, 0);
+		Actuate.tween(editorSelectionBar, 0.3, { y:Main.GAME_HEIGHT - 35 } ).ease(Cubic.easeOut);
+	}
+	
+	private function onEditorClosed():Void {
+		removeListeners();
+		editorSelectionBar.removeListeners();
+		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
+		editorDispatcher.dispatchEvent(new EditorEvent(Event.CHANGE, EditorEvent.CLOSED));
+	}
+	
 	
 	private function addListeners():Void {
 		addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);

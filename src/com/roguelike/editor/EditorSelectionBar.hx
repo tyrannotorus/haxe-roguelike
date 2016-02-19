@@ -87,7 +87,7 @@ class EditorSelectionBar extends Sprite {
 		menuBar.addItem("Tiles", EditorEvent.TILES);
 		//menuBar.addItem("Props", EditorEvent.PROPS);
 		menuBar.addItem("Reset Map", EditorEvent.RESET_MAP);
-		menuBar.addItem("Play", EditorEvent.CLOSE_EDITOR);
+		//menuBar.addItem("Play", EditorEvent.CLOSE_EDITOR);
 		addChild(menuBar);
 		
 		// Create the standard textData to be used for the menu bar.
@@ -261,7 +261,7 @@ class EditorSelectionBar extends Sprite {
 	/**
 	 * Add listeners.
 	 */
-	private function addListeners():Void {
+	public function addListeners():Void {
 		addEventListener(MouseEvent.CLICK, onMouseClick);
 		addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
@@ -269,7 +269,8 @@ class EditorSelectionBar extends Sprite {
 	/**
 	 * Removes listeners.
 	 */
-	private function removeListeners():Void {
+	public function removeListeners():Void {
+		removeEventListener(Event.ENTER_FRAME, animateActors);
 		removeEventListener(MouseEvent.CLICK, onMouseClick);
 		removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}

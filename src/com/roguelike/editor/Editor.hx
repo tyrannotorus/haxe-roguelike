@@ -3,14 +3,13 @@ package com.roguelike.editor;
 import com.roguelike.dialogs.DialogData;
 import com.roguelike.dialogs.GenericDialog;
 import com.roguelike.editor.MapEditor;
+import com.roguelike.Game;
 import com.roguelike.managers.MapManager;
 import com.roguelike.managers.TextManager;
 import com.roguelike.TextData;
 import com.tyrannotorus.utils.Colors;
-import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.events.Event;
-import openfl.geom.Rectangle;
 
 /**
  * Editor.as.
@@ -18,9 +17,9 @@ import openfl.geom.Rectangle;
  */
 class Editor extends Sprite {
 	
-	private var map:Map;
-	private var mapEditor:MapEditor;
-			
+	public var map:Map;
+	public var mapEditor:MapEditor;
+	
 	/**
 	 * Constructor.
 	 */
@@ -42,7 +41,7 @@ class Editor extends Sprite {
 		map = new Map(mapData);
 		mapEditor = new MapEditor(map);
 		addChild(mapEditor);
-				
+		
 		// Listen for dispatches from the editorDispatcher.
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
 		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
@@ -55,7 +54,7 @@ class Editor extends Sprite {
 	private function onEditorDispatch(e:EditorEvent):Void {
 		
 		var editorEvent:String = e.data;
-		trace("onEditorDispatch() " + editorEvent);
+		
 		switch(editorEvent) {
 			
 			case EditorEvent.FILE:
@@ -70,11 +69,40 @@ class Editor extends Sprite {
 				dialogData.dialogPositionY = 0.4;
 				var genericDialog:GenericDialog = new GenericDialog(dialogData);
 				addChild(genericDialog);
-			
+				
+			case EditorEvent.CLOSED:
+				
+				var game:Game = Game.getInstance();
+				game.removeChild(this);
+				game.addChildAt(map, 0);
+				
+				if (map.allActors[0] != null) {
+					game.player = map.allActors[0];
+					map.setCurrentTile(game.player.currentTile);
+				}
+				
+				game.stage.focus = stage;
+					
 			case EditorEvent.HELP:
 				trace("EditorEvent.HELP");
 			
 		}
+	}
+	
+	/**
+	 * Hide the editor.
+	 */
+	public function show():Void {
+		var game:Game = Game.getInstance();
+		game.addChildAt(this, 0);
+		mapEditor.show();
+	}
+	
+	/**
+	 * Hide the editor.
+	 */
+	public function hide():Void {
+		mapEditor.hide();
 	}
 	
 	/**

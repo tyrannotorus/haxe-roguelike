@@ -1,46 +1,87 @@
 package com.roguelike;
 
 import com.roguelike.editor.Editor;
-import com.roguelike.editor.EditorEvent;
-import com.roguelike.editor.Map;
+import com.roguelike.managers.ActorManager;
+import com.roguelike.managers.MapManager;
+import com.roguelike.managers.TextManager;
+import com.roguelike.managers.TileManager;
 import com.tyrannotorus.utils.KeyCodes;
 import openfl.display.Sprite;
+import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.media.SoundTransform;
-import openfl.ui.Keyboard;
 
 /**
  * Game.as.
  * - The main game stage.
  */
 class Game extends Sprite {
-		
-	private var player:Actor;
-	private var opponent:Actor;
-	private var editor:Editor;
-	private var map:Map;
 	
+	public static var game:Game;
+	
+	public var textManager:TextManager;
+	public var mapManager:MapManager;
+	public var tileManager:TileManager;
+	public var actorManager:ActorManager;
+	
+	public var player:Actor;
+	private var editor:Editor;
+		
 	// Music and sfx
 	private var music:Sound;
 	private var musicChannel:SoundChannel;
 	private var musicTransform:SoundTransform;
 	
 	/**
+	 * Return static instance of Game.
+	 * @return {Game}
+	 */
+	public static function getInstance():Game {
+		return (game != null) ? game : game = new Game();
+	}	
+	
+	/**
 	 * Constructor.
 	 */
 	public function new() {
+		
 		super();
+		
+		textManager = TextManager.getInstance();
+		mapManager = MapManager.getInstance();
+		mapManager.addEventListener(Event.COMPLETE, init);
+		tileManager = TileManager.getInstance();
+		tileManager.addEventListener(Event.COMPLETE, init);
+		actorManager = ActorManager.getInstance();
+		actorManager.addEventListener(Event.COMPLETE, init);
+		
+		textManager.init();
+		mapManager.init();
+		tileManager.init();
+		actorManager.init();
 	}
 	
 	/**
-	 * Initiate load of the game.
+	 * Attempt to initialize the game (after assets are loaded)
+	 * @param {Event.COMPLETE} e
 	 */
-	public function loadGame():Void {
+	private function init(e:Event = null):Void {
+		
+		if (!mapManager.isReady()) {
+			return;
+		} else if (!tileManager.isReady()) {
+			return;
+		} else if (!actorManager.isReady()) {
+			return;
+		}
+		
+		mapManager.removeEventListener(Event.COMPLETE, init);
+		tileManager.removeEventListener(Event.COMPLETE, init);
+		actorManager.removeEventListener(Event.COMPLETE, init);
 		
 		editor = new Editor();
-		editor.addEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
 		addChild(editor);
 		
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
@@ -51,29 +92,22 @@ class Game extends Sprite {
 		//musicChannel = music.play();
 		//musicChannel.soundTransform = musicTransform;
 	}
-	
-	public function onCloseEditor(e:EditorEvent):Void {
 		
-		map = cast e.data;
-			
-		player = map.allActors[0];
-		map.setCurrentTile(player.currentTile);
-			
-		editor.removeEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
-		editor.parent.removeChild(editor);
-		editor.cleanUp();
-		editor = null;
-		
-		addChild(map);
-	}
-	
-
-	
 	private function onGameKeyDown(e:KeyboardEvent):Void {
 		
 		var keyCode:Int = e.keyCode;
 			
 		switch(keyCode) {
+			
+			case KeyCodes.ESC:
+				
+				if (editor.parent == this) {
+					trace("editor.hide();");
+					editor.hide();
+				} else {
+					trace("editor.show();");
+					editor.show();
+				}				
 			
 			case KeyCodes.LEFT, KeyCodes.LEFT_NUMLOCK:
 				keyCode = KeyCodes.LEFT;

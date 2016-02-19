@@ -18,6 +18,9 @@ class Main extends Sprite {
 	
 	/**
 	 * GET FUNCTIONAL
+	 * - Highlight is only on top plane of tile.
+	 * - Shadow is cast only on top plane of tile (not the vertical plane)
+	 * - shadow is cast on actor only if elevation is > 2
 	 * - Fix placing empty tiles
 	 * - Save level
 	 * - load level
@@ -37,9 +40,8 @@ class Main extends Sprite {
 	public static inline var GAME_WIDTH:Int = 384;
 	public static inline var GAME_HEIGHT:Int = 216;
 	
-
 	private var game:Game;
-	
+		
 	/**
 	 * Constructor.
 	 */
@@ -49,45 +51,11 @@ class Main extends Sprite {
 		stage.quality = StageQuality.HIGH;
 		stage.scaleMode = StageScaleMode.EXACT_FIT;
 		
-		TextManager.getInstance().init();
-		
-		var mapManager:MapManager = MapManager.getInstance();
-		mapManager.addEventListener(Event.COMPLETE, init);
-		mapManager.init();
-		
-		var tileManager:TileManager = TileManager.getInstance();
-		tileManager.addEventListener(Event.COMPLETE, init);
-		tileManager.init();
-		
-		var actorManager:ActorManager = ActorManager.getInstance();
-		actorManager.addEventListener(Event.COMPLETE, init);
-		actorManager.init();
-	}
-	
-	/**
-	 * Attempt to initialize the game (after assets are loaded)
-	 * @param {Event.COMPLETE} e
-	 */
-	private function init(e:Event = null):Void {
-		
-		if (!MapManager.getInstance().isReady()) {
-			return;
-		} else if (!TileManager.getInstance().isReady()) {
-			return;
-		} else if (!ActorManager.getInstance().isReady()) {
-			return;
-		}
-						
-		game = new Game();
+		game = Game.getInstance();
 		game.scrollRect = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
+		game.scaleX = game.scaleY = GAME_SCALE;
 		addChild(game);
 		
-		game.scaleX = game.scaleY = GAME_SCALE;
-		game.loadGame();
-		
-		//var fps:FPS = new FPS(10, 10, Colors.RED);
-		//addChild(fps);
-				
 		addListeners();
 	}
 	

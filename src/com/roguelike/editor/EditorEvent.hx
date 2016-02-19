@@ -13,8 +13,9 @@ class EditorEvent extends DataEvent {
 	public static inline var ZOOM_OUT:String = "ZOOM_OUT";
 	public static inline var HELP:String = "HELP";
 	public static inline var TILE_SELECTED:String = "TILE_SELECTED";
-	public static inline var CLOSE_EDITOR:String = "CLOSE_EDITOR";
 	public static inline var RESET_MAP:String = "RESET_MAP";
+	public static inline var CLOSED:String = "CLOSED";
+	public static inline var OPENED:String = "OPENED";
 	
 	/**
 	 * A standard event with an added data parameter
@@ -23,7 +24,7 @@ class EditorEvent extends DataEvent {
 	 * @param {Bool} bubbles
 	 * @param {Bool} cancelable
 	 */
-	public function new(type:String, data:Dynamic, bubbles:Bool = false, cancelable:Bool = false) {
+	public function new(type:String, data:Dynamic = null, bubbles:Bool = false, cancelable:Bool = false) {
         super(type, data, bubbles, cancelable);
        
     }

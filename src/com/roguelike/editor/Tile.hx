@@ -172,7 +172,7 @@ class Tile extends Sprite {
 			occupant.y = centerY;
 		}
 		
-		update();
+		update(true);
 	}
 	
 	public function highlight(value:Bool):Void {
@@ -180,36 +180,43 @@ class Tile extends Sprite {
 	}
 	
 	/**
-	 * Update the look of the tile
+	 * Update the look of the tile.
+	 * @param {Bool} updateNeighbours
 	 */
-	public function update():Void {
+	public function update(updateNeighbours:Bool = false):Void {
 		
-		var tile:Tile;
-		var neighbours:Array<Int> = [KeyCodes.SW, KeyCodes.SE];
+		if(updateNeighbours) {
+		
+			var tile:Tile;
+			var neighbours:Array<Int> = [KeyCodes.SW, KeyCodes.SE];
 			
-		// Update edges of this tile if it overshadows northernly neighbours.
-		for (idxTile in 0...neighbours.length) {
-			tile = getNeighbourTile(neighbours[idxTile]);
-			if (tile != null) {
-				tile.updateEdges();
+			// Update edges of this tile if it overshadows northernly neighbours.
+			for (idxTile in 0...neighbours.length) {
+				tile = getNeighbourTile(neighbours[idxTile]);
+				if (tile != null) {
+					tile.updateEdging();
+				}
 			}
-		}
 		
-		// Update the shadows of southernly neighbours.
-		neighbours = [KeyCodes.SE, KeyCodes.DOWN, KeyCodes.SW];
-		for (idxTile in 0...neighbours.length) {
-			tile = getNeighbourTile(neighbours[idxTile]);
-			if (tile != null) {
-				tile.updateShadow();
+			// Update the shadows of southernly neighbours.
+			neighbours = [KeyCodes.SE, KeyCodes.DOWN, KeyCodes.SW];
+			for (idxTile in 0...neighbours.length) {
+				tile = getNeighbourTile(neighbours[idxTile]);
+				if (tile != null) {
+					tile.updateShadow();
+				}
 			}
 		}
 			
 		// Update this tile's edges/shadow.
-		updateEdges();
+		updateEdging();
 		updateShadow();
 	}
 	
-	public function updateEdges():Void {
+	/**
+	 * Update the edging on this tile.
+	 */
+	public function updateEdging():Void {
 		
 		nwEdge.x = tilesContainer.x;
 		nwEdge.y = centerY - nwEdge.height - 2;
@@ -239,6 +246,9 @@ class Tile extends Sprite {
 		}
 	}
 	
+	/**
+	 * Update the shadowing on this tile.
+	 */
 	public function updateShadow():Void {
 		
 		var tile:Tile;
