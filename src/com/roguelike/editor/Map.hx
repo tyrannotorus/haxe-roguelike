@@ -7,11 +7,13 @@ import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.KeyCodes;
 import com.tyrannotorus.utils.OptimizedPerlin;
 import motion.Actuate;
+import motion.easing.Cubic;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
+import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import openfl.utils.Object;
 import openfl.Vector;
@@ -23,6 +25,9 @@ import openfl.Vector;
  */
 class Map extends Sprite {
 	
+	public static inline var TILES_FROM_CENTER:Int = 4;
+	public static inline var MAP_TWEEN_SPEED:Float = 0.2;
+	
 	public var mapLayer:Sprite;
 	public var allActors:Array<Actor>;
 	
@@ -30,12 +35,14 @@ class Map extends Sprite {
 	private var currentScale:Float = 1;
 	private var tileMap:Array<Array<Tile>>;
 	private var currentTile:Tile;
-	private var dragRect:Rectangle;
+	private var viewRect:Rectangle;
+	private var centerTile:Tile;
 	private var dragDifferenceX:Int;
 	private var dragDifferenceY:Int;
 	private var originalX:Int;
 	private var originalY:Int;
-	
+	private var isTransposing:Bool;
+		
 	/**
 	 * Constructor.
 	 * @param {MapData} mapData
@@ -48,17 +55,16 @@ class Map extends Sprite {
 		allActors = new Array<Actor>();
 		
 		this.y = 4;
-		
-		
-		dragRect = new Rectangle(0, 0, Main.GAME_WIDTH, Main.GAME_HEIGHT - 8);
-		scrollRect = dragRect;
+				
+		viewRect = new Rectangle(0, 0, Main.GAME_WIDTH, Main.GAME_HEIGHT - 8);
+		scrollRect = viewRect;
 		
 		// Create the layer holding the map tiles.
 		mapLayer = new Sprite();
 		mapLayer.mouseEnabled = false;
 		mapLayer.cacheAsBitmap = true;
 		addChild(mapLayer);
-			
+		
 		addListeners();
 		
 		if (mapData != null) {
@@ -71,22 +77,41 @@ class Map extends Sprite {
 		currentTile.highlight(true);
 	}
 	
-	public function moveCurrentTile(tileCode:Int = 0):Void {
-
-		if (tileCode != 0) {
-			
-			var neighbourTile:Tile = currentTile.getNeighbourTile(tileCode);
-			trace(neighbourTile);
-			if (neighbourTile != null) {
-				currentTile.highlight(false);
-				currentTile = neighbourTile;
-				currentTile.highlight(true);
-			}		
-			
-		} else {
-			currentTile = tileMap[0][0];
-			currentTile.highlight(true);
+	public function alignViewRect(tile:Tile, tileKey:Int):Void {
+		
+		if (centerTile == null) {
+			centerTile = tile;
 		}
+		
+		// Calculate number of blocks away.
+		var halfWidth:Float = centerTile.width / 2;
+		var halfHeight:Float = halfWidth / 2;
+		var xDistance:Float = Math.abs(centerTile.x - tile.x);
+		var yDistance:Float = Math.abs(centerTile.y - tile.y);
+		var numBlocksX:Int = cast(Math.ceil(xDistance / halfWidth));
+		var numBlocksY:Int = cast(Math.ceil(yDistance / halfHeight));
+		
+		if (numBlocksX +  numBlocksY > TILES_FROM_CENTER * 2) {
+			setFocusToTile(centerTile.getNeighbourTile(tileKey));
+		}
+	}
+	
+	public function setFocusToTile(tile:Tile, tweenSpeed:Float = MAP_TWEEN_SPEED):Void {
+		
+		if(centerTile != null) {
+			centerTile.highlight(false);
+		}
+		
+		centerTile = tile;
+		centerTile.highlight(true);
+		var viewRectX:Int = cast(centerTile.x - (viewRect.width/2));
+		var viewRectY:Int = cast(centerTile.y - (viewRect.height/2));
+		isTransposing = true;
+		Actuate.tween(viewRect, tweenSpeed, { x:viewRectX, y:viewRectY } ).ease(Cubic.easeInOut).onUpdate(updateScrollRect);
+	}
+	
+	private function updateScrollRect():Void {
+		scrollRect = viewRect;
 	}
 	
 	public function reset():Void {
@@ -115,7 +140,7 @@ class Map extends Sprite {
 		var yPosition:Int = halfHeight;
 		var tileArray:Array<Int> = mapData.tileArray;
 		var idxTile:Int = 0;
-				
+		
 		var mapSeed:Int = cast Math.random() * 6000;
 		var optimizedPerlin:OptimizedPerlin = new OptimizedPerlin(mapSeed);
 		var bmd:BitmapData = new BitmapData(mapData.width, mapData.height, true, Colors.TRANSPARENT);
@@ -236,9 +261,9 @@ class Map extends Sprite {
 		}
 		
 		// Position the map.
-		var dragRect:Rectangle = mapLayer.getBounds(this);
-		mapLayer.x = Std.int( -dragRect.left + halfWidth);
-		mapLayer.y = Std.int(-dragRect.top + halfWidth);
+		var viewRect:Rectangle = mapLayer.getBounds(this);
+		mapLayer.x = Std.int( -viewRect.left + halfWidth);
+		mapLayer.y = Std.int(-viewRect.top + halfWidth);
 	}
 	
 	/**
@@ -298,8 +323,8 @@ class Map extends Sprite {
 			addEventListener(MouseEvent.MOUSE_UP, onMouseUp, true);
 			addEventListener(Event.MOUSE_LEAVE, onMouseUp);
 			mapLayer.buttonMode = true;
-			originalX = cast dragRect.x;
-			originalY = cast dragRect.y;
+			originalX = cast viewRect.x;
+			originalY = cast viewRect.y;
 			dragDifferenceX = cast e.stageX;
 			dragDifferenceY = cast e.stageY;
 			mapLayer.removeEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
@@ -314,17 +339,17 @@ class Map extends Sprite {
 			return;
 		}
 		
-		dragRect.x = originalX + (dragDifferenceX - e.stageX);
-		dragRect.y = originalY + (dragDifferenceY - e.stageY);
-		scrollRect = dragRect;
+		viewRect.x = originalX + (dragDifferenceX - e.stageX);
+		viewRect.y = originalY + (dragDifferenceY - e.stageY);
+		scrollRect = viewRect;
 	}
 	
 	public function onMouseUp(e:Event = null):Void {
 		
 		// Stop the drag and set the scrollRect.
-		dragRect.x = Std.int(dragRect.x);
-		dragRect.y = Std.int(dragRect.y);
-		scrollRect = dragRect;
+		viewRect.x = Std.int(viewRect.x);
+		viewRect.y = Std.int(viewRect.y);
+		scrollRect = viewRect;
 		
 		mapLayer.buttonMode = false;
 		removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove, true);

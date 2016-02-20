@@ -1,11 +1,16 @@
 package com.roguelike;
 
 import com.roguelike.editor.Editor;
+import com.roguelike.editor.Map;
+import com.roguelike.editor.MapData;
+import com.roguelike.editor.Tile;
 import com.roguelike.managers.ActorManager;
 import com.roguelike.managers.MapManager;
 import com.roguelike.managers.TextManager;
 import com.roguelike.managers.TileManager;
 import com.tyrannotorus.utils.KeyCodes;
+import openfl.display.Bitmap;
+import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
@@ -27,6 +32,7 @@ class Game extends Sprite {
 	public var actorManager:ActorManager;
 	
 	public var player:Actor;
+	public var map:Map;
 	private var editor:Editor;
 		
 	// Music and sfx
@@ -81,7 +87,12 @@ class Game extends Sprite {
 		tileManager.removeEventListener(Event.COMPLETE, init);
 		actorManager.removeEventListener(Event.COMPLETE, init);
 		
-		editor = new Editor();
+		
+		// Create the map and add it to the map editor.
+		var mapData:MapData = mapManager.getMapData("hellmouth.txt");
+		map = new Map(mapData);
+		
+		editor = new Editor(map);
 		addChild(editor);
 		
 		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
@@ -136,7 +147,10 @@ class Game extends Sprite {
 		
 		//map.moveCurrentTile(e.keyCode);
 		if(player != null) {
-			player.moveToTile(keyCode);
+			var actorTile:Tile = player.moveToTile(keyCode);
+			if (actorTile != null) {
+				map.alignViewRect(actorTile, keyCode);
+			}
 		}
 			
 	}

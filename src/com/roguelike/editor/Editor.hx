@@ -22,8 +22,9 @@ class Editor extends Sprite {
 	
 	/**
 	 * Constructor.
+	 * @param {Map} map
 	 */
-	public function new() {
+	public function new(map:Map) {
 		
 		super();
 		
@@ -37,9 +38,8 @@ class Editor extends Sprite {
 		menuData.shadowColor = Colors.BLACK;
 			
 		// Create the map and add it to the map editor.
-		var mapData:MapData = MapManager.getInstance().getMapData("hellmouth.txt");
-		map = new Map(mapData);
-		mapEditor = new MapEditor(map);
+		this.map = map;
+		mapEditor = new MapEditor(this.map);
 		addChild(mapEditor);
 		
 		// Listen for dispatches from the editorDispatcher.
@@ -78,7 +78,8 @@ class Editor extends Sprite {
 				
 				if (map.allActors[0] != null) {
 					game.player = map.allActors[0];
-					map.setCurrentTile(game.player.currentTile);
+					//map.setCurrentTile(game.player.currentTile);
+					map.setFocusToTile(game.player.currentTile, 1);
 				}
 				
 				game.stage.focus = stage;

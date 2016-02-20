@@ -17,23 +17,18 @@ import openfl.geom.Rectangle;
 class Main extends Sprite {
 	
 	/**
-	 * GET FUNCTIONAL
-	 * - Highlight is only on top plane of tile.
-	 * - Shadow is cast only on top plane of tile (not the vertical plane)
-	 * - shadow is cast on actor only if elevation is > 2
-	 * - Fix placing empty tiles
-	 * - Save level
-	 * - load level
-	 * - starting point on map and player character.
-	 * - Start game button
-	 * - move from tile to tile
-	 * 
-	 * EXCITING STUFF
-	 * - Use multiple maps for multiple levels of the same map
-	 * - Stack tiles
-	 * - Allow different tiles / no tiles in stacks.
-	 * - Add liquid aquafer
-	 * - consider 16x16 hitArea block for actors.
+	 * Roguelike 0.01c Goals
+	 * ESC to open/close edit mode
+	 * Initial tile.update() ignores updating neighbours
+	 * - Map scrollrect follows active tile
+	 * - Remove mouse from map.
+	 * - Wheelmouse zoom centers on active tile
+	 * - Highlight only the tile top.
+	 * - Elevation difference > 0 shadows only tile top (not vertical plane of tile).
+	 * - Elevation difference > 1 shadows occupant.
+	 * - Shift + drag draws tiles.
+	 * - Bugfix: Edging bug on righthand side
+	 * - Bugfix: Void tiles not drawn
 	 */
 	
 	public static inline var GAME_SCALE:Int = 1;
