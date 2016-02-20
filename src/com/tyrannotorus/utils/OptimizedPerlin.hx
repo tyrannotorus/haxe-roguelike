@@ -11,7 +11,11 @@ Haxe port and optimization by Nicolas Cannasse http://haxe.org
 
 package com.tyrannotorus.utils;
 
+import com.roguelike.editor.MapData;
 import flash.display.BitmapData;
+import openfl.utils.Object;
+import openfl.Vector;
+import openfl.display.BitmapData;
 
 class OptimizedPerlin {
 
@@ -91,7 +95,77 @@ class OptimizedPerlin {
     seedOffset(seed);
     octFreqPers(falloff);
   }
-
+  
+	/**
+	 * Returns an elevation map based on perlin noise for speified parameters.
+	 * @param	{Int} mapWidth
+	 * @param	{Int} mapHeight
+	 * @param	{Array<Int>} mapElevations
+	 */
+	public function getElevationArray(mapData:MapData, mapElevations:Array<Int>, xFloat:Float, yFloat:Float, zFloat:Float):Array<Array<Int>> {
+		
+		var bmd:BitmapData = new BitmapData(mapData.width, mapData.height, true, Colors.TRANSPARENT);
+		fill(bmd, xFloat, yFloat, zFloat);
+		var noiseVector:Vector<UInt> = bmd.getVector(bmd.rect);
+		var brightnessArray:Array<Int> = new Array<Int>();
+		var minBrightness:Int = 100;
+		var maxBrightness:Int = 0;
+		
+		// Determine the brightness of each pixel in the perlin noise vector.
+		for (ii in 0...noiseVector.length) {
+			var pixelBrightness:Int = cast(determineBrightness(noiseVector[ii]) * 100);
+			minBrightness = (pixelBrightness < minBrightness) ? pixelBrightness : minBrightness;
+			maxBrightness = (pixelBrightness > maxBrightness) ? pixelBrightness : maxBrightness;
+			brightnessArray[ii] = pixelBrightness;
+		}
+		
+		// Replace map elevations with brightness values for each elevation, and attempt to normalize the distribution.
+		var elevationIncrement:Int = cast((maxBrightness - minBrightness) / mapElevations.length);
+		var normalizer:Int = 0;
+		var remainder:Int = elevationIncrement - 1 - ((maxBrightness - minBrightness) % elevationIncrement);
+		for (ii in 0...mapElevations.length) {
+			normalizer = (remainder-- > 0) ? normalizer + 1 : normalizer;
+			mapElevations[ii] = cast((minBrightness - normalizer + ((ii + 1) * elevationIncrement)));
+		}
+				
+		var elevationMap:Object = {};
+		var currentElevation:Int = 0;
+		var currentBrightness:Int = minBrightness;
+		var numberIndexes:Int = maxBrightness - minBrightness + 1;
+		
+		for (ii in 0...numberIndexes) {
+			
+			if (mapElevations.indexOf(currentBrightness) != -1) {
+				currentElevation++;
+			}
+			
+			elevationMap[currentBrightness] = currentElevation;
+			currentBrightness++;
+		}
+		
+		// Create the actual elevation array.
+		var idxPixel:Int = 0;
+		var elevationArray:Array<Array<Int>> = new Array<Array<Int>>();
+		for (yy in 0...mapData.height) {
+			elevationArray[yy] = new Array<Int>();
+			for (xx in 0...mapData.width) {
+				elevationArray[yy][xx] = cast(elevationMap[brightnessArray[idxPixel++]]);
+			}
+		}
+		
+		return elevationArray;
+	}
+	
+	/**
+	 * Returns the brightness of a specified color as a float from 0.00 to 1.00
+	 * @param {UInt} colour
+	 * @return {Float}
+	 */
+	public function determineBrightness(colour:UInt):Float {
+		var rgb:Array<UInt> = HexToRGB(colour);
+		return Math.sqrt((rgb[0] * rgb[0] * 0.241) + (rgb[1] * rgb[1] * 0.691) + (rgb[2] * rgb[2] * 0.068) ) / 255;
+	}
+	
   public function fill( bitmap:BitmapData, _x:Float, _y:Float, _z:Float, ?_ ):Void {
 
     var baseX:Float;
@@ -223,13 +297,7 @@ class OptimizedPerlin {
     iZoffset = iSeed = Std.int((iSeed * 16807.) % 2147483647);
   }
   
-  public function determineBrightness(colour:UInt):Float {
-    var rgb:Array<UInt> = HexToRGB(colour);
-   
-    return Math.sqrt((rgb[0] * rgb[0] * 0.241) + (rgb[1] * rgb[1] * 0.691) + (rgb[2] * rgb[2] * 0.068) ) / 255;
-}
-
-function HexToRGB(hex:UInt):Array<UInt> {
+  function HexToRGB(hex:UInt):Array<UInt> {
 	
     var rgb:Array<UInt> = new Array<UInt>();
            

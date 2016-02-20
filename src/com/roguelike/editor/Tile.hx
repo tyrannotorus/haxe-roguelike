@@ -185,10 +185,14 @@ class Tile extends Sprite {
 	 */
 	public function update(updateNeighbours:Bool = false):Void {
 		
+		// Update this tile's edges/shadow.
+		updateEdging();
+		updateShadow();
+		
 		if(updateNeighbours) {
 		
 			var tile:Tile;
-			var neighbours:Array<Int> = [KeyCodes.SW, KeyCodes.SE];
+			var neighbours:Array<Int> = [KeyCodes.SW, KeyCodes.SE, KeyCodes.DOWN];
 			
 			// Update edges of this tile if it overshadows northernly neighbours.
 			for (idxTile in 0...neighbours.length) {
@@ -207,10 +211,6 @@ class Tile extends Sprite {
 				}
 			}
 		}
-			
-		// Update this tile's edges/shadow.
-		updateEdging();
-		updateShadow();
 	}
 	
 	/**
@@ -226,22 +226,41 @@ class Tile extends Sprite {
 		neEdge.y = centerY - neEdge.height - 2;
 		neEdge.visible = false;
 		
-		var tile:Tile;
-		var tileId:Int;
-		var neighbours:Array<Int> = [KeyCodes.NW, KeyCodes.NE];
+		var nwTile:Tile = getNeighbourTile(KeyCodes.NW);
+		var neTile:Tile = getNeighbourTile(KeyCodes.NE);
+		
+		if (nwTile == null && neTile == null) {
+			nwEdge.visible = true;
+			neEdge.visible = true;
 			
-		// Update edges of this tile if it overshadows northernly neighbours.
-		for (idxTile in 0...neighbours.length) {
+		} else {
+		
+			if (nwTile == null && neTile != null && elevation == neTile.elevation && neTile.nwEdge.visible) {
+				nwEdge.visible = true;
+			} else if (nwTile != null && elevation > nwTile.elevation && tileData.fileName == nwTile.tileData.fileName) {
+				nwEdge.visible = true;
+			}
+		
+			if (neTile == null && nwTile != null && elevation == nwTile.elevation && nwTile.neEdge.visible) {
+				neEdge.visible = true;
+			} else if (neTile != null && elevation > neTile.elevation && tileData.fileName == neTile.tileData.fileName) {
+				neEdge.visible = true;
+			}
+		
+			if (neTile == null && nwEdge.visible) {
+				neEdge.visible = true;
+			}
+		
+			if (nwTile == null && neEdge.visible) {
+				nwEdge.visible = true;
+			}
 			
-			tileId = neighbours[idxTile];
-			tile = getNeighbourTile(tileId);
-						
-			if (tile != null && elevation > tile.elevation && tileData.fileName == tile.tileData.fileName) {
-				if (tileId == KeyCodes.NW) {
-					nwEdge.visible = true;
-				} else if (tileId == KeyCodes.NE) {
-					neEdge.visible = true;
-				}
+			if (neTile != null && elevation == neTile.elevation) {
+				neEdge.visible = false;
+			}
+			
+			if (nwTile != null && elevation == nwTile.elevation) {
+				nwEdge.visible = false;
 			}
 		}
 	}

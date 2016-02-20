@@ -1,9 +1,5 @@
 package com.roguelike;
 
-import com.roguelike.managers.ActorManager;
-import com.roguelike.managers.MapManager;
-import com.roguelike.managers.TextManager;
-import com.roguelike.managers.TileManager;
 import openfl.display.Sprite;
 import openfl.display.StageDisplayState;
 import openfl.display.StageQuality;
@@ -18,17 +14,17 @@ class Main extends Sprite {
 	
 	/**
 	 * Roguelike 0.01c Goals
-	 * ESC to open/close edit mode
-	 * Initial tile.update() ignores updating neighbours
+	 * - ESC to open/close edit mode
+	 * - Initial tile.update() ignores updating neighbours
 	 * - Map scrollrect follows active tile
-	 * - Remove mouse from map.
-	 * - Wheelmouse zoom centers on active tile
-	 * - Highlight only the tile top.
-	 * - Elevation difference > 0 shadows only tile top (not vertical plane of tile).
-	 * - Elevation difference > 1 shadows occupant.
-	 * - Shift + drag draws tiles.
-	 * - Bugfix: Edging bug on righthand side
-	 * - Bugfix: Void tiles not drawn
+	 * Bugfix: Edging bug on righthand side
+	 * Bugfix: Void tiles not drawn
+	 * Remove mouse from map.
+	 * Wheelmouse zoom centers on active tile
+	 * Highlight only the tile top.
+	 * Elevation difference > 0 shadows only tile top (not vertical plane of tile).
+	 * Elevation difference > 1 shadows occupant.
+	 * Shift + drag draws tiles.
 	 */
 	
 	public static inline var GAME_SCALE:Int = 1;

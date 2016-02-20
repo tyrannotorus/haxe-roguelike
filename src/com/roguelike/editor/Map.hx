@@ -96,6 +96,11 @@ class Map extends Sprite {
 		}
 	}
 	
+	/**
+	 * Set the viewRect's focus to a specified tile.
+	 * @param {Tile} tile
+	 * @param {Float} tweenSpeed
+	 */
 	public function setFocusToTile(tile:Tile, tweenSpeed:Float = MAP_TWEEN_SPEED):Void {
 		
 		if(centerTile != null) {
@@ -141,45 +146,12 @@ class Map extends Sprite {
 		var tileArray:Array<Int> = mapData.tileArray;
 		var idxTile:Int = 0;
 		
-		var mapSeed:Int = cast Math.random() * 6000;
+		// Create the elevation array of the map using perlin noise.
+		var mapSeed:Int = cast(Math.random() * 2000000000);
 		var optimizedPerlin:OptimizedPerlin = new OptimizedPerlin(mapSeed);
-		var bmd:BitmapData = new BitmapData(mapData.width, mapData.height, true, Colors.TRANSPARENT);
-		optimizedPerlin.fill(bmd, 0.2, 0.4, 1.0);
-		var bitmap:Bitmap = new Bitmap(bmd);
-		var perlinVector:Vector<UInt> = bmd.getVector(bmd.rect);
-		var floatArray:Array<Float> = new Array<Float>();
-		var lowestElevation:Float = 1;
-		var highestElevation:Float = 0;
-		
-		for (ii in 0...perlinVector.length) {
-			var float:Float = Std.int(optimizedPerlin.determineBrightness(perlinVector[ii]) * 100) / 100;
-			lowestElevation = (float < lowestElevation) ? float : lowestElevation;
-			highestElevation = (float > highestElevation) ? float : highestElevation;
-			floatArray[ii] = Std.int(optimizedPerlin.determineBrightness(perlinVector[ii])*100)/100;
-		}
-				
-		trace(lowestElevation + " to " + highestElevation);
-		
-		var elevationRange:Array<Float> = [0, 1, 2, 3, 4];
-		var elevationIncrement:Float = (highestElevation - lowestElevation) / elevationRange.length;
-		for (ii in 0...elevationRange.length) {
-			elevationRange[ii] = Math.ceil((lowestElevation + ((ii + 1) * elevationIncrement)) * 100) / 100;
-			trace(elevationRange[ii]);
-		}
-		
-		var elevationMap:Object = {};
-		var currentElevation:Int = 0;
-		var currentIdx:Float = lowestElevation;
-		var numberIndexes:Int = cast((highestElevation - lowestElevation) * 100);
-		trace(elevationRange.join(","));
-		for (i in 0...numberIndexes) {
-			if (elevationRange.indexOf(currentIdx) != -1) {
-				currentElevation++;
-			}
-			trace(currentIdx + ":" + currentElevation);
-			elevationMap[Std.int(currentIdx*100)] = currentElevation;
-			currentIdx = Std.int((currentIdx + 0.01)*100)/100;
-		}
+		var elevationArray:Array<Array<Int>> = optimizedPerlin.getElevationArray(mapData, [0, 1, 2, 3], 0.2, 0.4, 1.0);
+	
+		var tile:Tile;
 		
 		for (yy in 0...mapData.height) {
 			
@@ -187,12 +159,14 @@ class Map extends Sprite {
 						
 			for (xx in 0...mapData.width) {
 				
-				var elevation:Int = elevationMap[Std.int(floatArray[idxTile]*100)];
-				
+				var elevation:Int = elevationArray[yy][xx];
 				var tileNum:Int = tileArray[idxTile++];
+				
+				// All tiles are terrain1 currently
 				tileNum = 1;
+				
 				var tileName:String = (elevation > 0) ? mapData.tileMap[tileNum] : "water.png";
-				var tile:Tile = tileManager.getTile(tileName);
+				tile = tileManager.getTile(tileName);
 				tile.x = xPosition;
 				tile.y = yPosition;
 				mapLayer.addChild(tile);
@@ -219,30 +193,40 @@ class Map extends Sprite {
 		}
 		
 		// Populate each tile with their direct neighbours.
+		var thisTileRow:Array<Tile>;
+		var nextTileRow:Array<Tile>;
+		
 		for (yy in 0...tileMap.length) {
+			
+			thisTileRow = tileMap[yy];
+			nextTileRow = (yy + 1 < tileMap.length) ? tileMap[yy + 1] : null;
 			
 			for (xx in 0...tileMap[yy].length) {
 				
-				tileMap[yy][xx].setNeighbourTile(tileMap[yy][xx - 1], KeyCodes.LEFT);
+				tile = thisTileRow[xx];
+				tile.setNeighbourTile(thisTileRow[xx - 1], KeyCodes.LEFT);
 				
 				if(xx > 0) {
-					tileMap[yy][xx - 1].setNeighbourTile(tileMap[yy][xx], KeyCodes.RIGHT);
+					thisTileRow[xx - 1].setNeighbourTile(tile, KeyCodes.RIGHT);
 				}
 				
-				if (yy + 1 < tileMap.length) {
+				if (nextTileRow != null) {
 					if(yy % 2 == 0) {
 						
 						if(xx > 0) {
-							tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx - 1], KeyCodes.SW);
-							tileMap[yy + 1][xx - 1].setNeighbourTile(tileMap[yy][xx], KeyCodes.NE);
+							tile.setNeighbourTile(nextTileRow[xx - 1], KeyCodes.SW);
+							nextTileRow[xx - 1].setNeighbourTile(tile, KeyCodes.NE);
 						}
-						tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx], KeyCodes.SE);
-						tileMap[yy + 1][xx].setNeighbourTile(tileMap[yy][xx], KeyCodes.NW);
-					} else if(xx + 1 < tileMap[yy].length){
-						tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx], KeyCodes.SW);
-						tileMap[yy + 1][xx].setNeighbourTile(tileMap[yy][xx], KeyCodes.NE);
-						tileMap[yy][xx].setNeighbourTile(tileMap[yy + 1][xx+1], KeyCodes.SE);
-						tileMap[yy + 1][xx+1].setNeighbourTile(tileMap[yy][xx], KeyCodes.NW);
+						tile.setNeighbourTile(nextTileRow[xx], KeyCodes.SE);
+						nextTileRow[xx].setNeighbourTile(tile, KeyCodes.NW);
+					} else {
+						
+						if (xx + 1 < tileMap[yy].length) {
+							tile.setNeighbourTile(nextTileRow[xx + 1], KeyCodes.SE);
+							nextTileRow[xx + 1].setNeighbourTile(tile, KeyCodes.NW);
+						}
+						tile.setNeighbourTile(nextTileRow[xx], KeyCodes.SW);
+						nextTileRow[xx].setNeighbourTile(tile, KeyCodes.NE);
 					}
 				}
 				
@@ -259,11 +243,6 @@ class Map extends Sprite {
 				tileMap[yy][xx].update();
 			}
 		}
-		
-		// Position the map.
-		var viewRect:Rectangle = mapLayer.getBounds(this);
-		mapLayer.x = Std.int( -viewRect.left + halfWidth);
-		mapLayer.y = Std.int(-viewRect.top + halfWidth);
 	}
 	
 	/**
