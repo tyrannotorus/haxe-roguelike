@@ -78,7 +78,7 @@ class Actor extends Sprite {
 	private var tmpxShiftFrames	:Int;	// xShiftFrames[currentAnimation][currentFrame] holder should declare these when needed = faster
 	private var tmpyShiftFrames	:Int;	// yShiftFrames[currentAnimation][currentFrame] holder
 			
-	private var tick		:Int = 0;		
+	public var tick		:Int = 0;		
 	private var combo		:Int;
 		
 	// Heath Display

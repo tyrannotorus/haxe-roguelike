@@ -39,7 +39,7 @@ class Main extends Sprite {
 	public function new() {
 		
 		super();
-		stage.quality = StageQuality.HIGH;
+		stage.quality = StageQuality.LOW;
 		stage.scaleMode = StageScaleMode.EXACT_FIT;
 		
 		game = Game.getInstance();

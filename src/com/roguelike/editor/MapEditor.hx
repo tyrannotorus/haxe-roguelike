@@ -83,10 +83,10 @@ class MapEditor extends Sprite {
 				enableActorsOnMap(false);
 				
 			case EditorEvent.ZOOM_OUT:
-				map.modifyScale(-0.25);
+				map.modifyScale(-0.5);
 				
 			case EditorEvent.ZOOM_IN:
-				map.modifyScale(0.25);
+				map.modifyScale(0.5);
 				
 			case EditorEvent.RESET_MAP:
 				map.reset();
@@ -193,7 +193,6 @@ class MapEditor extends Sprite {
 					} else {
 						selectedActor = actor.clone();
 						map.allActors.push(selectedActor);
-						addEventListener(Event.ENTER_FRAME, map.animateActors);
 					}
 				
 				// Mousedown upon a tile.

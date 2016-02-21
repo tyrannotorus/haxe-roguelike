@@ -77,8 +77,8 @@ class Editor extends Sprite {
 				game.addChildAt(map, 0);
 				
 				if (map.allActors[0] != null) {
-					game.player = map.allActors[0];
-					//map.setCurrentTile(game.player.currentTile);
+					game.player = map.allActors[Std.int(Math.random()*map.allActors.length)];
+					game.player.currentTile.highlight(true);
 					map.setFocusToTile(game.player.currentTile, 1);
 				}
 				

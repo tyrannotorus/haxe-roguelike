@@ -3,6 +3,7 @@ package com.roguelike.editor;
 import com.roguelike.Actor;
 import com.roguelike.editor.MapData;
 import com.roguelike.managers.TileManager;
+import com.roguelike.managers.ActorManager;
 import com.tyrannotorus.utils.Colors;
 import com.tyrannotorus.utils.KeyCodes;
 import com.tyrannotorus.utils.OptimizedPerlin;
@@ -62,7 +63,6 @@ class Map extends Sprite {
 		// Create the layer holding the map tiles.
 		mapLayer = new Sprite();
 		mapLayer.mouseEnabled = false;
-		mapLayer.cacheAsBitmap = true;
 		addChild(mapLayer);
 		
 		addListeners();
@@ -81,11 +81,14 @@ class Map extends Sprite {
 		
 		if (centerTile == null) {
 			centerTile = tile;
+			centerTile.highlight(true);
 		}
 		
-		if (currentScale > 1.5) {
+		// Always close follow the player at scales greater than 1.
+		if (currentScale > 1) {
 			setFocusToTile(centerTile.getNeighbourTile(tileKey));
 		
+		// Otherwise...
 		} else {
 		
 			// Calculate number of blocks away.
@@ -108,13 +111,7 @@ class Map extends Sprite {
 	 * @param {Float} tweenSpeed
 	 */
 	public function setFocusToTile(tile:Tile, tweenSpeed:Float = MAP_TWEEN_SPEED):Void {
-		
-		//if(centerTile != null) {
-		//	centerTile.highlight(false);
-		//}
-		
 		centerTile = tile;
-		//centerTile.highlight(true);
 		var viewRectX:Int = cast(centerTile.x * currentScale - (viewRect.width/2));
 		var viewRectY:Int = cast((centerTile.y + centerTile.centerY) * currentScale - (viewRect.height/2));
 		isTransposing = true;
@@ -257,6 +254,24 @@ class Map extends Sprite {
 				tileMap[yy][xx].update();
 			}
 		}
+		
+		// Populate map with actors.
+		var actors:Array<Actor> = ActorManager.getInstance().getAllActors();
+		for (idxActor in 0...100) {
+			var randomActor:Actor = actors[Std.int(Math.random() * actors.length)].clone();
+			var xx:Int = cast(Math.random() * mapData.width);
+			var yy:Int = cast(Math.random() * mapData.height);
+			if (tileMap[yy][xx].occupant == null) {
+				randomActor.scaleX = Std.int(Math.random() * 2) == 0 ? -1 : 1;
+				randomActor.currentFrame = Std.int(Math.random() * 3);
+				randomActor.tick = Std.int(Math.random() * 6);
+				allActors.push(randomActor);
+				tileMap[yy][xx].addOccupant(randomActor);
+				tileMap[yy][xx].highlight(false);
+			}
+		}
+		
+		addEventListener(Event.ENTER_FRAME, animateActors);
 	}
 	
 	public function smooth(andUpdate:Bool = true):Void {
@@ -289,13 +304,7 @@ class Map extends Sprite {
 	 */
 	public function modifyScale(scaleIncrement:Float):Void {
 		currentScale += scaleIncrement;
-		
-		var oldWidth:Float = mapLayer.width;
-		var oldHeight:Float = mapLayer.height;
-		
-		mapLayer.scaleX = mapLayer.scaleY = currentScale;
-		//mapLayer.x += (oldWidth - mapLayer.width) / 2;
-		//mapLayer.y += (oldHeight - mapLayer.height) / 2;
+		mapLayer.scaleX = mapLayer.scaleY = Std.int(currentScale*10)/10;
 	}
 	
 	/**
