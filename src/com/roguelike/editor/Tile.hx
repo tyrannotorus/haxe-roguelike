@@ -6,6 +6,7 @@ import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.utils.Object;
 import com.tyrannotorus.utils.Colors;
+import com.roguelike.managers.TileManager;
 
 /**
  * Tile.hx.
@@ -22,6 +23,7 @@ class Tile extends Sprite {
 	public var hitSprite:Sprite;
 	public var occupant:Dynamic;
 	public var elevation:Int;
+	public var smoothedElevation:Int = 0;
 	public var tinted:Bool;
 	public var tileHeight:Int;
 	public var centerX:Int = 0;
@@ -127,6 +129,11 @@ class Tile extends Sprite {
 		}
 	}
 		
+	public function setElevation(newElevation:Int):Void {
+		var elevationDifference:Int = newElevation - elevation;
+		addElevation(elevationDifference);
+	}
+	
 	/**
 	 * Add or subtract elevation from tile by modifier value.
 	 * @param {Int} modifier
@@ -157,10 +164,21 @@ class Tile extends Sprite {
 				tileStackArray.push(newTile);
 				tilesContainer.addChild(newTile);
 				
+				if (tileData.fileName == "water.png") {
+					var terrainTile:Tile = TileManager.getInstance().getTile("terrain1.png");
+					clone(terrainTile);
+				}
+				
 			// Subtracting elevation from tile.	
 			} else if(tileStackArray.length > 1) {
+				
 				topTile = tileStackArray.pop();
 				tilesContainer.removeChild(topTile);
+				
+				if (elevation == 1) {
+					var waterTile:Tile = TileManager.getInstance().getTile("water.png");
+					clone(waterTile);				
+				}
 			}
 		}
 			
@@ -173,6 +191,46 @@ class Tile extends Sprite {
 		}
 		
 		update(true);
+	}
+	
+	/**
+	 * Smooth the elevation of the tile.
+	 * If it has 5 neighbours of 1 lower elevation and 3 of equal, lower the elevation of this tile.
+	 */
+	public function smooth(doSmoothing:Bool = false):Void {
+		
+		if (doSmoothing && smoothedElevation != 0) {
+			addElevation(smoothedElevation);
+			smoothedElevation = 0;
+			return;
+		}
+		
+		var equalNeighbours:Int = 0;
+		var lowerNeighbours:Int = 0;
+		var higherNeighbours:Int = 0;
+		var tileKeys:Array<String> = Reflect.fields(neighbourTiles);
+		for (idxTile in 0...tileKeys.length) {
+			var neighbourTile:Tile = neighbourTiles[cast(tileKeys[idxTile])];
+			if (neighbourTile == null) {
+				lowerNeighbours++;
+			} else {
+			
+				var neighbourElevation:Int = neighbourTile.elevation;
+				if (neighbourElevation == elevation) {
+					equalNeighbours++;
+				} else if (neighbourElevation + 1 == elevation) {
+					lowerNeighbours++;
+				} else if (neighbourElevation == elevation + 1) {
+					higherNeighbours++;
+				}
+			}
+		}
+		
+		if (lowerNeighbours > 6 || lowerNeighbours == 5 && equalNeighbours == 3 || equalNeighbours==1 && higherNeighbours==0) {
+			smoothedElevation = -1;
+		} else if (higherNeighbours > 6) {
+			smoothedElevation = 1;
+		}
 	}
 	
 	public function highlight(value:Bool):Void {
@@ -322,6 +380,10 @@ class Tile extends Sprite {
 				tileBitmap.bitmapData = this.tileData.tintBmd;
 			} else {
 				tileBitmap.bitmapData = this.tileData.tileBmd;
+			}
+			
+			for (ii in 0...tileStackArray.length) {
+				tileStackArray[ii].bitmapData = tileBitmap.bitmapData;
 			}
 			
 			//tintBitmap.bitmapData = this.tileData.tintBmd;

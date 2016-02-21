@@ -83,10 +83,10 @@ class MapEditor extends Sprite {
 				enableActorsOnMap(false);
 				
 			case EditorEvent.ZOOM_OUT:
-				map.modifyScale(-0.1);
+				map.modifyScale(-0.25);
 				
 			case EditorEvent.ZOOM_IN:
-				map.modifyScale(0.1);
+				map.modifyScale(0.25);
 				
 			case EditorEvent.RESET_MAP:
 				map.reset();

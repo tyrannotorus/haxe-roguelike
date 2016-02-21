@@ -109,8 +109,8 @@ class Map extends Sprite {
 		
 		centerTile = tile;
 		centerTile.highlight(true);
-		var viewRectX:Int = cast(centerTile.x - (viewRect.width/2));
-		var viewRectY:Int = cast(centerTile.y - (viewRect.height/2));
+		var viewRectX:Int = cast(centerTile.x * currentScale - (viewRect.width/2));
+		var viewRectY:Int = cast((centerTile.y + centerTile.centerY) * currentScale - (viewRect.height/2));
 		isTransposing = true;
 		Actuate.tween(viewRect, tweenSpeed, { x:viewRectX, y:viewRectY } ).ease(Cubic.easeInOut).onUpdate(updateScrollRect);
 	}
@@ -149,7 +149,7 @@ class Map extends Sprite {
 		// Create the elevation array of the map using perlin noise.
 		var mapSeed:Int = cast(Math.random() * 2000000000);
 		var optimizedPerlin:OptimizedPerlin = new OptimizedPerlin(mapSeed);
-		var elevationArray:Array<Array<Int>> = optimizedPerlin.getElevationArray(mapData, [0, 1, 2, 3], 0.2, 0.4, 1.0);
+		var elevationArray:Array<Array<Int>> = optimizedPerlin.getElevationArray(mapData, [0,1,2,3,4,5], 0.9, 0.4, 0.4);
 	
 		var tile:Tile;
 		
@@ -237,10 +237,42 @@ class Map extends Sprite {
 			}
 		}
 		
-		// Update shadows and edging of all tiles.
+		if (mapData.smoothing > 0) {
+			
+			for (ii in 0...mapData.smoothing) {
+				smooth(false);
+			}
+			
+		}
+		
+		
 		for (yy in 0...tileMap.length) {
 			for (xx in 0...tileMap[yy].length) {
 				tileMap[yy][xx].update();
+			}
+		}
+	}
+	
+	public function smooth(andUpdate:Bool = true):Void {
+		
+		for (yy in 0...tileMap.length) {
+			for (xx in 0...tileMap[yy].length) {
+				tileMap[yy][xx].smooth();
+			}
+		}
+		
+		// Update shadows and edging of all tiles.
+		for (yy in 0...tileMap.length) {
+			for (xx in 0...tileMap[yy].length) {
+				tileMap[yy][xx].smooth(true);
+			}
+		}
+		
+		if(andUpdate) {
+			for (yy in 0...tileMap.length) {
+				for (xx in 0...tileMap[yy].length) {
+					tileMap[yy][xx].update();
+				}
 			}
 		}
 	}
@@ -256,8 +288,8 @@ class Map extends Sprite {
 		var oldHeight:Float = mapLayer.height;
 		
 		mapLayer.scaleX = mapLayer.scaleY = currentScale;
-		mapLayer.x += (oldWidth - mapLayer.width) / 2;
-		mapLayer.y += (oldHeight - mapLayer.height) / 2;
+		//mapLayer.x += (oldWidth - mapLayer.width) / 2;
+		//mapLayer.y += (oldHeight - mapLayer.height) / 2;
 	}
 	
 	/**
@@ -324,7 +356,7 @@ class Map extends Sprite {
 	}
 	
 	public function onMouseUp(e:Event = null):Void {
-		
+		//smooth();
 		// Stop the drag and set the scrollRect.
 		viewRect.x = Std.int(viewRect.x);
 		viewRect.y = Std.int(viewRect.y);
