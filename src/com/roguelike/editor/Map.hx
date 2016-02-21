@@ -83,16 +83,22 @@ class Map extends Sprite {
 			centerTile = tile;
 		}
 		
-		// Calculate number of blocks away.
-		var halfWidth:Float = centerTile.width / 2;
-		var halfHeight:Float = halfWidth / 2;
-		var xDistance:Float = Math.abs(centerTile.x - tile.x);
-		var yDistance:Float = Math.abs(centerTile.y - tile.y);
-		var numBlocksX:Int = cast(Math.ceil(xDistance / halfWidth));
-		var numBlocksY:Int = cast(Math.ceil(yDistance / halfHeight));
-		
-		if (numBlocksX +  numBlocksY > TILES_FROM_CENTER * 2) {
+		if (currentScale > 1.5) {
 			setFocusToTile(centerTile.getNeighbourTile(tileKey));
+		
+		} else {
+		
+			// Calculate number of blocks away.
+			var halfWidth:Float = centerTile.width / 2;
+			var halfHeight:Float = halfWidth / 2;
+			var xDistance:Float = Math.abs(centerTile.x - tile.x);
+			var yDistance:Float = Math.abs(centerTile.y - tile.y);
+			var numBlocksX:Int = cast(Math.ceil(xDistance / halfWidth));
+			var numBlocksY:Int = cast(Math.ceil(yDistance / halfHeight));
+		
+			if (numBlocksX +  numBlocksY > TILES_FROM_CENTER * 2) {
+				setFocusToTile(centerTile.getNeighbourTile(tileKey));
+			}
 		}
 	}
 	
@@ -103,12 +109,12 @@ class Map extends Sprite {
 	 */
 	public function setFocusToTile(tile:Tile, tweenSpeed:Float = MAP_TWEEN_SPEED):Void {
 		
-		if(centerTile != null) {
-			centerTile.highlight(false);
-		}
+		//if(centerTile != null) {
+		//	centerTile.highlight(false);
+		//}
 		
 		centerTile = tile;
-		centerTile.highlight(true);
+		//centerTile.highlight(true);
 		var viewRectX:Int = cast(centerTile.x * currentScale - (viewRect.width/2));
 		var viewRectY:Int = cast((centerTile.y + centerTile.centerY) * currentScale - (viewRect.height/2));
 		isTransposing = true;
