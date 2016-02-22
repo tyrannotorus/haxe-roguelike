@@ -145,11 +145,10 @@ class Game extends Sprite {
 				keyCode = KeyCodes.SW;
 		}
 		
-		//map.moveCurrentTile(e.keyCode);
 		if(player != null) {
 			var actorTile:Tile = player.moveToTile(keyCode);
 			if (actorTile != null) {
-				map.alignViewRect(actorTile, keyCode);
+				map.alignCameraToTile(actorTile, keyCode);
 			}
 		}
 			

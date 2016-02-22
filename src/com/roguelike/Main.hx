@@ -17,14 +17,14 @@ class Main extends Sprite {
 	 * - ESC to open/close edit mode
 	 * - Initial tile.update() ignores updating neighbours
 	 * - Map scrollrect follows active tile
-	 * Bugfix: Edging bug on righthand side
+	 * - Bugfix: Edging bug on righthand side
+	 * Shift + drag draws tiles.
 	 * Bugfix: Void tiles not drawn
 	 * Remove mouse from map.
 	 * Wheelmouse zoom centers on active tile
 	 * Highlight only the tile top.
 	 * Elevation difference > 0 shadows only tile top (not vertical plane of tile).
 	 * Elevation difference > 1 shadows occupant.
-	 * Shift + drag draws tiles.
 	 */
 	
 	public static inline var GAME_SCALE:Int = 1;

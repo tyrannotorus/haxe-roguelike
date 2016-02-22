@@ -16,6 +16,7 @@ class EditorEvent extends DataEvent {
 	public static inline var RESET_MAP:String = "RESET_MAP";
 	public static inline var CLOSED:String = "CLOSED";
 	public static inline var OPENED:String = "OPENED";
+	public static inline var DISPATCH:String = "DISPATCH";
 	
 	/**
 	 * A standard event with an added data parameter

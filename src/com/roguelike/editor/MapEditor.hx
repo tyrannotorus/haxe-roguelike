@@ -37,7 +37,7 @@ class MapEditor extends Sprite {
 		
 		// Listen for dispatches from the editorDispatcher.
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
+		editorDispatcher.addEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 		
 		// Add the map to the editor.
 		this.map = map;
@@ -388,7 +388,7 @@ class MapEditor extends Sprite {
 		removeListeners();
 		editorSelectionBar.removeListeners();
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.dispatchEvent(new EditorEvent(Event.CHANGE, EditorEvent.CLOSED));
+		editorDispatcher.dispatchEvent(new EditorEvent(EditorEvent.DISPATCH, EditorEvent.CLOSED));
 	}
 	
 	
@@ -409,7 +409,7 @@ class MapEditor extends Sprite {
 	}
 	
 	public function cleanUp():Void {
-		EditorDispatcher.getInstance().removeEventListener(Event.CHANGE, onEditorDispatch);
+		EditorDispatcher.getInstance().removeEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 		removeListeners();
 		removeEventListener(MouseEvent.MOUSE_MOVE, onActorMove);
 	}

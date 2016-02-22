@@ -77,7 +77,7 @@ class Map extends Sprite {
 		currentTile.highlight(true);
 	}
 	
-	public function alignViewRect(tile:Tile, tileKey:Int):Void {
+	public function alignCameraToTile(tile:Tile, tileKey:Int):Void {
 		
 		if (centerTile == null) {
 			centerTile = tile;
@@ -243,15 +243,15 @@ class Map extends Sprite {
 		if (mapData.smoothing > 0) {
 			
 			for (ii in 0...mapData.smoothing) {
-				smooth(false);
+				smooth(true);
 			}
 			
-		}
+		} else {
 		
-		
-		for (yy in 0...tileMap.length) {
-			for (xx in 0...tileMap[yy].length) {
-				tileMap[yy][xx].update();
+			for (yy in 0...tileMap.length) {
+				for (xx in 0...tileMap[yy].length) {
+					tileMap[yy][xx].update();
+				}
 			}
 		}
 		
@@ -303,6 +303,11 @@ class Map extends Sprite {
 	 * @param {Float} scaleIncrement
 	 */
 	public function modifyScale(scaleIncrement:Float):Void {
+		
+		if (currentScale + scaleIncrement < 0.5) {
+			return;
+		}
+		
 		currentScale += scaleIncrement;
 		mapLayer.scaleX = mapLayer.scaleY = Std.int(currentScale*10)/10;
 	}

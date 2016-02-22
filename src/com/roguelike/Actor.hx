@@ -16,13 +16,12 @@ import com.tyrannotorus.utils.KeyCodes;
  */
 class Actor extends Sprite {
 	
-	public static inline var HOP_HEIGHT:Int = 4;
 	public static inline var MOVE_SPEED:Float = 0.1;
 	
 	// Amimation types.
 	public var IDLE:Int = 0;
-	public var WALK:Int;
-	public var STUN:Int;
+	public var HOP:Int = 0;
+	public var STUN:Int = 0;
 	
 	public var currentTile:Tile;
 	
@@ -50,7 +49,7 @@ class Actor extends Sprite {
 	public var currentFrame:Int = 0;
 	public var currentAnimation:Int = 0;
 	public var nextAnimation:Int = 0;
-		
+	
 	public var currentBitmap:Bitmap;
 	public var currentHitSprite:Sprite;
 	public var frameContainer:Sprite;
@@ -101,7 +100,6 @@ class Actor extends Sprite {
 		this.actorName = actorData.name;
 		
 		frameContainer = new Sprite();
-		frameContainer.mouseChildren = false;
 		currentBitmap = new Bitmap();
 		currentBitmap.visible = true;
 		
@@ -246,8 +244,8 @@ class Actor extends Sprite {
 			// SHIFT BITMAP PIXELS
 			frameContainer.x -= tmpxShiftFrames;
 			frameContainer.x += (tmpxShiftFrames = xShiftFrames[currentAnimation][currentFrame]);
-			frameContainer.y -= tmpyShiftFrames;
-			frameContainer.y += (tmpyShiftFrames = yShiftFrames[currentAnimation][currentFrame]);
+			//frameContainer.y -= tmpyShiftFrames;
+			//frameContainer.y += (tmpyShiftFrames = yShiftFrames[currentAnimation][currentFrame]);
 				
 			// FLIP FRAME
 			scaleX *= flipFrames[currentAnimation][currentFrame];
@@ -299,8 +297,11 @@ class Actor extends Sprite {
 		} else if (newTile.x > currentTile.x) {
 			scaleX = 1;
 		}
+		
+		var jumpHeight:Int = cast(frameContainer.y - 5);
+		Actuate.tween(frameContainer, MOVE_SPEED, { y:jumpHeight } ).ease(Cubic.easeInOut).repeat(1).reflect();
 			
-		if(newTile.elevation > 0 && Math.abs(newTile.elevation - currentTile.elevation) <= 1) {
+		if(newTile.occupant == null && newTile.elevation > 0 && Math.abs(newTile.elevation - currentTile.elevation) <= 1) {
 			
 			switch (tileKey) {
 				case KeyCodes.LEFT:
@@ -346,19 +347,20 @@ class Actor extends Sprite {
 				Actuate.tween(this, MOVE_SPEED * 2, {x:xOffset, y:yOffset}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
 			}
 			
+			setAnimation(HOP);
+			
 			isMoving = true;
 			
 			return newTile;
 		}
-			//Actuate.tween(this, MOVE_SPEED * 2, { x:xDistance } ).onComplete(completeMoveTile, [newTile]);
-		
+			
 		return null;
 	}
 	
 	private function completeMoveTile(newTile:Tile):Void {
 		newTile.addOccupant(this);
 		currentTile.highlight(true);
-		//setAnimation(IDLE);
+		setAnimation(IDLE);
 		isMoving = false;
 	}
 	

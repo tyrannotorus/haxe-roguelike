@@ -44,7 +44,7 @@ class Editor extends Sprite {
 		
 		// Listen for dispatches from the editorDispatcher.
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
+		editorDispatcher.addEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 	}
 	
 	/**
@@ -116,7 +116,7 @@ class Editor extends Sprite {
 		mapEditor = null;
 		
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.removeEventListener(Event.CHANGE, onEditorDispatch);
+		editorDispatcher.removeEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 	}
 	
 }

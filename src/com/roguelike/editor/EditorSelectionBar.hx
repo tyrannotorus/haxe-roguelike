@@ -108,9 +108,9 @@ class EditorSelectionBar extends Sprite {
 		this.cacheAsBitmap = true;
 		
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
+		editorDispatcher.addEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 		
-		var editorEvent:EditorEvent = new EditorEvent(Event.CHANGE, EditorEvent.ACTORS);
+		var editorEvent:EditorEvent = new EditorEvent(EditorEvent.DISPATCH, EditorEvent.ACTORS);
 		editorDispatcher.dispatchEvent(editorEvent);
 	}
 	
@@ -249,7 +249,7 @@ class EditorSelectionBar extends Sprite {
 			highlightTile.y = selectedTile.y;
 			tilesContainer.addChild(highlightTile);
 			
-			var editorEvent:EditorEvent = new EditorEvent(Event.CHANGE, EditorEvent.TILE_SELECTED);
+			var editorEvent:EditorEvent = new EditorEvent(EditorEvent.DISPATCH, EditorEvent.TILE_SELECTED);
 			EditorDispatcher.getInstance().dispatchEvent(editorEvent);
 		}
 	}

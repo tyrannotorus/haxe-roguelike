@@ -77,7 +77,7 @@ class MenuBar extends Sprite {
 		}
 		
 		// Dispatch the menu click.
-		var editorEvent:EditorEvent = new EditorEvent(Event.CHANGE, menuEvents[menuIndex]);
+		var editorEvent:EditorEvent = new EditorEvent(EditorEvent.DISPATCH, menuEvents[menuIndex]);
 		EditorDispatcher.getInstance().dispatchEvent(editorEvent);
 	}
 		
