@@ -2,22 +2,17 @@ package com.roguelike.editor;
 
 import com.roguelike.Actor;
 import com.roguelike.editor.MapData;
-import com.roguelike.managers.TileManager;
 import com.roguelike.managers.ActorManager;
-import com.tyrannotorus.utils.Colors;
+import com.roguelike.managers.TileManager;
 import com.tyrannotorus.utils.KeyCodes;
 import com.tyrannotorus.utils.OptimizedPerlin;
 import motion.Actuate;
 import motion.easing.Cubic;
-import openfl.display.Bitmap;
-import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
-import openfl.geom.Point;
 import openfl.geom.Rectangle;
-import openfl.utils.Object;
-import openfl.Vector;
+import openfl.ui.Mouse;
 
 /**
  * Map.as
@@ -31,11 +26,11 @@ class Map extends Sprite {
 	
 	public var mapLayer:Sprite;
 	public var allActors:Array<Actor>;
+	public var currentTile:Tile;
 	
 	private var mapData:MapData;
 	private var currentScale:Float = 1;
 	private var tileMap:Array<Array<Tile>>;
-	private var currentTile:Tile;
 	private var viewRect:Rectangle;
 	private var centerTile:Tile;
 	private var dragDifferenceX:Int;
@@ -72,9 +67,27 @@ class Map extends Sprite {
 		}
 	}
 	
+	public function moveToTile(tileKey:Int):Void {
+		trace("map.moveToTile");
+		if (currentTile == null) {
+			return;
+		}
+		
+		var neighbourTile:Tile = currentTile.getNeighbourTile(tileKey);
+		setCurrentTile(neighbourTile);
+	}
+	
 	public function setCurrentTile(tile:Tile):Void {
-		currentTile = tile;
-		currentTile.highlight(true);
+		
+		if(tile != null) {
+			
+			if (currentTile != null) {
+				currentTile.highlight(false);
+			}
+				
+			currentTile = tile;
+			currentTile.highlight(true);
+		}
 	}
 	
 	public function alignCameraToTile(tile:Tile, tileKey:Int):Void {
@@ -328,10 +341,8 @@ class Map extends Sprite {
 	 */
 	private function onTileRollOver(e:MouseEvent):Void {
 		
-		e.stopImmediatePropagation();
-		
 		if (Std.is(e.target, Tile)) {
-			cast(e.target, Tile).highlight(true);
+			setCurrentTile(cast(e.target));
 		}
 	}
 	
@@ -343,9 +354,9 @@ class Map extends Sprite {
 		
 		e.stopImmediatePropagation();
 		
-		if (Std.is(e.target, Tile)) {
-			cast(e.target, Tile).highlight(false);
-		}
+		//if (Std.is(e.target, Tile)) {
+		//	cast(e.target, Tile).highlight(false);
+		//}
 	}
 	
 	public function onMouseDown(e:MouseEvent):Void {
@@ -390,9 +401,12 @@ class Map extends Sprite {
 		mapLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);
 	}
 	
-	
+	private function onRollOver(e:MouseEvent):Void {
+		Mouse.hide();
+	}
 	
 	public function addListeners():Void {
+		addEventListener(MouseEvent.ROLL_OVER, onRollOver);
 		mapLayer.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		mapLayer.addEventListener(MouseEvent.MOUSE_OUT, onTileRollOut);
 		mapLayer.addEventListener(MouseEvent.MOUSE_OVER, onTileRollOver);

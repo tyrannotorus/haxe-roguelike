@@ -14,6 +14,7 @@ import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.geom.Rectangle;
+import openfl.ui.Mouse;
 
 /**
  * ActorsDialog.hx.
@@ -105,13 +106,17 @@ class EditorSelectionBar extends Sprite {
 		helpBar.y = -1;
 		addChild(helpBar);
 		
-		this.cacheAsBitmap = true;
+		this.addEventListener(MouseEvent.ROLL_OVER, onRollOver);
 		
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
 		editorDispatcher.addEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 		
 		var editorEvent:EditorEvent = new EditorEvent(EditorEvent.DISPATCH, EditorEvent.ACTORS);
 		editorDispatcher.dispatchEvent(editorEvent);
+	}
+	
+	private function onRollOver(e:MouseEvent):Void {
+		Mouse.show();
 	}
 	
 	/**

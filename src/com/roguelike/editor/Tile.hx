@@ -164,10 +164,10 @@ class Tile extends Sprite {
 				tileStackArray.push(newTile);
 				tilesContainer.addChild(newTile);
 				
-				if (tileData.fileName == "water.png") {
-					var terrainTile:Tile = TileManager.getInstance().getTile("terrain1.png");
-					clone(terrainTile);
-				}
+				//if (tileData.fileName == "water.png") {
+				//	var terrainTile:Tile = TileManager.getInstance().getTile("terrain1.png");
+				//	clone(terrainTile);
+				//}
 				
 			// Subtracting elevation from tile.	
 			} else if(tileStackArray.length > 1) {
@@ -175,10 +175,10 @@ class Tile extends Sprite {
 				topTile = tileStackArray.pop();
 				tilesContainer.removeChild(topTile);
 				
-				if (elevation == 1) {
-					var waterTile:Tile = TileManager.getInstance().getTile("water.png");
-					clone(waterTile);				
-				}
+				//if (elevation == 1) {
+				//	var waterTile:Tile = TileManager.getInstance().getTile("water.png");
+				//	clone(waterTile);				
+				//}
 			}
 		}
 			
@@ -347,6 +347,7 @@ class Tile extends Sprite {
 	 * @param {Bool} value
 	 */
 	public function tint(value:Bool = true):Void {
+		
 		if(tileData.elevation != -1) {
 			tinted = value;
 			tileBitmap.bitmapData = tileData.tintBmd;
@@ -372,7 +373,7 @@ class Tile extends Sprite {
 	 */
 	public function clone(tile:Tile = null):Tile {
 		
-		// This tile is becoming a clone of the tile parameter.
+		// This tile is is cloning the tile parameter.
 		if (tile != null) {
 			this.tileData = tile.tileData;
 			
@@ -382,15 +383,22 @@ class Tile extends Sprite {
 				tileBitmap.bitmapData = this.tileData.tileBmd;
 			}
 			
+			// Set the bitmapDatas of all the tiles in the tile stack
 			for (ii in 0...tileStackArray.length) {
 				tileStackArray[ii].bitmapData = tileBitmap.bitmapData;
 			}
 			
-			//tintBitmap.bitmapData = this.tileData.tintBmd;
+			if(this.tileData.edgeColor > 0) {
+				neEdge.bitmapData = this.tileData.neEdge;
+				nwEdge.bitmapData = this.tileData.nwEdge;
+			} else {
+				neEdge.bitmapData = null;
+				nwEdge.bitmapData = null;
+			}
+			
 			highlightBitmap.bitmapData = this.tileData.highlightBmd;
 			tilesContainer.x = tile.tilesContainer.x;
 			tilesContainer.y = tile.tilesContainer.y;
-			elevation = tile.elevation;
 			
 			#if flash
 				hitSprite.graphics.copyFrom(this.tileData.hitSprite.graphics);

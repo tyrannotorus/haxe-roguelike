@@ -9,14 +9,14 @@ import com.roguelike.managers.MapManager;
 import com.roguelike.managers.TextManager;
 import com.roguelike.managers.TileManager;
 import com.tyrannotorus.utils.KeyCodes;
-import openfl.display.Bitmap;
-import openfl.display.BitmapData;
 import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.media.SoundTransform;
+import openfl.ui.Mouse;
+import openfl.utils.Object;
 
 /**
  * Game.as.
@@ -33,8 +33,9 @@ class Game extends Sprite {
 	
 	public var player:Actor;
 	public var map:Map;
+	public var keysDown:Object = {};
 	private var editor:Editor;
-		
+	
 	// Music and sfx
 	private var music:Sound;
 	private var musicChannel:SoundChannel;
@@ -87,7 +88,6 @@ class Game extends Sprite {
 		tileManager.removeEventListener(Event.COMPLETE, init);
 		actorManager.removeEventListener(Event.COMPLETE, init);
 		
-		
 		// Create the map and add it to the map editor.
 		var mapData:MapData = mapManager.getMapData("hellmouth.txt");
 		map = new Map(mapData);
@@ -95,7 +95,8 @@ class Game extends Sprite {
 		editor = new Editor(map);
 		addChild(editor);
 		
-		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
+		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			
 		
 		//musicTransform = new SoundTransform(0.1);
@@ -104,55 +105,72 @@ class Game extends Sprite {
 		//musicChannel.soundTransform = musicTransform;
 	}
 		
-	private function onGameKeyDown(e:KeyboardEvent):Void {
+	/**
+	 * User has pressed a key.
+	 * @param {KeyboardEvent.KEY_DOWN} e
+	 */
+	private function onKeyDown(e:KeyboardEvent):Void {
 		
-		var keyCode:Int = e.keyCode;
-			
-		switch(keyCode) {
+		if (keysDown[e.keyCode]) {
+			return;
+		}
+
+		var keyDown:Int = e.keyCode;
+		keysDown[keyDown] = true;
+		
+		switch(keyDown) {
 			
 			case KeyCodes.ESC:
 				
 				if (editor.parent == this) {
-					trace("editor.hide();");
 					editor.hide();
 				} else {
-					trace("editor.show();");
 					editor.show();
 				}				
 			
 			case KeyCodes.LEFT, KeyCodes.LEFT_NUMLOCK:
-				keyCode = KeyCodes.LEFT;
+				keyDown = KeyCodes.LEFT;
 			
 			case KeyCodes.RIGHT, KeyCodes.RIGHT_NUMLOCK:
-				keyCode = KeyCodes.RIGHT;
+				keyDown = KeyCodes.RIGHT;
 			
 			case KeyCodes.UP, KeyCodes.UP_NUMLOCK:
-				keyCode = KeyCodes.UP;
+				keyDown = KeyCodes.UP;
 			
 			case KeyCodes.DOWN, KeyCodes.DOWN_NUMLOCK:
-				keyCode = KeyCodes.DOWN;
+				keyDown = KeyCodes.DOWN;
 			
 			case KeyCodes.NE, KeyCodes.NE_NUMLOCK:
-				keyCode = KeyCodes.NE;
+				keyDown = KeyCodes.NE;
 			
 			case KeyCodes.NW, KeyCodes.NW_NUMLOCK:
-				keyCode = KeyCodes.NW;
+				keyDown = KeyCodes.NW;
 			
 			case KeyCodes.SE, KeyCodes.SE_NUMLOCK:
-				keyCode = KeyCodes.SE;
+				keyDown = KeyCodes.SE;
 			
 			case KeyCodes.SW, KeyCodes.SW_NUMLOCK:
-				keyCode = KeyCodes.SW;
+				keyDown = KeyCodes.SW;
+				
 		}
 		
 		if(player != null) {
-			var actorTile:Tile = player.moveToTile(keyCode);
+			var actorTile:Tile = player.moveToTile(keyDown);
 			if (actorTile != null) {
-				map.alignCameraToTile(actorTile, keyCode);
+				map.alignCameraToTile(actorTile, keyDown);
 			}
+		
+		} else {
+			map.moveToTile(keyDown);
 		}
-			
 	}
 	
+	/**
+	 * User has released a key.
+	 * @param {KeyboardEvent.KEY_UP} e
+	 */
+	private function onKeyUp(e:KeyboardEvent):Void {
+		keysDown[e.keyCode] = null;
+	}
 	
 }

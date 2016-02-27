@@ -23,5 +23,8 @@ class KeyCodes {
 	public static inline var NE_NUMLOCK:Int = 105;
 	public static inline var ESC:Int = 27;
 	public static inline var ENTER:Int = 13;
+	public static inline var A:Int = 65;
+	public static inline var S:Int = 83;
+	public static inline var D:Int = 68;
 	
 }

@@ -19,18 +19,19 @@ class TileData {
 	
 	public var name:String;
 	public var fileName:String;
+	public var edgeColor:Int = -1;
 	public var elevation:Int;
-	public var fireAtk:Float;
-	public var critAtk:Float;
-	public var coldAtk:Float;
-	public var magicAtk:Float;
-	public var physAtk:Float;
-	public var fireDef:Float;
-	public var critDef:Float;
-	public var coldDef:Float;
-	public var magicDef:Float;
-	public var physDef:Float;
-	public var maxWeight:Int; // A maximum weight the tile can support before collapsing.
+	//public var fireAtk:Float;
+	//public var critAtk:Float;
+	//public var coldAtk:Float;
+	//public var magicAtk:Float;
+	//public var physAtk:Float;
+	//public var fireDef:Float;
+	//public var critDef:Float;
+	//public var coldDef:Float;
+	//public var magicDef:Float;
+	//public var physDef:Float;
+	//public var maxWeight:Int; // A maximum weight the tile can support before collapsing.
 	public var tileBmd:BitmapData;
 	public var tintBmd:BitmapData;
 	public var nwEdge:BitmapData;
@@ -65,10 +66,15 @@ class TileData {
 	private function deserialize(jsonString:String, assetData:Dynamic):Void {
 		
 		if(jsonString != null) {
+			
 			var jsonData:Object = Json.parse(jsonString);
 			name = jsonData.name;
 			fileName = jsonData.fileName;
 			elevation = jsonData.elevation;
+			
+			if(jsonData.edgeColor != null) {
+				edgeColor = Colors.hexToInt(jsonData.edgeColor, true);
+			}
 		}
 		
 		if (assetData != null && fileName != null) {

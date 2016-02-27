@@ -41,7 +41,6 @@ class Colors {
 	public static inline var GARYS_PINK_LACE:Int = 0xFFFFCFE9;
 	public static inline var BLUE:Int = 0xFF0000FF;
 	public static inline var TILE_GREEN:Int = 0xFF005D28;
-	//public static inline var TILE_GREEN:Int = 0xFF007B2C;
 	
 	
 	public static var ACTOR_SHADOW:Int = setAlpha(BLACK, 0.3);
