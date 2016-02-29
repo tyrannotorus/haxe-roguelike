@@ -74,27 +74,29 @@ class TileData {
 			
 			if(jsonData.edgeColor != null) {
 				edgeColor = Colors.hexToInt(jsonData.edgeColor, true);
+			} else {
+				edgeColor = Colors.TRANSPARENT;
 			}
 		}
 		
-		if (assetData != null && fileName != null) {
-			var tile:Bitmap = Reflect.field(assetData, fileName);
-			tileBmd = tile.bitmapData;
-			tintBmd = Colors.tintBitmapData(tileBmd, Colors.TILE_OFFSET_COLOR);
-			highlightBmd = Colors.tintBitmapData(tileBmd, Colors.TILE_HIGHLIGHT);
-			hitSprite = Utils.getHitArea(tileBmd);
-			centerX = cast(tileBmd.width / 2);
-			centerY = cast(tileBmd.height - centerX);
-		}
-		
-		// Create the edge
+		var tile:Bitmap = Reflect.field(assetData, fileName);
+		tileBmd = tile.bitmapData;
+		tintBmd = Colors.tintBitmapData(tileBmd, Colors.TILE_OFFSET_COLOR);
+		highlightBmd = Colors.tintBitmapData(tileBmd, Colors.TILE_HIGHLIGHT);
+		hitSprite = Utils.getHitArea(tileBmd);
+		centerX = cast(tileBmd.width / 2);
+		centerY = cast(tileBmd.height - centerX);
+				
+		// Clone the tile. Convert it all to the edge color.
 		var edgeBmd:BitmapData = tileBmd.clone();
-		edgeBmd.threshold(edgeBmd, edgeBmd.rect, new Point(), "!=", Colors.TRANSPARENT, Colors.TILE_GREEN);
+		edgeBmd.threshold(edgeBmd, edgeBmd.rect, new Point(), "!=", Colors.TRANSPARENT, edgeColor);
 		
-		var cookieBmd:BitmapData = tileBmd.clone();
-		cookieBmd.threshold(cookieBmd, cookieBmd.rect, new Point(), "!=", Colors.TRANSPARENT, Colors.MAGENTA);
+		// Clone the tile. Convert it all to magenta.
+		var magentaTile:BitmapData = tileBmd.clone();
+		magentaTile.threshold(magentaTile, magentaTile.rect, new Point(), "!=", Colors.TRANSPARENT, Colors.MAGENTA);
 		
-		edgeBmd.copyPixels(cookieBmd, cookieBmd.rect, new Point(0, 1), null, null, true);
+		// Copy the magenta tile to edgeBmd, leaving only the upper edge.
+		edgeBmd.copyPixels(magentaTile, magentaTile.rect, new Point(0, 1), null, null, true);
 		edgeBmd.threshold(edgeBmd, edgeBmd.rect, new Point(), "==", Colors.MAGENTA, Colors.TRANSPARENT);
 		
 		var halfWidth:Int = cast(tileBmd.width / 2);
@@ -104,6 +106,11 @@ class TileData {
 				
 		neEdge = new BitmapData(halfWidth, halfHeight, true, Colors.TRANSPARENT);
 		neEdge.copyPixels(edgeBmd, new Rectangle(halfWidth, 0, halfWidth, halfHeight), new Point(), null, null, true);
+		
+		if (fileName == "empty.png") {
+			tileBmd.threshold(tileBmd, tileBmd.rect, new Point(), "!=", Colors.TRANSPARENT, Colors.TRANSPARENT);
+			tintBmd.threshold(tintBmd, tintBmd.rect, new Point(), "!=", Colors.TRANSPARENT, Colors.TRANSPARENT);
+		}
 	}
 	
 }

@@ -18,7 +18,7 @@ class Main extends Sprite {
 	 * - Initial tile.update() ignores updating neighbours
 	 * - Map scrollrect follows active tile
 	 * - Bugfix: Edging bug on righthand side
-	 * Shift + drag draws tiles.
+	 * - D + drag draws tiles.
 	 * Bugfix: Void tiles not drawn
 	 * Remove mouse from map.
 	 * Wheelmouse zoom centers on active tile

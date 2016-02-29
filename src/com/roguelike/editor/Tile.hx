@@ -85,7 +85,7 @@ class Tile extends Sprite {
 		this.cacheAsBitmap = true;
 		
 		if (tileData.fileName == "empty.png") {
-			tileBitmap.bitmapData = null;
+			//tileBitmap.visible = false;
 		}
 		
 		elevation = tileData.elevation;
@@ -358,10 +358,20 @@ class Tile extends Sprite {
 		}
 	}
 	
+	/**
+	 * Set a tile by a certain tileKey as a tile neighbour.
+	 * @param {Tile} tile
+	 * @param {Int} tileKey
+	 */
 	public function setNeighbourTile(tile:Tile, tileKey:Int):Void {
 		neighbourTiles[tileKey] = tile;
 	}
 	
+	/**
+	 * Get a neighbour by the tileKey.
+	 * @param {Int} tileKey
+	 * @return {Tile}
+	 */
 	public function getNeighbourTile(tileKey:Int):Tile {
 		return neighbourTiles[tileKey];
 	}
@@ -375,7 +385,17 @@ class Tile extends Sprite {
 		
 		// This tile is is cloning the tile parameter.
 		if (tile != null) {
+			
+			// We're it already. No need to clone.
+			if (tileData.fileName == tile.tileData.fileName) {
+				return null;
+			}
+			
 			this.tileData = tile.tileData;
+			
+			if (tileData.fileName == "empty.png") {
+				setElevation(1);
+			}
 			
 			if(tinted) {
 				tileBitmap.bitmapData = this.tileData.tintBmd;
