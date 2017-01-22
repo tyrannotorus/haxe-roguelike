@@ -1,59 +1,102 @@
 package com.roguelike;
 
 import com.roguelike.editor.Editor;
-import com.roguelike.editor.EditorEvent;
 import com.roguelike.editor.Map;
+import com.roguelike.editor.MapData;
+import com.roguelike.editor.Tile;
+import com.roguelike.managers.ActorManager;
+import com.roguelike.managers.MapManager;
+import com.roguelike.managers.TextManager;
+import com.roguelike.managers.TileManager;
 import com.tyrannotorus.utils.KeyCodes;
 import openfl.display.Sprite;
+import openfl.events.Event;
 import openfl.events.KeyboardEvent;
 import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.media.SoundTransform;
+import openfl.ui.Mouse;
+import openfl.utils.Object;
 
 /**
  * Game.as.
  * - The main game stage.
  */
 class Game extends Sprite {
-		
-	private var player:Actor;
-	private var opponent:Actor;
-	private var editor:Editor;
-	private var map:Map;
 	
-	// Keyboard Controls
-	private var zKey:Bool = false;
-	private var xKey:Bool = false;
-	private var cKey:Bool = false;
-	private var upKey:Bool = false;
-	private var downKey:Bool = false;
-	private var leftKey:Bool = false;
-	private var rightKey:Bool = false;
-	private var shiftKey:Bool = false;
-		
+	public static var game:Game;
+	
+	public var textManager:TextManager;
+	public var mapManager:MapManager;
+	public var tileManager:TileManager;
+	public var actorManager:ActorManager;
+	
+	public var player:Actor;
+	public var map:Map;
+	public var keysDown:Object = {};
+	private var editor:Editor;
+	
 	// Music and sfx
 	private var music:Sound;
 	private var musicChannel:SoundChannel;
 	private var musicTransform:SoundTransform;
 	
 	/**
+	 * Return static instance of Game.
+	 * @return {Game}
+	 */
+	public static function getInstance():Game {
+		return (game != null) ? game : game = new Game();
+	}	
+	
+	/**
 	 * Constructor.
 	 */
 	public function new() {
+		
 		super();
+		
+		textManager = TextManager.getInstance();
+		mapManager = MapManager.getInstance();
+		mapManager.addEventListener(Event.COMPLETE, init);
+		tileManager = TileManager.getInstance();
+		tileManager.addEventListener(Event.COMPLETE, init);
+		actorManager = ActorManager.getInstance();
+		actorManager.addEventListener(Event.COMPLETE, init);
+		
+		textManager.init();
+		mapManager.init();
+		tileManager.init();
+		actorManager.init();
 	}
 	
 	/**
-	 * Initiate load of the game.
+	 * Attempt to initialize the game (after assets are loaded)
+	 * @param {Event.COMPLETE} e
 	 */
-	public function loadGame():Void {
+	private function init(e:Event = null):Void {
 		
-		editor = new Editor();
-		editor.addEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
+		if (!mapManager.isReady()) {
+			return;
+		} else if (!tileManager.isReady()) {
+			return;
+		} else if (!actorManager.isReady()) {
+			return;
+		}
+		
+		mapManager.removeEventListener(Event.COMPLETE, init);
+		tileManager.removeEventListener(Event.COMPLETE, init);
+		actorManager.removeEventListener(Event.COMPLETE, init);
+		
+		// Create the map and add it to the map editor.
+		var mapData:MapData = mapManager.getMapData("hellmouth.txt");
+		map = new Map(mapData);
+		
+		editor = new Editor(map);
 		addChild(editor);
 		
-		stage.addEventListener(KeyboardEvent.KEY_DOWN, onGameKeyDown);
-		stage.addEventListener(KeyboardEvent.KEY_UP, onGameKeyUp);
+		stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			
 		
 		//musicTransform = new SoundTransform(0.1);
@@ -61,103 +104,73 @@ class Game extends Sprite {
 		//musicChannel = music.play();
 		//musicChannel.soundTransform = musicTransform;
 	}
-	
-	public function onCloseEditor(e:EditorEvent):Void {
 		
-		map = cast e.data;
-		map.setCurrentTile();
+	/**
+	 * User has pressed a key.
+	 * @param {KeyboardEvent.KEY_DOWN} e
+	 */
+	private function onKeyDown(e:KeyboardEvent):Void {
 		
-		player = map.allActors[0];
-			
-		editor.removeEventListener(EditorEvent.CLOSE_EDITOR, onCloseEditor);
-		editor.parent.removeChild(editor);
-		editor.cleanUp();
-		editor = null;
-		
-		addChild(map);
-	}
-	
+		if (keysDown[e.keyCode]) {
+			return;
+		}
 
-	
-	private function onGameKeyDown(e:KeyboardEvent):Void {
+		var keyDown:Int = e.keyCode;
+		keysDown[keyDown] = true;
 		
-		trace(e.keyCode + " " + e.shiftKey);
-		
-		map.setCurrentTile(e.keyCode);
-		
-		switch(e.keyCode) {
+		switch(keyDown) {
 			
-			// Left key
-			case KeyCodes.LEFT:
-				if (leftKey == false) {
-					leftKey = true;
-				}
-			
-			// Up key
-			case KeyCodes.UP:
-				if (upKey == false) {
-					upKey = true;
-				}
-			
-			// Right Key
-			case KeyCodes.RIGHT:
-				if (rightKey == false) {
-					rightKey = true;
-				}
-			
-			// Down Key
-			case KeyCodes.DOWN:
-				if (downKey == false) {
-					downKey = true;
-				}
-			
-			// X Key
-			case KeyCodes.X:
-				if (xKey == false && zKey == false) {
-					xKey = true;
-					if (upKey == true) {
-						//player.highPunchA();
-					} else {
-						//player.lowPunchA();
-					}
-				}
-			
-			// Z Key
-			case KeyCodes.Z:
-				if (zKey == false && xKey == false) {
-					zKey = true;
-					if (upKey == true) {
-						//player.highPunchB();
-					} else {
-						//player.lowPunchB();
-					}
-				}
-		}
-			
-	}
-	
-	private function onGameKeyUp(e:KeyboardEvent):Void {
+			case KeyCodes.ESC:
 				
-		switch(e.keyCode) {
-			case KeyCodes.LEFT:
-				leftKey = false;
-				//player.xMove(0, 0, player.IDLE);
-			case KeyCodes.UP:
-				upKey = false;
-			case KeyCodes.RIGHT:
-				rightKey = false;
-				//player.xMove(0, 0, player.IDLE);
-			case KeyCodes.DOWN:
-				downKey = false;
-				//player.duck(false);
-			case KeyCodes.X:
-				xKey = false;
-			case KeyCodes.Z:
-				zKey = false;
+				if (editor.parent == this) {
+					editor.hide();
+				} else {
+					editor.show();
+				}				
+			
+			case KeyCodes.LEFT, KeyCodes.LEFT_NUMLOCK:
+				keyDown = KeyCodes.LEFT;
+			
+			case KeyCodes.RIGHT, KeyCodes.RIGHT_NUMLOCK:
+				keyDown = KeyCodes.RIGHT;
+			
+			case KeyCodes.UP, KeyCodes.UP_NUMLOCK:
+				keyDown = KeyCodes.UP;
+			
+			case KeyCodes.DOWN, KeyCodes.DOWN_NUMLOCK:
+				keyDown = KeyCodes.DOWN;
+			
+			case KeyCodes.NE, KeyCodes.NE_NUMLOCK:
+				keyDown = KeyCodes.NE;
+			
+			case KeyCodes.NW, KeyCodes.NW_NUMLOCK:
+				keyDown = KeyCodes.NW;
+			
+			case KeyCodes.SE, KeyCodes.SE_NUMLOCK:
+				keyDown = KeyCodes.SE;
+			
+			case KeyCodes.SW, KeyCodes.SW_NUMLOCK:
+				keyDown = KeyCodes.SW;
+				
 		}
 		
+		if(player != null) {
+			var actorTile:Tile = player.moveToTile(keyDown);
+			if (actorTile != null) {
+				map.alignCameraToTile(actorTile, keyDown);
+			}
+		
+		} else {
+			map.moveToTile(keyDown);
+		}
 	}
 	
-	
+	/**
+	 * User has released a key.
+	 * @param {KeyboardEvent.KEY_UP} e
+	 */
+	private function onKeyUp(e:KeyboardEvent):Void {
+		keysDown[e.keyCode] = null;
+	}
 	
 }

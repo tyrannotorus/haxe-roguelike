@@ -39,9 +39,9 @@ class Colors {
 	public static inline var GALLERY:Int = 0xFFEAEAEA; // Light silver
 	public static inline var MILAN:Int = 0xFFFEFFA4;
 	public static inline var GARYS_PINK_LACE:Int = 0xFFFFCFE9;
-	public static inline var YO_COIN_GOLD:Int = 0xFFFEF07E;
-	public static inline var YO_CASH_GREEN:Int = 0xFF53A551;
 	public static inline var BLUE:Int = 0xFF0000FF;
+	public static inline var TILE_GREEN:Int = 0xFF005D28;
+	
 	
 	public static var ACTOR_SHADOW:Int = setAlpha(BLACK, 0.3);
 	public static var TILE_HIGHLIGHT:UInt = setAlpha(PIZAZZ, 0.7);

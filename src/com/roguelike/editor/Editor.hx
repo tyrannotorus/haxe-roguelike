@@ -3,11 +3,11 @@ package com.roguelike.editor;
 import com.roguelike.dialogs.DialogData;
 import com.roguelike.dialogs.GenericDialog;
 import com.roguelike.editor.MapEditor;
+import com.roguelike.Game;
 import com.roguelike.managers.MapManager;
 import com.roguelike.managers.TextManager;
 import com.roguelike.TextData;
 import com.tyrannotorus.utils.Colors;
-import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.events.Event;
 
@@ -17,49 +17,34 @@ import openfl.events.Event;
  */
 class Editor extends Sprite {
 	
-	private var map:Map;
-	private var mapEditor:MapEditor;
-			
+	public var map:Map;
+	public var mapEditor:MapEditor;
+	
 	/**
 	 * Constructor.
+	 * @param {Map} map
 	 */
-	public function new() {
+	public function new(map:Map) {
 		
 		super();
 		
 		var textManager:TextManager = TextManager.getInstance();
+		
+		// Create the standard textData to be used for the menu bar.
+		var menuData:TextData = new TextData();
+		menuData.upColor = Colors.WHITE;
+		menuData.overColor = Colors.SCHOOL_BUS_YELLOW;
+		menuData.downColor = Colors.SCHOOL_BUS_YELLOW;
+		menuData.shadowColor = Colors.BLACK;
 			
-		// Create text
-		var textData:TextData = new TextData( { text:"- Tiny Tactics Editor -" } );
-		var titleText:Bitmap = textManager.toBitmap(textData);
-		titleText.x = Std.int((Main.GAME_WIDTH - titleText.width) / 2);
-		titleText.y = 1;
-		addChild(titleText);
-		
-		textData = new TextData( { text:"- Menu -" } );
-		var menuText:Bitmap = textManager.toBitmap(textData);
-		menuText.y = 1;
-		addChild(menuText);
-		
-		textData = new TextData( { text:"- Stage 1 -" } );
-		var stageText:Bitmap = textManager.toBitmap(textData);
-		stageText.x = Main.GAME_WIDTH - stageText.width;
-		stageText.y = 1;
-		addChild(stageText);
-		
-		// Create the map.
-		var mapData:MapData = MapManager.getInstance().getMapData("hellmouth.txt");
-		map = new Map(mapData);
-		addChild(map);
-		
-		// Create the map editor.
-		mapEditor = new MapEditor(map);
-		mapEditor.y = 8;
+		// Create the map and add it to the map editor.
+		this.map = map;
+		mapEditor = new MapEditor(this.map);
 		addChild(mapEditor);
 		
 		// Listen for dispatches from the editorDispatcher.
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
+		editorDispatcher.addEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 	}
 	
 	/**
@@ -69,7 +54,7 @@ class Editor extends Sprite {
 	private function onEditorDispatch(e:EditorEvent):Void {
 		
 		var editorEvent:String = e.data;
-		trace("onEditorDispatch() " + editorEvent);
+		
 		switch(editorEvent) {
 			
 			case EditorEvent.FILE:
@@ -84,11 +69,41 @@ class Editor extends Sprite {
 				dialogData.dialogPositionY = 0.4;
 				var genericDialog:GenericDialog = new GenericDialog(dialogData);
 				addChild(genericDialog);
-			
+				
+			case EditorEvent.CLOSED:
+				
+				var game:Game = Game.getInstance();
+				game.removeChild(this);
+				game.addChildAt(map, 0);
+				
+				if (map.allActors[0] != null) {
+					game.player = map.allActors[Std.int(Math.random()*map.allActors.length)];
+					game.player.currentTile.highlight(true);
+					map.setFocusToTile(game.player.currentTile, 1);
+				}
+				
+				game.stage.focus = stage;
+					
 			case EditorEvent.HELP:
 				trace("EditorEvent.HELP");
 			
 		}
+	}
+	
+	/**
+	 * Hide the editor.
+	 */
+	public function show():Void {
+		var game:Game = Game.getInstance();
+		game.addChildAt(this, 0);
+		mapEditor.show();
+	}
+	
+	/**
+	 * Hide the editor.
+	 */
+	public function hide():Void {
+		mapEditor.hide();
 	}
 	
 	/**
@@ -101,7 +116,7 @@ class Editor extends Sprite {
 		mapEditor = null;
 		
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.removeEventListener(Event.CHANGE, onEditorDispatch);
+		editorDispatcher.removeEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 	}
 	
 }

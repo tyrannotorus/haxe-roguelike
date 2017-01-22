@@ -2,10 +2,16 @@ package com.roguelike.editor;
 
 import com.roguelike.Actor;
 import com.roguelike.editor.EditorSelectionBar;
-import com.roguelike.managers.MapManager;
+import com.roguelike.Game;
+import com.tyrannotorus.utils.KeyCodes;
+import motion.Actuate;
+import motion.easing.Cubic;
 import openfl.display.Sprite;
 import openfl.events.Event;
+import openfl.events.KeyboardEvent;
 import openfl.events.MouseEvent;
+import openfl.ui.Mouse;
+import openfl.utils.Object;
 
 /**
  * MapEditor.as
@@ -13,9 +19,6 @@ import openfl.events.MouseEvent;
  */
 class MapEditor extends Sprite {
 	
-	// currentStates
-	private static inline var DRAG_MAP:String = "DRAG_MAP";
-		
 	private var currentState:String;
 	private var dialogLayer:Sprite;
 	private var map:Map;
@@ -24,6 +27,7 @@ class MapEditor extends Sprite {
 	private var selectedActor:Actor;
 	private var dragStarted:Bool;
 	private var mouseDown:Bool;
+	private var keysDown:Object = {};
 		
 	/**
 	 * Constructor.
@@ -35,11 +39,10 @@ class MapEditor extends Sprite {
 		
 		// Listen for dispatches from the editorDispatcher.
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
+		editorDispatcher.addEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 		
 		// Add the map to the editor.
 		this.map = map;
-		this.map.removeListeners();
 		this.addChild(map);
 		
 		// Create the dialog layer.
@@ -82,15 +85,18 @@ class MapEditor extends Sprite {
 				enableActorsOnMap(false);
 				
 			case EditorEvent.ZOOM_OUT:
-				map.modifyScale(-0.1);
+				map.modifyScale(-0.5);
 				
 			case EditorEvent.ZOOM_IN:
-				map.modifyScale(0.1);
+				map.modifyScale(0.5);
 				
-			case EditorEvent.CLOSE_EDITOR:
-				enableActorsOnMap(false);
-				map.addListeners();
-				dispatchEvent(new EditorEvent(EditorEvent.CLOSE_EDITOR, map, true));
+			case EditorEvent.RESET_MAP:
+				map.reset();
+				
+			//case EditorEvent.CLOSE_EDITOR:
+			//	enableActorsOnMap(false);
+			//	map.addListeners();
+			//	dispatchEvent(new EditorEvent(EditorEvent.CLOSE_EDITOR, map, true));
 				
 			case EditorEvent.HELP:
 				trace("EditorEvent.HELP");
@@ -104,8 +110,11 @@ class MapEditor extends Sprite {
 	private function onMouseOver(e:MouseEvent):Void {
 		
 		// An actor as been dragged from the field back to the EditorSelectionBar.
-		if (currentState == EditorEvent.ACTORS && Std.is(e.target, EditorSelectionBar)) {
-			if (selectedActor != null) {
+		if (Std.is(e.target, EditorSelectionBar)) {
+			
+			Mouse.show();
+			
+			if (currentState == EditorEvent.ACTORS && selectedActor != null) {
 				if (selectedActor.currentTile != null) {
 					selectedActor.currentTile.removeOccupant();
 					selectedActor.currentTile.highlight(false);
@@ -117,7 +126,20 @@ class MapEditor extends Sprite {
 		// Otherwise
 		} else {
 			e.stopImmediatePropagation();
-			highlightTile(e.target, true);
+			
+			if (Std.is(e.target, Tile)) {
+				
+				var tile:Tile = cast(e.target);
+				
+				if (keysDown[KeyCodes.A] != null) {
+					tile.addElevation(1);
+				} else if (keysDown[KeyCodes.S] != null) {
+					tile.addElevation(-1);
+				} else if (keysDown[KeyCodes.D] != null) {
+					tile.clone(selectedTile);
+				}
+			}	
+			
 		}
 	}
 	
@@ -127,7 +149,6 @@ class MapEditor extends Sprite {
 	 */
 	private function onMouseOut(e:MouseEvent):Void {
 		e.stopImmediatePropagation();
-		highlightTile(e.target, false);
 	}
 
 	/**
@@ -157,12 +178,12 @@ class MapEditor extends Sprite {
 			case EditorEvent.TILES:
 				if (Std.is(displayObject, Tile)) {
 					var tile:Tile = cast displayObject;
+					map.setCurrentTile(tile);
+					//if (mouseDown) {
+					//	tile.clone(selectedTile);
+					//}
 					
-					if (mouseDown) {
-						tile.clone(selectedTile);
-					}
-					
-					tile.highlight(value);
+					//tile.highlight(value);
 				}
 		}
 	}
@@ -189,7 +210,6 @@ class MapEditor extends Sprite {
 					} else {
 						selectedActor = actor.clone();
 						map.allActors.push(selectedActor);
-						addEventListener(Event.ENTER_FRAME, map.animateActors);
 					}
 				
 				// Mousedown upon a tile.
@@ -204,24 +224,40 @@ class MapEditor extends Sprite {
 					dragStarted = false;
 					selectedActor.mouseEnabled = false;
 					editorSelectionBar.mouseChildren = false;
-					addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+					addEventListener(MouseEvent.MOUSE_MOVE, onActorMove);
 				}
 			
 			case EditorEvent.TILES:
 						
 				if (Std.is(e.target, Tile)) {
-					
-					var tile:Tile = cast e.target;
+					dragStarted = false;
+					addEventListener(MouseEvent.MOUSE_MOVE, onTileMove);
+					//var tile:Tile = cast e.target;
 			
-					if (e.shiftKey == true) {
-						currentState = DRAG_MAP;
-						map.mapLayer.mouseChildren = false;
-						map.mapLayer.startDrag();
+					//if (e.shiftKey == true) {
+					//	currentState = DRAG_MAP;
+					//	map.mapLayer.mouseChildren = false;
+					//	map.mapLayer.startDrag();
 			
-					} else if (selectedTile != null) {
-						tile.clone(selectedTile);
-					}
+					//} else if (selectedTile != null) {
+					//	tile.clone(selectedTile);
+					//}
 				}
+		}
+	}
+	
+	/**
+	 * The mouse is held and being dragged on the screen.
+	 * @param {MouseEvent.MOUSE_MOVE} e
+	 */
+	private function onTileMove(e:MouseEvent):Void {
+		
+		removeEventListener(MouseEvent.MOUSE_MOVE, onTileMove);
+		dragStarted = true;
+		
+		if (Std.is(e.target, Tile)) {
+			var tile:Tile = cast e.target;
+			//tile.clone(selectedTile);
 		}
 	}
 	
@@ -237,12 +273,6 @@ class MapEditor extends Sprite {
 		
 		switch(currentState) {
 			
-			case DRAG_MAP:
-				map.mapLayer.mouseChildren = true;
-				map.mapLayer.stopDrag();
-				map.mapLayer.x = Math.floor(map.mapLayer.x);
-				map.mapLayer.y = Math.floor(map.mapLayer.y);
-									
 			case EditorEvent.ACTORS:
 			
 				// The character has been dragged.
@@ -266,7 +296,7 @@ class MapEditor extends Sprite {
 			
 				enableActorsOnMap(true);
 				
-				removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+				removeEventListener(MouseEvent.MOUSE_MOVE, onActorMove);
 			
 				selectedActor = null;
 				dragStarted = false;
@@ -312,7 +342,7 @@ class MapEditor extends Sprite {
 	 * The mouse is held and being dragged on the screen.
 	 * @param {MouseEvent.MOUSE_MOVE} e
 	 */
-	private function onMouseMove(e:MouseEvent):Void {
+	private function onActorMove(e:MouseEvent):Void {
 
 		if (currentState == EditorEvent.ACTORS) {
 			
@@ -343,25 +373,91 @@ class MapEditor extends Sprite {
 		}
 	}
 	
+	public function hide():Void {
+		Actuate.tween(editorSelectionBar, 0.3, { y:Main.GAME_HEIGHT + 3 } ).ease(Cubic.easeOut).onComplete(onEditorClosed);
+	}
+	
+	public function show():Void {
+		addChildAt(map, 0);
+		Actuate.tween(editorSelectionBar, 0.3, { y:Main.GAME_HEIGHT - 35 } ).ease(Cubic.easeOut);
+	}
+	
+	private function onEditorClosed():Void {
+		removeListeners();
+		editorSelectionBar.removeListeners();
+		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
+		editorDispatcher.dispatchEvent(new EditorEvent(EditorEvent.DISPATCH, EditorEvent.CLOSED));
+	}
+	
+	/**
+	 * User has pressed a key.
+	 * @param {KeyboardEvent.KEY_DOWN} e
+	 */
+	private function onKeyDown(e:KeyboardEvent):Void {
+		
+		if (keysDown[e.keyCode] || map.currentTile == null) {
+			return;
+		}
+			
+		var keyDown:Int = e.keyCode;
+		keysDown[keyDown] = true;
+		
+		if (keysDown[KeyCodes.A]) {
+			map.currentTile.addElevation(1);
+			
+		} else if (keysDown[KeyCodes.S]) {
+			map.currentTile.addElevation( -1);
+		
+		} else if (keysDown[KeyCodes.D]) {
+			map.currentTile.clone(selectedTile);
+		}
+	}
+		
+	/**
+	 * User has released a key.
+	 * @param {KeyboardEvent.KEY_UP} e
+	 */
+	private function onKeyUp(e:KeyboardEvent):Void {
+		keysDown[e.keyCode] = null;
+	}
+	
+	/**
+	 * Add Listeners required for editing maps.
+	 */
 	private function addListeners():Void {
+		
 		addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
 		addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
 		addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		addEventListener(Event.MOUSE_LEAVE, onMouseUp);
+		
+		// Listen for keyDowns.
+		var game:Game = Game.getInstance();
+		game.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown, false, -1);
+		game.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp, false, -1);
 	}
 	
+	/**
+	 * Remove listeners.
+	 */
 	private function removeListeners():Void {
+		
 		removeEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
 		removeEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
 		removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		removeEventListener(Event.MOUSE_LEAVE, onMouseUp);
+		
+		// Listen for keyDowns.
+		var game:Game = Game.getInstance();
+		game.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		game.stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 	}
 	
 	public function cleanUp():Void {
-		EditorDispatcher.getInstance().removeEventListener(Event.CHANGE, onEditorDispatch);
+		EditorDispatcher.getInstance().removeEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 		removeListeners();
-		removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+		removeEventListener(MouseEvent.MOUSE_MOVE, onActorMove);
 	}
 }

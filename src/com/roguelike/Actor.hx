@@ -5,6 +5,9 @@ import com.roguelike.editor.Tile;
 import openfl.display.Bitmap;
 import openfl.display.BitmapData;
 import openfl.display.Sprite;
+import motion.Actuate;
+import motion.easing.Cubic;
+import com.tyrannotorus.utils.KeyCodes;
 
 /**
  * Actor.as
@@ -12,10 +15,13 @@ import openfl.display.Sprite;
  * - Used for all entities.
  */
 class Actor extends Sprite {
-		
+	
+	public static inline var MOVE_SPEED:Float = 0.1;
+	
+	// Amimation types.
 	public var IDLE:Int = 0;
-	public var WALK:Int;
-	public var STUN:Int;
+	public var HOP:Int = 0;
+	public var STUN:Int = 0;
 	
 	public var currentTile:Tile;
 	
@@ -43,7 +49,7 @@ class Actor extends Sprite {
 	public var currentFrame:Int = 0;
 	public var currentAnimation:Int = 0;
 	public var nextAnimation:Int = 0;
-		
+	
 	public var currentBitmap:Bitmap;
 	public var currentHitSprite:Sprite;
 	public var frameContainer:Sprite;
@@ -71,15 +77,14 @@ class Actor extends Sprite {
 	private var tmpxShiftFrames	:Int;	// xShiftFrames[currentAnimation][currentFrame] holder should declare these when needed = faster
 	private var tmpyShiftFrames	:Int;	// yShiftFrames[currentAnimation][currentFrame] holder
 			
-	private var tick		:Int = 0;		
+	public var tick		:Int = 0;		
 	private var combo		:Int;
 		
 	// Heath Display
 	private var healthdisplay	:Dynamic;
 	private var healthtick		:Int;
 						
-	private var player:Actor;
-	private var opponent:Actor;
+	private var isMoving:Bool;
 	
 	private var actorData:ActorData;
 		
@@ -95,7 +100,6 @@ class Actor extends Sprite {
 		this.actorName = actorData.name;
 		
 		frameContainer = new Sprite();
-		frameContainer.mouseChildren = false;
 		currentBitmap = new Bitmap();
 		currentBitmap.visible = true;
 		
@@ -240,8 +244,8 @@ class Actor extends Sprite {
 			// SHIFT BITMAP PIXELS
 			frameContainer.x -= tmpxShiftFrames;
 			frameContainer.x += (tmpxShiftFrames = xShiftFrames[currentAnimation][currentFrame]);
-			frameContainer.y -= tmpyShiftFrames;
-			frameContainer.y += (tmpyShiftFrames = yShiftFrames[currentAnimation][currentFrame]);
+			//frameContainer.y -= tmpyShiftFrames;
+			//frameContainer.y += (tmpyShiftFrames = yShiftFrames[currentAnimation][currentFrame]);
 				
 			// FLIP FRAME
 			scaleX *= flipFrames[currentAnimation][currentFrame];
@@ -269,6 +273,95 @@ class Actor extends Sprite {
 		}
 			
 		x += vx;
+	}
+	
+	/*
+	 * Attempt to move the actor to another Tile.
+	 * @param {Int} tileKey (NW, SE, SW, etc...)
+	 * @return {Bool} if the move was a success.
+	 */
+	public function moveToTile(tileKey:Int):Tile {
+		
+		if (isMoving) {
+			return null;
+		}
+		
+		var newTile:Tile = currentTile.getNeighbourTile(tileKey);
+		
+		if (newTile == null) {
+			return null;
+		}
+		
+		if (newTile.x < currentTile.x) {
+			scaleX = -1;
+		} else if (newTile.x > currentTile.x) {
+			scaleX = 1;
+		}
+		
+		var jumpHeight:Int = cast(frameContainer.y - 5);
+		Actuate.tween(frameContainer, MOVE_SPEED, { y:jumpHeight } ).ease(Cubic.easeInOut).repeat(1).reflect();
+			
+		if(newTile.occupant == null && newTile.elevation > 0 && Math.abs(newTile.elevation - currentTile.elevation) <= 1) {
+			
+			switch (tileKey) {
+				case KeyCodes.LEFT:
+					var nwTile:Tile = currentTile.getNeighbourTile(KeyCodes.NW);
+					var swTile:Tile = currentTile.getNeighbourTile(KeyCodes.SW);
+					if (newTile.elevation > currentTile.elevation || nwTile != null && nwTile.elevation > currentTile.elevation && nwTile.elevation > newTile.elevation || swTile != null && swTile.elevation > currentTile.elevation && swTile.elevation > newTile.elevation) {
+						return null;
+					}
+				case KeyCodes.RIGHT:
+					var neTile:Tile = currentTile.getNeighbourTile(KeyCodes.NE);
+					var seTile:Tile = currentTile.getNeighbourTile(KeyCodes.SE);
+					if (newTile.elevation > currentTile.elevation || neTile != null && neTile.elevation > currentTile.elevation && neTile.elevation > newTile.elevation || seTile != null && seTile.elevation > currentTile.elevation && seTile.elevation > newTile.elevation) {
+						return null;
+					}
+				case KeyCodes.DOWN:
+					var seTile:Tile = currentTile.getNeighbourTile(KeyCodes.SE);
+					var swTile:Tile = currentTile.getNeighbourTile(KeyCodes.SW);
+					if (newTile.elevation > currentTile.elevation || seTile != null && seTile.elevation > currentTile.elevation && seTile.elevation > newTile.elevation || swTile != null && swTile.elevation > currentTile.elevation && swTile.elevation > newTile.elevation) {
+						return null;
+					}
+				case KeyCodes.UP:
+					var neTile:Tile = currentTile.getNeighbourTile(KeyCodes.NE);
+					var nwTile:Tile = currentTile.getNeighbourTile(KeyCodes.NW);
+					if (newTile.elevation > currentTile.elevation || neTile != null && neTile.elevation > currentTile.elevation && neTile.elevation > newTile.elevation || nwTile != null && nwTile.elevation > currentTile.elevation && nwTile.elevation > newTile.elevation) {
+						return null;
+					}
+			}
+				
+			currentTile.highlight(false);
+		
+			var xDistance:Float = (newTile.x - currentTile.x);
+			var yDistance:Float = (newTile.y - currentTile.y);
+		
+			if (xDistance >= 0 && yDistance >= 0 || yDistance > 0) {
+				var xOffset:Int = cast(currentTile.centerX - xDistance - newTile.centerX);
+				var yOffset:Int = cast(currentTile.centerY - yDistance - newTile.centerY);
+				newTile.addOccupant(this, xOffset, yOffset);
+				currentTile.highlight(false);
+				Actuate.tween(this, MOVE_SPEED * 2, {x:currentTile.centerX, y:currentTile.centerY}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
+			} else {
+				var xOffset:Int = cast(newTile.centerX + xDistance);
+				var yOffset:Int = cast(newTile.centerY + yDistance);
+				Actuate.tween(this, MOVE_SPEED * 2, {x:xOffset, y:yOffset}).ease(Cubic.easeInOut).onComplete(completeMoveTile, [newTile]);
+			}
+			
+			setAnimation(HOP);
+			
+			isMoving = true;
+			
+			return newTile;
+		}
+			
+		return null;
+	}
+	
+	private function completeMoveTile(newTile:Tile):Void {
+		newTile.addOccupant(this);
+		currentTile.highlight(true);
+		setAnimation(IDLE);
+		isMoving = false;
 	}
 	
 	/*

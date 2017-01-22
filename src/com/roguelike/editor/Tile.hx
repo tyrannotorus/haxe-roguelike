@@ -1,9 +1,12 @@
 package com.roguelike.editor;
 
 import com.tyrannotorus.utils.KeyCodes;
+import motion.Actuate;
 import openfl.display.Bitmap;
 import openfl.display.Sprite;
 import openfl.utils.Object;
+import com.tyrannotorus.utils.Colors;
+import com.roguelike.managers.TileManager;
 
 /**
  * Tile.hx.
@@ -13,13 +16,20 @@ class Tile extends Sprite {
 	
 	public var tileData:TileData;
 	public var neighbourTiles:Object;
-	public var bitmapStack:Array<Bitmap>;
+	public var tileStackArray:Array<Bitmap>;
 	public var tilesContainer:Sprite;
 	public var tileBitmap:Bitmap;
-	public var tintBitmap:Bitmap;
 	public var highlightBitmap:Bitmap;
 	public var hitSprite:Sprite;
 	public var occupant:Dynamic;
+	public var elevation:Int;
+	public var smoothedElevation:Int = 0;
+	public var tinted:Bool;
+	public var tileHeight:Int;
+	public var centerX:Int = 0;
+	public var centerY:Int = 0;
+	public var neEdge:Bitmap;
+	public var nwEdge:Bitmap;
 		
 	/**
 	 * Constructor.
@@ -39,9 +49,8 @@ class Tile extends Sprite {
 		tileBitmap = new Bitmap(tileData.tileBmd);
 		tilesContainer.addChild(tileBitmap);
 		
-		tintBitmap = new Bitmap(tileData.tintBmd);
-		tintBitmap.visible = false;
-		tilesContainer.addChild(tintBitmap);
+		tileStackArray = new Array<Bitmap>();
+		tileStackArray.push(tileBitmap);
 		
 		highlightBitmap = new Bitmap(tileData.highlightBmd);
 		highlightBitmap.visible = false;
@@ -49,9 +58,17 @@ class Tile extends Sprite {
 		
 		tilesContainer.x = -tileBitmap.width / 2;
 		tilesContainer.y = -tileBitmap.height / 2;
-				
+		
+		nwEdge = new Bitmap(tileData.nwEdge);
+		nwEdge.visible = false;
+		addChild(nwEdge);
+		
+		neEdge = new Bitmap(tileData.neEdge);
+		neEdge.visible = false;
+		addChild(neEdge);
+			
 		addChild(tilesContainer);
-				
+		
 		// HitAreas only work in flash apparently.
 		#if flash
 			hitSprite = new Sprite();
@@ -68,16 +85,17 @@ class Tile extends Sprite {
 		this.cacheAsBitmap = true;
 		
 		if (tileData.fileName == "empty.png") {
-			tileBitmap.bitmapData = null;
-			tintBitmap.bitmapData = null;
+			//tileBitmap.visible = false;
 		}
+		
+		elevation = tileData.elevation;
 	}
 	
 	/**
 	 * Add an occupant to this tile (Actor, Treasure, etc);
 	 * @param {Dynamic} occupant
 	 */
-	public function addOccupant(occupant:Dynamic):Void {
+	public function addOccupant(occupant:Dynamic, xOffset:Float = 0, yOffset:Float = 0):Void {
 		
 		// Occupant already occupies tile.
 		if (this.occupant == occupant) {
@@ -91,12 +109,13 @@ class Tile extends Sprite {
 		
 		// Add occupant to this tile.
 		this.occupant = occupant;
-		occupant.x = 0;
-		occupant.y = 0;
+		occupant.x = xOffset + centerX;
+		occupant.y = yOffset + centerY;
 		occupant.currentTile = this;
 		occupant.mouseEnabled = false;
 		highlight(true);
 		addChild(occupant);
+		setChildIndex(occupant, numChildren -1);
 	}
 	
 	/**
@@ -110,23 +129,108 @@ class Tile extends Sprite {
 		}
 	}
 		
-	public function increaseHeight():Void {
-		/*
-		if (stackable && bitmapStack.length > 0) {
-			var lastTile:Bitmap = bitmapStack[bitmapStack.length - 1];
-			var newTile:Bitmap = new Bitmap(lastTile.bitmapData);
-			newTile.y = lastTile.y - (lastTile.height - (lastTile.width/2));
-			bitmapStack.push(newTile);
-			tilesContainer.addChild(newTile);
-		}*/
+	public function setElevation(newElevation:Int):Void {
+		var elevationDifference:Int = newElevation - elevation;
+		addElevation(elevationDifference);
 	}
 	
-	public function reduceHeight():Void {
-		/*trace("reduceHeight()");
-		if (stackable && bitmapStack.length > 0) {
-			var lastTile:Bitmap = bitmapStack.pop();
-			tilesContainer.removeChild(lastTile);
-		}*/
+	/**
+	 * Add or subtract elevation from tile by modifier value.
+	 * @param {Int} modifier
+	 */
+	public function addElevation(value:Int):Void {
+		
+		var newElevation:Int = elevation + value;
+		
+		if (value == 0 || newElevation < 1) {
+			return;
+		}
+		
+		var elevationIncrement:Int = cast(value / Math.abs(value));
+		var topTile:Bitmap;
+		var newTile:Bitmap;
+		
+		while(elevation != newElevation) {
+		
+			elevation += elevationIncrement;
+			centerX = 0;
+			centerY = (elevation - 1) * -tileData.centerY;
+			
+			// Adding elevation to tile.
+			if (elevationIncrement > 0) {
+				topTile = tileStackArray[tileStackArray.length - 1];
+				newTile = new Bitmap(topTile.bitmapData);
+				newTile.y = centerY;
+				tileStackArray.push(newTile);
+				tilesContainer.addChild(newTile);
+				
+				//if (tileData.fileName == "water.png") {
+				//	var terrainTile:Tile = TileManager.getInstance().getTile("terrain1.png");
+				//	clone(terrainTile);
+				//}
+				
+			// Subtracting elevation from tile.	
+			} else if(tileStackArray.length > 1) {
+				
+				topTile = tileStackArray.pop();
+				tilesContainer.removeChild(topTile);
+				
+				//if (elevation == 1) {
+				//	var waterTile:Tile = TileManager.getInstance().getTile("water.png");
+				//	clone(waterTile);				
+				//}
+			}
+		}
+			
+		tilesContainer.setChildIndex(highlightBitmap, tileStackArray.length);
+		highlightBitmap.x = centerX;
+		highlightBitmap.y = centerY;
+		
+		if (occupant != null) {
+			occupant.y = centerY;
+		}
+		
+		update(true);
+	}
+	
+	/**
+	 * Smooth the elevation of the tile.
+	 * If it has 5 neighbours of 1 lower elevation and 3 of equal, lower the elevation of this tile.
+	 */
+	public function smooth(doSmoothing:Bool = false):Void {
+		
+		if (doSmoothing && smoothedElevation != 0) {
+			addElevation(smoothedElevation);
+			smoothedElevation = 0;
+			return;
+		}
+		
+		var equalNeighbours:Int = 0;
+		var lowerNeighbours:Int = 0;
+		var higherNeighbours:Int = 0;
+		var tileKeys:Array<String> = Reflect.fields(neighbourTiles);
+		for (idxTile in 0...tileKeys.length) {
+			var neighbourTile:Tile = neighbourTiles[cast(tileKeys[idxTile])];
+			if (neighbourTile == null) {
+				lowerNeighbours++;
+			} else {
+			
+				var neighbourElevation:Int = neighbourTile.elevation;
+				if (neighbourElevation == elevation) {
+					equalNeighbours++;
+				} else if (neighbourElevation + 1 == elevation) {
+					lowerNeighbours++;
+				} else if (neighbourElevation == elevation + 1) {
+					higherNeighbours++;
+				}
+			}
+		}
+		
+		if (lowerNeighbours > 6 || lowerNeighbours == 5 && equalNeighbours == 3 || equalNeighbours==1 && higherNeighbours==0) {
+			smoothedElevation = -1;
+		} else if (higherNeighbours > 6) {
+			smoothedElevation = 1;
+		}
 	}
 	
 	public function highlight(value:Bool):Void {
@@ -134,18 +238,140 @@ class Tile extends Sprite {
 	}
 	
 	/**
+	 * Update the look of the tile.
+	 * @param {Bool} updateNeighbours
+	 */
+	public function update(updateNeighbours:Bool = false):Void {
+		
+		// Update this tile's edges/shadow.
+		updateEdging();
+		updateShadow();
+		
+		if(updateNeighbours) {
+		
+			var tile:Tile;
+			var neighbours:Array<Int> = [KeyCodes.SW, KeyCodes.SE, KeyCodes.DOWN];
+			
+			// Update edges of this tile if it overshadows northernly neighbours.
+			for (idxTile in 0...neighbours.length) {
+				tile = getNeighbourTile(neighbours[idxTile]);
+				if (tile != null) {
+					tile.updateEdging();
+				}
+			}
+		
+			// Update the shadows of southernly neighbours.
+			neighbours = [KeyCodes.SE, KeyCodes.DOWN, KeyCodes.SW];
+			for (idxTile in 0...neighbours.length) {
+				tile = getNeighbourTile(neighbours[idxTile]);
+				if (tile != null) {
+					tile.updateShadow();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Update the edging on this tile.
+	 */
+	public function updateEdging():Void {
+		
+		nwEdge.x = tilesContainer.x;
+		nwEdge.y = centerY - nwEdge.height - 2;
+		nwEdge.visible = false;
+		
+		neEdge.x = tilesContainer.x + neEdge.width;
+		neEdge.y = centerY - neEdge.height - 2;
+		neEdge.visible = false;
+		
+		var nwTile:Tile = getNeighbourTile(KeyCodes.NW);
+		var neTile:Tile = getNeighbourTile(KeyCodes.NE);
+		
+		if (nwTile == null && neTile == null) {
+			nwEdge.visible = true;
+			neEdge.visible = true;
+			
+		} else {
+		
+			if (nwTile == null && neTile != null && elevation == neTile.elevation && neTile.nwEdge.visible) {
+				nwEdge.visible = true;
+			} else if (nwTile != null && elevation > nwTile.elevation && tileData.fileName == nwTile.tileData.fileName) {
+				nwEdge.visible = true;
+			}
+		
+			if (neTile == null && nwTile != null && elevation == nwTile.elevation && nwTile.neEdge.visible) {
+				neEdge.visible = true;
+			} else if (neTile != null && elevation > neTile.elevation && tileData.fileName == neTile.tileData.fileName) {
+				neEdge.visible = true;
+			}
+		
+			if (neTile == null && nwEdge.visible) {
+				neEdge.visible = true;
+			}
+		
+			if (nwTile == null && neEdge.visible) {
+				nwEdge.visible = true;
+			}
+			
+			if (neTile != null && elevation == neTile.elevation) {
+				neEdge.visible = false;
+			}
+			
+			if (nwTile != null && elevation == nwTile.elevation) {
+				nwEdge.visible = false;
+			}
+		}
+	}
+	
+	/**
+	 * Update the shadowing on this tile.
+	 */
+	public function updateShadow():Void {
+		
+		var tile:Tile;
+		var neighbours:Array<Int> = [KeyCodes.NE, KeyCodes.UP, KeyCodes.NW];
+			
+		for (idxTile in 0...neighbours.length) {
+			tile = getNeighbourTile(neighbours[idxTile]);
+			if (tile != null && elevation < tile.elevation) {
+				Actuate.transform(this, 0).color(Colors.BLACK, 0.6);
+				return;
+			}
+		}
+		
+		Actuate.transform(this, 0).color(Colors.BLACK, 0);
+	}
+	
+	/**
 	 * Use the tinted bitmap for the tile.
 	 * @param {Bool} value
 	 */
 	public function tint(value:Bool = true):Void {
-		tintBitmap.visible = value;
-		tileBitmap.visible = !value;
+		
+		if(tileData.elevation != -1) {
+			tinted = value;
+			tileBitmap.bitmapData = tileData.tintBmd;
+		}
+		
+		for (i in 0...tileStackArray.length) {
+			tileStackArray[i].bitmapData = tileData.tintBmd;
+		}
 	}
 	
+	/**
+	 * Set a tile by a certain tileKey as a tile neighbour.
+	 * @param {Tile} tile
+	 * @param {Int} tileKey
+	 */
 	public function setNeighbourTile(tile:Tile, tileKey:Int):Void {
 		neighbourTiles[tileKey] = tile;
 	}
 	
+	/**
+	 * Get a neighbour by the tileKey.
+	 * @param {Int} tileKey
+	 * @return {Tile}
+	 */
 	public function getNeighbourTile(tileKey:Int):Tile {
 		return neighbourTiles[tileKey];
 	}
@@ -157,11 +383,39 @@ class Tile extends Sprite {
 	 */
 	public function clone(tile:Tile = null):Tile {
 		
-		// We're cloning the tile parameter.
+		// This tile is is cloning the tile parameter.
 		if (tile != null) {
+			
+			// We're it already. No need to clone.
+			if (tileData.fileName == tile.tileData.fileName) {
+				return null;
+			}
+			
 			this.tileData = tile.tileData;
-			tileBitmap.bitmapData = this.tileData.tileBmd;
-			tintBitmap.bitmapData = this.tileData.tintBmd;
+			
+			if (tileData.fileName == "empty.png") {
+				setElevation(1);
+			}
+			
+			if(tinted) {
+				tileBitmap.bitmapData = this.tileData.tintBmd;
+			} else {
+				tileBitmap.bitmapData = this.tileData.tileBmd;
+			}
+			
+			// Set the bitmapDatas of all the tiles in the tile stack
+			for (ii in 0...tileStackArray.length) {
+				tileStackArray[ii].bitmapData = tileBitmap.bitmapData;
+			}
+			
+			if(this.tileData.edgeColor > 0) {
+				neEdge.bitmapData = this.tileData.neEdge;
+				nwEdge.bitmapData = this.tileData.nwEdge;
+			} else {
+				neEdge.bitmapData = null;
+				nwEdge.bitmapData = null;
+			}
+			
 			highlightBitmap.bitmapData = this.tileData.highlightBmd;
 			tilesContainer.x = tile.tilesContainer.x;
 			tilesContainer.y = tile.tilesContainer.y;

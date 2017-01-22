@@ -14,6 +14,7 @@ class MapData {
 	public var fileName:String;
 	public var width:Int;
 	public var height:Int;
+	public var smoothing:Int;
 	public var tileMap:Object;
 	public var tileArray:Array<Int>;
 	public var actorArray:Array<Int>;
@@ -39,6 +40,7 @@ class MapData {
 		fileName = jsonData.fileName;
 		width = jsonData.width;
 		height = jsonData.height;
+		smoothing = jsonData.smoothing;
 		tileMap = jsonData.tileMap;
 		tileArray = jsonData.tileArray;
 	}

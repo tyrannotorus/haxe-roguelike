@@ -14,6 +14,7 @@ import openfl.display.Sprite;
 import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.geom.Rectangle;
+import openfl.ui.Mouse;
 
 /**
  * ActorsDialog.hx.
@@ -82,12 +83,12 @@ class EditorSelectionBar extends Sprite {
 		menuBar = new MenuBar(menuData);
 		menuBar.x = 4;
 		menuBar.y = -1;
-		menuBar.addItem("File", EditorEvent.FILE);
+		//menuBar.addItem("File", EditorEvent.FILE);
 		menuBar.addItem("Actors", EditorEvent.ACTORS, true);
 		menuBar.addItem("Tiles", EditorEvent.TILES);
-		menuBar.addItem("Props", EditorEvent.PROPS);
-		menuBar.addItem("Settings", EditorEvent.SETTINGS);
-		menuBar.addItem("Play", EditorEvent.CLOSE_EDITOR);
+		//menuBar.addItem("Props", EditorEvent.PROPS);
+		menuBar.addItem("Reset Map", EditorEvent.RESET_MAP);
+		//menuBar.addItem("Play", EditorEvent.CLOSE_EDITOR);
 		addChild(menuBar);
 		
 		// Create the standard textData to be used for the menu bar.
@@ -105,13 +106,17 @@ class EditorSelectionBar extends Sprite {
 		helpBar.y = -1;
 		addChild(helpBar);
 		
-		this.cacheAsBitmap = true;
+		this.addEventListener(MouseEvent.ROLL_OVER, onRollOver);
 		
 		var editorDispatcher:EditorDispatcher = EditorDispatcher.getInstance();
-		editorDispatcher.addEventListener(Event.CHANGE, onEditorDispatch);
+		editorDispatcher.addEventListener(EditorEvent.DISPATCH, onEditorDispatch);
 		
-		var editorEvent:EditorEvent = new EditorEvent(Event.CHANGE, EditorEvent.ACTORS);
+		var editorEvent:EditorEvent = new EditorEvent(EditorEvent.DISPATCH, EditorEvent.ACTORS);
 		editorDispatcher.dispatchEvent(editorEvent);
+	}
+	
+	private function onRollOver(e:MouseEvent):Void {
+		Mouse.show();
 	}
 	
 	/**
@@ -176,8 +181,8 @@ class EditorSelectionBar extends Sprite {
 		tileManager.removeEventListener(Event.COMPLETE, onTilesLoaded);
 		
 		var tileArray:Array<Tile> = tileManager.getAllTiles();
-		for (i in 0...tileArray.length) {
-			var tile:Tile = tileArray[i].clone();
+		for (idxTile in 0...tileArray.length) {
+			var tile:Tile = tileArray[idxTile].clone();
 			tile.buttonMode = true;
 			tilesContainer.addItem(tile);
 		}
@@ -249,7 +254,7 @@ class EditorSelectionBar extends Sprite {
 			highlightTile.y = selectedTile.y;
 			tilesContainer.addChild(highlightTile);
 			
-			var editorEvent:EditorEvent = new EditorEvent(Event.CHANGE, EditorEvent.TILE_SELECTED);
+			var editorEvent:EditorEvent = new EditorEvent(EditorEvent.DISPATCH, EditorEvent.TILE_SELECTED);
 			EditorDispatcher.getInstance().dispatchEvent(editorEvent);
 		}
 	}
@@ -261,7 +266,7 @@ class EditorSelectionBar extends Sprite {
 	/**
 	 * Add listeners.
 	 */
-	private function addListeners():Void {
+	public function addListeners():Void {
 		addEventListener(MouseEvent.CLICK, onMouseClick);
 		addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}
@@ -269,7 +274,8 @@ class EditorSelectionBar extends Sprite {
 	/**
 	 * Removes listeners.
 	 */
-	private function removeListeners():Void {
+	public function removeListeners():Void {
+		removeEventListener(Event.ENTER_FRAME, animateActors);
 		removeEventListener(MouseEvent.CLICK, onMouseClick);
 		removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 	}

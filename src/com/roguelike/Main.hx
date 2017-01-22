@@ -1,14 +1,9 @@
 package com.roguelike;
 
-import com.roguelike.managers.ActorManager;
-import com.roguelike.managers.MapManager;
-import com.roguelike.managers.TextManager;
-import com.roguelike.managers.TileManager;
-import com.tyrannotorus.utils.Colors;
-import openfl.display.FPS;
 import openfl.display.Sprite;
 import openfl.display.StageDisplayState;
 import openfl.display.StageQuality;
+import openfl.display.StageScaleMode;
 import openfl.events.Event;
 import openfl.geom.Rectangle;
 
@@ -18,76 +13,40 @@ import openfl.geom.Rectangle;
 class Main extends Sprite {
 	
 	/**
-	 * GET FUNCTIONAL
-	 * - Fix placing empty tiles
-	 * - Save level
-	 * - load level
-	 * - starting point on map and player character.
-	 * - Start game button
-	 * - move from tile to tile
-	 * 
-	 * EXCITING STUFF
-	 * - Use multiple maps for multiple levels of the same map
-	 * - Stack tiles
-	 * - Allow different tiles / no tiles in stacks.
-	 * - Add liquid aquafer
-	 * - consider 16x16 hitArea block for actors.
+	 * Roguelike 0.01c Goals
+	 * - ESC to open/close edit mode
+	 * - Initial tile.update() ignores updating neighbours
+	 * - Map scrollrect follows active tile
+	 * - Bugfix: Edging bug on righthand side
+	 * - D + drag draws tiles.
+	 * Bugfix: Void tiles not drawn
+	 * Remove mouse from map.
+	 * Wheelmouse zoom centers on active tile
+	 * Highlight only the tile top.
+	 * Elevation difference > 0 shadows only tile top (not vertical plane of tile).
+	 * Elevation difference > 1 shadows occupant.
 	 */
 	
 	public static inline var GAME_SCALE:Int = 1;
 	public static inline var GAME_WIDTH:Int = 384;
 	public static inline var GAME_HEIGHT:Int = 216;
 	
-
 	private var game:Game;
-	
+		
 	/**
 	 * Constructor.
 	 */
 	public function new() {
 		
 		super();
-		stage.quality = StageQuality.MEDIUM;
+		stage.quality = StageQuality.LOW;
+		stage.scaleMode = StageScaleMode.EXACT_FIT;
 		
-		TextManager.getInstance().init();
-		
-		var mapManager:MapManager = MapManager.getInstance();
-		mapManager.addEventListener(Event.COMPLETE, init);
-		mapManager.init();
-		
-		var tileManager:TileManager = TileManager.getInstance();
-		tileManager.addEventListener(Event.COMPLETE, init);
-		tileManager.init();
-		
-		var actorManager:ActorManager = ActorManager.getInstance();
-		actorManager.addEventListener(Event.COMPLETE, init);
-		actorManager.init();
-	}
-	
-	/**
-	 * Attempt to initialize the game (after assets are loaded)
-	 * @param {Event.COMPLETE} e
-	 */
-	private function init(e:Event = null):Void {
-		
-		if (!MapManager.getInstance().isReady()) {
-			return;
-		} else if (!TileManager.getInstance().isReady()) {
-			return;
-		} else if (!ActorManager.getInstance().isReady()) {
-			return;
-		}
-						
-		game = new Game();
+		game = Game.getInstance();
 		game.scrollRect = new Rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT);
+		game.scaleX = game.scaleY = GAME_SCALE;
 		addChild(game);
 		
-		game.scaleX = game.scaleY = GAME_SCALE;
-		game.loadGame();
-		
-		//var fps:FPS = new FPS(10, 10, Colors.RED);
-		//addChild(fps);
-				
 		addListeners();
 	}
 	
