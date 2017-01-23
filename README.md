@@ -1,2 +1,2 @@
-# bubblebobble
-Bubble Bubble in Haxe
+# Isometric Roguelike
+An Isometric Roguelike in Haxe / Openfl
