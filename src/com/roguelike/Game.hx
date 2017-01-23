@@ -33,7 +33,7 @@ class Game extends Sprite {
 	
 	public var player:Actor;
 	public var map:Map;
-	public var keysDown:Object = {};
+	public var keysDown:Array<Bool> = [];
 	private var editor:Editor;
 	
 	// Music and sfx
@@ -170,7 +170,7 @@ class Game extends Sprite {
 	 * @param {KeyboardEvent.KEY_UP} e
 	 */
 	private function onKeyUp(e:KeyboardEvent):Void {
-		keysDown[e.keyCode] = null;
+		keysDown[e.keyCode] = false;
 	}
 	
 }

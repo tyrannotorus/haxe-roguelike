@@ -15,7 +15,7 @@ class MapData {
 	public var width:Int;
 	public var height:Int;
 	public var smoothing:Int;
-	public var tileMap:Object;
+	public var tileMap:Array<String> = [];
 	public var tileArray:Array<Int>;
 	public var actorArray:Array<Int>;
 	public var propArray:Array<Int>;
@@ -41,7 +41,13 @@ class MapData {
 		width = jsonData.width;
 		height = jsonData.height;
 		smoothing = jsonData.smoothing;
-		tileMap = jsonData.tileMap;
 		tileArray = jsonData.tileArray;
+				
+		var tileFields:Array<String> = Reflect.fields(jsonData.tileMap);
+		for (idxField in 0...tileFields.length) {
+			var tileKey:Int = Std.parseInt(tileFields[idxField]);
+			var tileValue:String = Reflect.field(jsonData.tileMap, Std.string(tileFields[idxField]));
+			tileMap[tileKey] = tileValue;
+		}
 	}
 }

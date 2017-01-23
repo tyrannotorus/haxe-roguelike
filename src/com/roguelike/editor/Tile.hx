@@ -15,7 +15,7 @@ import com.roguelike.managers.TileManager;
 class Tile extends Sprite {
 	
 	public var tileData:TileData;
-	public var neighbourTiles:Object;
+	public var neighbourTiles:Array<Tile>;
 	public var tileStackArray:Array<Bitmap>;
 	public var tilesContainer:Sprite;
 	public var tileBitmap:Bitmap;
@@ -40,7 +40,7 @@ class Tile extends Sprite {
 		
 		this.tileData = tileData;
 		
-		neighbourTiles = { };
+		neighbourTiles = [];
 		
 		tilesContainer = new Sprite();
 		tilesContainer.mouseChildren = false;

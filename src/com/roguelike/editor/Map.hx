@@ -29,7 +29,7 @@ class Map extends Sprite {
 	public var currentTile:Tile;
 	
 	private var mapData:MapData;
-	private var currentScale:Float = 1;
+	private var currentScale:Float = 3;
 	private var tileMap:Array<Array<Tile>>;
 	private var viewRect:Rectangle;
 	private var centerTile:Tile;
@@ -64,6 +64,7 @@ class Map extends Sprite {
 		
 		if (mapData != null) {
 			loadMap(mapData);
+			mapLayer.scaleX = mapLayer.scaleY = Std.int(currentScale*10)/10;
 		}
 	}
 	
@@ -177,10 +178,6 @@ class Map extends Sprite {
 				
 				var elevation:Int = elevationArray[yy][xx];
 				var tileNum:Int = tileArray[idxTile++];
-				
-				// All tiles are terrain1 currently
-				tileNum = 1;
-				
 				var tileName:String = (elevation > 0) ? mapData.tileMap[tileNum] : "water.png";
 				tile = tileManager.getTile(tileName);
 				tile.x = xPosition;

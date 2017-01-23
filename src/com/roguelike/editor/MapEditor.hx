@@ -27,7 +27,7 @@ class MapEditor extends Sprite {
 	private var selectedActor:Actor;
 	private var dragStarted:Bool;
 	private var mouseDown:Bool;
-	private var keysDown:Object = {};
+	private var keysDown:Array<Bool> = [];
 		
 	/**
 	 * Constructor.
@@ -131,11 +131,11 @@ class MapEditor extends Sprite {
 				
 				var tile:Tile = cast(e.target);
 				
-				if (keysDown[KeyCodes.A] != null) {
+				if (keysDown[KeyCodes.A]) {
 					tile.addElevation(1);
-				} else if (keysDown[KeyCodes.S] != null) {
+				} else if (keysDown[KeyCodes.S]) {
 					tile.addElevation(-1);
-				} else if (keysDown[KeyCodes.D] != null) {
+				} else if (keysDown[KeyCodes.D]) {
 					tile.clone(selectedTile);
 				}
 			}	
@@ -418,7 +418,7 @@ class MapEditor extends Sprite {
 	 * @param {KeyboardEvent.KEY_UP} e
 	 */
 	private function onKeyUp(e:KeyboardEvent):Void {
-		keysDown[e.keyCode] = null;
+		keysDown[e.keyCode] = false;
 	}
 	
 	/**

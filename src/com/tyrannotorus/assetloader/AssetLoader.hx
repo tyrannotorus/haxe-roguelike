@@ -154,8 +154,7 @@ class AssetLoader extends EventDispatcher {
 		// Read the file entries in the zip.
 		var bytes:Bytes = Bytes.ofData(byteArray);
         var bytesInput:BytesInput = new haxe.io.BytesInput(bytes);
-       	var reader:format.zip.Reader = new format.zip.Reader(bytesInput);
-		var zipEntries:List<format.zip.Data.Entry> = reader.read();
+		var zipEntries:List<haxe.zip.Entry> = Reader.readZip(bytesInput);
 		
 		// Instantiate the assetData.
 		assetEvent.assetData = { };

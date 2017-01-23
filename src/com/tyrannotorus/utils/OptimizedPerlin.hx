@@ -128,7 +128,7 @@ class OptimizedPerlin {
 			mapElevations[ii] = cast((minBrightness - normalizer + ((ii + 1) * elevationIncrement)));
 		}
 				
-		var elevationMap:Object = {};
+		var elevationMap:Array<Int> = [];
 		var currentElevation:Int = 0;
 		var currentBrightness:Int = minBrightness;
 		var numberIndexes:Int = maxBrightness - minBrightness + 1;
