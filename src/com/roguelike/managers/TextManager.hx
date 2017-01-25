@@ -9,28 +9,12 @@ import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 
-//@:bitmap("assets/fonts/bmd_font_custom7x7.png")
-//class FontLarge extends BitmapData { }
-
 @:bitmap("assets/fonts/bmd_font_custom5x5.png")
 class FontSmall extends BitmapData { }
 
-//@:bitmap("assets/fonts/bmd_font_ironsword.png")
-//class FontIronsword extends BitmapData { }
-
-//@:bitmap("assets/fonts/bmd_font_sopwith.png")
-//class FontSopwith extends BitmapData { }
-
-//@:bitmap("assets/fonts/bmd_font_punchout.png")
-//class FontPunchOut extends BitmapData { }
-
 class TextManager {
 	
-	public static inline var LARGE:Int = 0;
 	public static inline var SMALL:Int = 1;
-	public static inline var IRONSWORD:Int = 2;
-	public static inline var SOPWITH:Int = 3;
-	public static inline var PUNCHOUT:Int = 4;
 	public static inline var ALPHABET:String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopkrstuvwxyz0123456789?!.<>|()@:+- ";
 	
 	private static var textManager:TextManager;
@@ -62,19 +46,16 @@ class TextManager {
 	 * Initializes the TextManager.
 	 */
 	public function init():Void {
-		//constructFont(LARGE, new FontLarge(0, 0));
 		constructFont(SMALL, new FontSmall(0, 0));
-		//constructFont(IRONSWORD, new FontIronsword(0, 0));
-		//constructFont(SOPWITH, new FontSopwith(0, 0));
-		//constructFont(PUNCHOUT, new FontPunchOut(0, 0));
 	}
 	
 	/**
-	 * Parse Font Bitmaps
-	 * @param	fontSet
-	 * @param	fontBmd
+	 * Parse Font Bitmaps.
+	 * @param {Int} fontSet
+	 * @param {BitmapData} fontBmd
 	 */
 	private function constructFont(fontSet:Int, fontBmd:BitmapData):Void {
+		
 		var point:Point = new Point(0, 0);
 		var position_x:Int = 0;
 		var fontHeight:Int = fontBmd.height;
@@ -154,8 +135,8 @@ class TextManager {
 			}
 		}
 		
-		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.BLACK, textData.upColor);		// Colour opaque text
-		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.YELLOW, textData.secondaryColor);		// Colour opaque text
+		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.BLACK, textData.upColor);	// Colour opaque text
+		bmd.threshold(bmd, bmd.rect, new Point(0,0), "==", Colors.YELLOW, textData.secondaryColor);	// Colour opaque text
 			
 		// Render shadow text and lay opaque text on top.
 		if (textData.shadowColor != Colors.TRANSPARENT) {
@@ -198,11 +179,11 @@ class TextManager {
 	}
 	
 	/**
-	 * Returns Bitmap block of text 
-	 * @param	{textData} textData
-	 * @param	{String} name
-	 * @param	{Bool} visibilty
-	 * @return	{Bitmap}
+	 * Returns Bitmap block of text.
+	 * @param {TextData} textData
+	 * @param {String} name
+	 * @param {Bool} visibilty
+	 * @return {Bitmap}
 	 */
 	public function toBitmap(textData:TextData, name:String = null, visibilty:Bool = true):Bitmap {
 		
@@ -267,10 +248,10 @@ class TextManager {
 	}	
 	
 	/**
-	 * Returns a scaled bitmapData according to scale parameter
-	 * @param	{BitmapData} source
-	 * @param	{Int} scale
-	 * @return	{BitmapData}
+	 * Returns a scaled bitmapData according to scale parameter.
+	 * @param {BitmapData} source
+	 * @param {Int} scale
+	 * @return {BitmapData}
 	 */
 	public function scaleBMD(source:BitmapData, scale:Int):BitmapData {
 		
