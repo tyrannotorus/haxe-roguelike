@@ -98,72 +98,45 @@ class OptimizedPerlin {
   
 	/**
 	 * Returns an elevation map based on perlin noise for speified parameters.
-	 * @param	{Int} mapWidth
-	 * @param	{Int} mapHeight
-	 * @param	{Array<Int>} mapElevations
+	 * @param {MapData} mapData
+	 * @param {Int} numElevations
+	 * @param {Float} xFloat
+	 * @param {Float} yFloat
+	 * @param {Float} zFloat
+	 * @param {Vector<UInt>}
 	 */
-	public function getElevationArray(mapData:MapData, mapElevations:Array<Int>, xFloat:Float, yFloat:Float, zFloat:Float):Array<Array<Int>> {
+	public function getElevationArray(mapData:MapData, numElevations:Int, xFloat:Float, yFloat:Float, zFloat:Float):Vector<UInt> {
 		
 		var bmd:BitmapData = new BitmapData(mapData.width, mapData.height, true, Colors.TRANSPARENT);
 		fill(bmd, xFloat, yFloat, zFloat);
 		var noiseVector:Vector<UInt> = bmd.getVector(bmd.rect);
-		var brightnessArray:Array<Int> = new Array<Int>();
 		var minBrightness:Int = 100;
 		var maxBrightness:Int = 0;
+		var xx:Int = 0;
+		var yy:Int = 0;
 		
 		// Determine the brightness of each pixel in the perlin noise vector.
 		for (ii in 0...noiseVector.length) {
-			var pixelBrightness:Int = cast(determineBrightness(noiseVector[ii]) * 100);
-			minBrightness = (pixelBrightness < minBrightness) ? pixelBrightness : minBrightness;
-			maxBrightness = (pixelBrightness > maxBrightness) ? pixelBrightness : maxBrightness;
-			brightnessArray[ii] = pixelBrightness;
+			var hex:UInt = noiseVector[ii];
+			var r:UInt = hex >> 16 & 0xFF;
+			var g:UInt = hex >> 8 & 0xFF;
+			var b:UInt = hex & 0xFF;
+			var brightness:Int = cast(Math.sqrt((r * r * 0.241) + (g * g * 0.691) + (b * b * 0.068) ) / 2.55);
+			minBrightness = (brightness < minBrightness) ? brightness : minBrightness;
+			maxBrightness = (brightness > maxBrightness) ? brightness : maxBrightness;
+			noiseVector[ii] = brightness;
 		}
 		
-		// Replace map elevations with brightness values for each elevation, and attempt to normalize the distribution.
-		var elevationIncrement:Int = cast((maxBrightness - minBrightness) / mapElevations.length);
-		var normalizer:Int = 0;
-		var remainder:Int = elevationIncrement - 1 - ((maxBrightness - minBrightness) % elevationIncrement);
-		for (ii in 0...mapElevations.length) {
-			normalizer = (remainder-- > 0) ? normalizer + 1 : normalizer;
-			mapElevations[ii] = cast((minBrightness - normalizer + ((ii + 1) * elevationIncrement)));
-		}
-				
-		var elevationMap:Array<Int> = [];
-		var currentElevation:Int = 0;
-		var currentBrightness:Int = minBrightness;
-		var numberIndexes:Int = maxBrightness - minBrightness + 1;
+		var brightnessDenominator:Float = (maxBrightness - minBrightness) / numElevations;
 		
-		for (ii in 0...numberIndexes) {
+		// Convert brightness to an elevation map.
+		for (ii in 0...noiseVector.length) {
+			var brightness:Int = noiseVector[ii];
+			var elevation:UInt = Math.floor((brightness - minBrightness) / brightnessDenominator);
+			noiseVector[ii] = elevation;
+		}
 			
-			if (mapElevations.indexOf(currentBrightness) != -1) {
-				currentElevation++;
-			}
-			
-			elevationMap[currentBrightness] = currentElevation;
-			currentBrightness++;
-		}
-		
-		// Create the actual elevation array.
-		var idxPixel:Int = 0;
-		var elevationArray:Array<Array<Int>> = new Array<Array<Int>>();
-		for (yy in 0...mapData.height) {
-			elevationArray[yy] = new Array<Int>();
-			for (xx in 0...mapData.width) {
-				elevationArray[yy][xx] = cast(elevationMap[brightnessArray[idxPixel++]]);
-			}
-		}
-		
-		return elevationArray;
-	}
-	
-	/**
-	 * Returns the brightness of a specified color as a float from 0.00 to 1.00
-	 * @param {UInt} colour
-	 * @return {Float}
-	 */
-	public function determineBrightness(colour:UInt):Float {
-		var rgb:Array<UInt> = HexToRGB(colour);
-		return Math.sqrt((rgb[0] * rgb[0] * 0.241) + (rgb[1] * rgb[1] * 0.691) + (rgb[2] * rgb[2] * 0.068) ) / 255;
+		return noiseVector;
 	}
 	
   public function fill( bitmap:BitmapData, _x:Float, _y:Float, _z:Float, ?_ ):Void {
