@@ -13,6 +13,7 @@ import openfl.events.Event;
 import openfl.events.MouseEvent;
 import openfl.geom.Rectangle;
 import openfl.ui.Mouse;
+import openfl.Vector;
 
 /**
  * Map.as
@@ -29,7 +30,7 @@ class Map extends Sprite {
 	public var currentTile:Tile;
 	
 	private var mapData:MapData;
-	private var currentScale:Float = 3;
+	private var currentScale:Float = 2;
 	private var tileMap:Array<Array<Tile>>;
 	private var viewRect:Rectangle;
 	private var centerTile:Tile;
@@ -166,19 +167,20 @@ class Map extends Sprite {
 		// Create the elevation array of the map using perlin noise.
 		var mapSeed:Int = cast(Math.random() * 2000000000);
 		var optimizedPerlin:OptimizedPerlin = new OptimizedPerlin(mapSeed);
-		var elevationArray:Array<Array<Int>> = optimizedPerlin.getElevationArray(mapData, [0,1,2,3,4,5], 0.9, 0.4, 0.4);
+		var elevations:Vector<UInt> = optimizedPerlin.getElevationArray(mapData, 6, 0.9, 0.4, 0.4);
+		var idxElevation:Int = 0;
 	
 		var tile:Tile;
-		
+
 		for (yy in 0...mapData.height) {
 			
 			tileMap[yy] = new Array<Tile>();
 						
 			for (xx in 0...mapData.width) {
-				
-				var elevation:Int = elevationArray[yy][xx];
+
+				var elevation:Int = elevations[idxElevation++];
 				var tileNum:Int = tileArray[idxTile++];
-				var tileName:String = (elevation > 0) ? mapData.tileMap[tileNum] : "water.png";
+				var tileName:String = (elevation > 1) ? mapData.tileMap[tileNum] : "water.png";
 				tile = tileManager.getTile(tileName);
 				tile.x = xPosition;
 				tile.y = yPosition;
@@ -186,12 +188,18 @@ class Map extends Sprite {
 				tileMap[yy].push(tile);
 				xPosition += tileWidth;
 				
+				if (elevation <= 1) {
+					Actuate.tween(tile, 2, { y:tile.y + 5 } ).ease(Cubic.easeInOut).repeat().reflect();
+				}
+				
 				if (Math.floor(yPosition % tileHeight) == 0) {
 					tile.tint();
 				}
 				
 				if (elevation > 0) {
 					tile.addElevation(elevation);
+				} else {
+					tile.visible = false;
 				}
 			}
 			
