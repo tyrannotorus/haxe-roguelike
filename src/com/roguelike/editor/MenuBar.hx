@@ -63,7 +63,7 @@ class MenuBar extends Sprite {
 	 */
 	private function onMenuClick(e:MouseEvent):Void {
 		
-		var menuIndex:Int = menuItems.indexOf(e.target);
+		/*var menuIndex:Int = menuItems.indexOf(e.target);
 		if (menuIndex == -1) {
 			return;
 		}
@@ -78,7 +78,7 @@ class MenuBar extends Sprite {
 		
 		// Dispatch the menu click.
 		var editorEvent:EditorEvent = new EditorEvent(EditorEvent.DISPATCH, menuEvents[menuIndex]);
-		EditorDispatcher.getInstance().dispatchEvent(editorEvent);
+		EditorDispatcher.getInstance().dispatchEvent(editorEvent);*/
 	}
 		
 	/**
