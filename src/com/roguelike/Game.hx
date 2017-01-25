@@ -36,7 +36,7 @@ class Game extends Sprite {
 	public var keysDown:Array<Bool> = [];
 	private var editor:Editor;
 	
-	// Music and sfx
+	// Music and sfx.
 	private var music:Sound;
 	private var musicChannel:SoundChannel;
 	private var musicTransform:SoundTransform;
@@ -56,31 +56,37 @@ class Game extends Sprite {
 		
 		super();
 		
+		// Initialize the text manager (bitmap fonts).
 		textManager = TextManager.getInstance();
+		textManager.init();
+		
+		// Initialize the map manager (generates maps).
 		mapManager = MapManager.getInstance();
 		mapManager.addEventListener(Event.COMPLETE, init);
+		mapManager.init();
+		
+		// Initialize the tile manager (manages individual tiles for maps).
 		tileManager = TileManager.getInstance();
 		tileManager.addEventListener(Event.COMPLETE, init);
+		tileManager.init();
+		
+		// Initialize the game's actors.
 		actorManager = ActorManager.getInstance();
 		actorManager.addEventListener(Event.COMPLETE, init);
-		
-		textManager.init();
-		mapManager.init();
-		tileManager.init();
 		actorManager.init();
 	}
 	
 	/**
-	 * Attempt to initialize the game (after assets are loaded)
+	 * Attempt to initialize the game (after assets are loaded).
 	 * @param {Event.COMPLETE} e
 	 */
 	private function init(e:Event = null):Void {
 		
-		if (!mapManager.isReady()) {
+		if (!MapManager.getInstance().isReady()) {
 			return;
-		} else if (!tileManager.isReady()) {
+		} else if (!TileManager.getInstance().isReady()) {
 			return;
-		} else if (!actorManager.isReady()) {
+		} else if (!ActorManager.getInstance().isReady()) {
 			return;
 		}
 		
