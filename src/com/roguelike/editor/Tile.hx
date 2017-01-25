@@ -8,6 +8,7 @@ import openfl.utils.Object;
 import com.tyrannotorus.utils.Colors;
 import com.roguelike.managers.TileManager;
 
+
 /**
  * Tile.hx.
  * - A game tile.
@@ -30,7 +31,7 @@ class Tile extends Sprite {
 	public var centerY:Int = 0;
 	public var neEdge:Bitmap;
 	public var nwEdge:Bitmap;
-		
+			
 	/**
 	 * Constructor.
 	 */
@@ -84,11 +85,8 @@ class Tile extends Sprite {
 		this.mouseChildren = false;
 		this.cacheAsBitmap = true;
 		
-		if (tileData.fileName == "empty.png") {
-			//tileBitmap.visible = false;
-		}
-		
 		elevation = tileData.elevation;
+		Actuate.transform(this, 0).color(Colors.BLACK, 1);
 	}
 	
 	/**
@@ -210,7 +208,7 @@ class Tile extends Sprite {
 		var higherNeighbours:Int = 0;
 		var tileKeys:Array<String> = Reflect.fields(neighbourTiles);
 		for (idxTile in 0...tileKeys.length) {
-			var neighbourTile:Tile = neighbourTiles[cast(tileKeys[idxTile])];
+			var neighbourTile:Tile = neighbourTiles[Std.parseInt(tileKeys[idxTile])];
 			if (neighbourTile == null) {
 				lowerNeighbours++;
 			} else {
@@ -334,12 +332,12 @@ class Tile extends Sprite {
 		for (idxTile in 0...neighbours.length) {
 			tile = getNeighbourTile(neighbours[idxTile]);
 			if (tile != null && elevation < tile.elevation) {
-				Actuate.transform(this, 0).color(Colors.BLACK, 0.6);
+				//Actuate.transform(this, 0).color(Colors.BLACK, 0.6);
 				return;
 			}
 		}
 		
-		Actuate.transform(this, 0).color(Colors.BLACK, 0);
+		//Actuate.transform(this, 0).color(Colors.BLACK, 0);
 	}
 	
 	/**
