@@ -8,6 +8,7 @@ import openfl.display.Sprite;
 import motion.Actuate;
 import motion.easing.Cubic;
 import com.tyrannotorus.utils.KeyCodes;
+import com.roguelike.managers.VisibilityManager;
 
 /**
  * Actor.as
@@ -95,6 +96,8 @@ class Actor extends Sprite {
 	public function new(actorData:ActorData):Void {
 		
 		super();
+		
+		health = Std.random(10);
 		
 		this.actorData = actorData;
 		this.actorName = actorData.name;
@@ -300,8 +303,7 @@ class Actor extends Sprite {
 		
 		var jumpHeight:Int = cast(frameContainer.y - 5);
 		Actuate.tween(frameContainer, MOVE_SPEED, { y:jumpHeight } ).ease(Cubic.easeInOut).repeat(1).reflect();
-			
-		if(newTile.occupant == null && newTile.elevation > 0 && Math.abs(newTile.elevation - currentTile.elevation) <= 1) {
+		if(newTile.elevation > 0 && Math.abs(newTile.elevation - currentTile.elevation) <= 1) {
 			
 			switch (tileKey) {
 				case KeyCodes.LEFT:
@@ -328,6 +330,17 @@ class Actor extends Sprite {
 					if (newTile.elevation > currentTile.elevation || neTile != null && neTile.elevation > currentTile.elevation && neTile.elevation > newTile.elevation || nwTile != null && nwTile.elevation > currentTile.elevation && nwTile.elevation > newTile.elevation) {
 						return null;
 					}
+			}
+			
+			// Attack the occupant of this tile.
+			if (newTile.occupant != null) {
+				newTile.occupant.health--;
+				trace(newTile.occupant.health);
+				if (newTile.occupant.health > 0) {
+					return null;
+				} else {
+					newTile.removeOccupant();
+				}
 			}
 				
 			currentTile.highlight(false);
@@ -362,6 +375,7 @@ class Actor extends Sprite {
 		currentTile.highlight(true);
 		setAnimation(IDLE);
 		isMoving = false;
+		VisibilityManager.lightTile(newTile);
 	}
 	
 	/*
