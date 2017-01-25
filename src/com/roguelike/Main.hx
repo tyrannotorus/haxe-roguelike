@@ -12,21 +12,6 @@ import openfl.geom.Rectangle;
  */
 class Main extends Sprite {
 	
-	/**
-	 * Roguelike 0.01c Goals
-	 * - ESC to open/close edit mode
-	 * - Initial tile.update() ignores updating neighbours
-	 * - Map scrollrect follows active tile
-	 * - Bugfix: Edging bug on righthand side
-	 * - D + drag draws tiles.
-	 * Bugfix: Void tiles not drawn
-	 * Remove mouse from map.
-	 * Wheelmouse zoom centers on active tile
-	 * Highlight only the tile top.
-	 * Elevation difference > 0 shadows only tile top (not vertical plane of tile).
-	 * Elevation difference > 1 shadows occupant.
-	 */
-	
 	public static inline var GAME_SCALE:Int = 1;
 	public static inline var GAME_WIDTH:Int = 384;
 	public static inline var GAME_HEIGHT:Int = 216;
@@ -58,7 +43,7 @@ class Main extends Sprite {
 	}
 	
 	/**
-	 * Returns width of stage in windowed or fullscreen
+	 * Returns width of stage in windowed or fullscreen.
 	 * @return {Int}
 	 */
 	private function getStageWidth():UInt {
@@ -75,7 +60,7 @@ class Main extends Sprite {
 	}
 	
 	/**
-	 * Returns height of stage in windowed or fullscreen
+	 * Returns height of stage in windowed or fullscreen.
 	 * @return {Int}
 	 */
 	private function getStageHeight():UInt {
@@ -92,7 +77,7 @@ class Main extends Sprite {
 	}
 	
 	/**
-	 * Called automatically on resize of the swf. Scales and positions the game container
+	 * Called automatically on resize of the swf. Scales and positions the game container.
 	 * @param {Event.RESIZE} e
 	 */
 	private function onGameResize(e:Event):Void {
@@ -101,7 +86,7 @@ class Main extends Sprite {
 		var stageWidth:UInt = getStageWidth();
 		var stageHeight:UInt = getStageHeight();
 				
-		// Find which dimension to scale by
+		// Find which dimension to scale by.
 		if (GAME_WIDTH / stageWidth > GAME_HEIGHT / stageHeight) {
 			scale = stageWidth / GAME_WIDTH;		
 		} else {
