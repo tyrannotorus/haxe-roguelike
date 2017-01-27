@@ -8,7 +8,7 @@ import openfl.display.Sprite;
 import motion.Actuate;
 import motion.easing.Cubic;
 import com.tyrannotorus.utils.KeyCodes;
-import com.roguelike.managers.VisibilityManager;
+import com.roguelike.managers.LightingManager;
 
 /**
  * Actor.as
@@ -375,7 +375,7 @@ class Actor extends Sprite {
 		currentTile.highlight(true);
 		setAnimation(IDLE);
 		isMoving = false;
-		VisibilityManager.lightTile(newTile);
+		LightingManager.lightTile(newTile);
 	}
 	
 	/*

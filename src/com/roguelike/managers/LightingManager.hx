@@ -12,7 +12,7 @@ import com.roguelike.editor.TileData;
 import motion.Actuate;
 import com.tyrannotorus.utils.Colors;
 
-class VisibilityManager {
+class LightingManager {
 	
 	private static var litTiles:Array<Tile> = new Array<Tile>();
 	

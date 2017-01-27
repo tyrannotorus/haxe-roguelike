@@ -158,10 +158,11 @@ class AssetLoader extends EventDispatcher {
 		
 		// Instantiate the assetData.
 		assetEvent.assetData = { };
-		
+				
 		filesLeft = zipEntries.length;
 						
 		// Cycle through entries in the zip
+		// Try lime.utils.compress.*
 		for(entry in zipEntries) {
 			
 			var fileName:String = entry.fileName.split("/").pop().toLowerCase();
